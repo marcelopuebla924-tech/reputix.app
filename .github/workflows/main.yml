@@ -1,0 +1,13 @@
+
+name: Reputix Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm workflow
+        run: echo "Reputix workflow is running"
+        
