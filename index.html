@@ -1,0 +1,190 @@
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#080d19">
+  <title>Reputix | Opiniones reales. Soluciones reales.</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #080d19;
+      color: #f5f7ff;
+    }
+    header {
+      padding: 22px 7%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #202b40;
+    }
+    .logo {
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .logo span { color: #3285ff; }
+    .tag {
+      color: #9eabc2;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .hero {
+      max-width: 850px;
+      margin: auto;
+      padding: 75px 22px 45px;
+      text-align: center;
+    }
+    .pill {
+      display: inline-block;
+      color: #75b0ff;
+      border: 1px solid #244878;
+      background: #101d32;
+      padding: 9px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+    }
+    h1 {
+      font-size: clamp(38px, 8vw, 66px);
+      line-height: 1.08;
+      margin: 25px 0 18px;
+      letter-spacing: -2px;
+    }
+    h1 span { color: #3989ff; }
+    .intro {
+      color: #aab6ca;
+      font-size: 17px;
+      line-height: 1.7;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+    .search {
+      display: flex;
+      gap: 10px;
+      max-width: 570px;
+      margin: auto;
+    }
+    input {
+      min-width: 0;
+      flex: 1;
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid #34435b;
+      background: #111a2b;
+      color: white;
+      font-size: 15px;
+    }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 15px 20px;
+      background: #287bfa;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .notice {
+      margin: 16px auto 0;
+      color: #8fa1bd;
+      font-size: 13px;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      max-width: 950px;
+      margin: 15px auto 70px;
+      padding: 0 22px;
+    }
+    .card {
+      padding: 23px;
+      border: 1px solid #243149;
+      border-radius: 15px;
+      background: #101827;
+    }
+    .icon { font-size: 27px; }
+    h2 { font-size: 18px; }
+    .card p {
+      color: #aab6ca;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    footer {
+      border-top: 1px solid #202b40;
+      padding: 25px;
+      text-align: center;
+      color: #8492aa;
+      font-size: 13px;
+    }
+    @media (max-width: 480px) {
+      .search { flex-direction: column; }
+      .search button { width: 100%; }
+      .hero { padding-top: 55px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <div class="logo">REPUTI<span>X</span></div>
+      <div class="tag">Opiniones reales. Soluciones reales.</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="pill">✦ Una nueva forma de confiar</div>
+      <h1>Tu opinión puede<br>hacer la <span>diferencia.</span></h1>
+      <p class="intro">
+        Descubre experiencias de otros clientes, comparte tu opinión
+        y ayuda a los negocios a mejorar con información útil y real.
+      </p>
+      <form class="search" id="searchForm">
+        <input id="business" type="search"
+          placeholder="Busca un negocio por nombre..."
+          aria-label="Nombre del negocio">
+        <button type="submit">Buscar negocio</button>
+      </form>
+      <p class="notice" id="notice">
+        Estamos preparando nuestro directorio de negocios.
+      </p>
+    </section>
+
+    <section class="features">
+      <article class="card">
+        <div class="icon">🔎</div>
+        <h2>Encuentra negocios</h2>
+        <p>Busca información para tomar decisiones con mayor confianza.</p>
+      </article>
+      <article class="card">
+        <div class="icon">⭐</div>
+        <h2>Comparte tu experiencia</h2>
+        <p>Las opiniones honestas ayudan a otros clientes y a las empresas.</p>
+      </article>
+      <article class="card">
+        <div class="icon">📊</div>
+        <h2>Mejora con estadísticas</h2>
+        <p>Identifica tendencias y oportunidades para ofrecer un mejor servicio.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    REPUTIX © 2026 · Opiniones reales. Soluciones reales.
+  </footer>
+
+  <script>
+    document.getElementById("searchForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      const business = document.getElementById("business").value.trim();
+      const notice = document.getElementById("notice");
+      notice.textContent = business
+        ? "El directorio todavía está en preparación. Pronto podrás buscar: " + business
+        : "Escribe el nombre de un negocio para comenzar.";
+    });
+  </script>
+</body>
+</html>
