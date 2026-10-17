@@ -3,213 +3,399 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080d19">
+  <meta name="description" content="Reputix: opiniones reales, información útil y reputación de negocios.">
   <title>Reputix | Opiniones reales. Soluciones reales.</title>
   <style>
+    :root {
+      --bg: #080d19;
+      --panel: #101827;
+      --panel2: #131f32;
+      --border: #293a56;
+      --blue: #3989ff;
+      --light: #f5f7ff;
+      --muted: #aab6ca;
+      --green: #65d6ad;
+      --gold: #f6c65b;
+    }
+
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
+      background: var(--bg);
+      color: var(--light);
       font-family: Arial, sans-serif;
-      background: #080d19;
-      color: #f5f7ff;
     }
 
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .6; cursor: wait; }
+
     header {
-      padding: 22px 7%;
+      padding: 20px 6%;
       border-bottom: 1px solid #202b40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
     }
 
     .logo {
       font-size: 27px;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: -1px;
     }
 
-    .logo span, h1 span { color: #3989ff; }
+    .logo span, .accent { color: var(--blue); }
 
     .tag {
-      color: #9eabc2;
+      color: var(--muted);
       font-size: 12px;
       margin-top: 5px;
     }
 
+    .header-pill, .pill {
+      border: 1px solid #244878;
+      background: #101d32;
+      color: #85baff;
+      border-radius: 30px;
+      padding: 9px 13px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
     .hero {
-      max-width: 850px;
+      max-width: 950px;
       margin: auto;
-      padding: 75px 22px 45px;
+      padding: 65px 22px 35px;
       text-align: center;
     }
 
-    .pill {
-      display: inline-block;
-      color: #75b0ff;
-      border: 1px solid #244878;
-      background: #101d32;
-      padding: 9px 14px;
-      border-radius: 30px;
-      font-size: 13px;
-    }
-
     h1 {
-      font-size: clamp(38px, 8vw, 66px);
-      line-height: 1.08;
-      margin: 25px 0 18px;
+      font-size: clamp(38px, 7vw, 64px);
       letter-spacing: -2px;
+      line-height: 1.08;
+      margin: 24px 0 18px;
     }
 
     .intro {
-      color: #aab6ca;
+      color: var(--muted);
       font-size: 17px;
       line-height: 1.7;
-      max-width: 600px;
+      max-width: 620px;
       margin: 0 auto 30px;
     }
 
     .search {
       display: flex;
       gap: 10px;
-      max-width: 570px;
+      max-width: 620px;
       margin: auto;
     }
 
-    input {
+    input, textarea {
+      width: 100%;
       min-width: 0;
-      flex: 1;
-      padding: 16px;
-      border-radius: 10px;
+      padding: 15px;
+      border-radius: 11px;
       border: 1px solid #34435b;
       background: #111a2b;
       color: white;
-      font-size: 15px;
+      outline: none;
     }
 
-    button {
-      border: 0;
-      border-radius: 10px;
-      padding: 15px 20px;
-      background: #287bfa;
+    input:focus, textarea:focus {
+      border-color: var(--blue);
+    }
+
+    .primary, .secondary {
+      border-radius: 11px;
+      padding: 14px 18px;
+      font-weight: 700;
+      border: 1px solid transparent;
+    }
+
+    .primary {
+      background: var(--blue);
       color: white;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
     }
 
-    button:disabled {
-      opacity: .65;
-      cursor: wait;
+    .secondary {
+      background: #15233a;
+      border-color: #344c70;
+      color: white;
     }
+
+    .search button { white-space: nowrap; }
 
     .notice {
-      margin: 16px auto 0;
-      color: #8fa1bd;
+      min-height: 22px;
+      margin: 17px auto 0;
+      color: #91a4c2;
       font-size: 13px;
       line-height: 1.6;
     }
 
     .results {
-      max-width: 850px;
-      margin: 28px auto 0;
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: 18px;
+      max-width: 1000px;
+      margin: 28px auto 0;
       text-align: left;
     }
 
     .business-card {
-      background: #101827;
-      border: 1px solid #2b3c59;
-      border-radius: 16px;
-      padding: 22px;
-      box-shadow: 0 8px 28px #00000025;
+      min-width: 0;
+      overflow: hidden;
+      background: linear-gradient(145deg, #121e31, #0e1625);
+      border: 1px solid var(--border);
+      border-radius: 19px;
+      box-shadow: 0 12px 32px #0003;
+      transition: border-color .2s, transform .2s;
     }
 
-    .business-card h2 {
-      margin: 0 0 10px;
-      font-size: 21px;
+    .business-card:hover {
+      border-color: #426ca6;
+      transform: translateY(-2px);
     }
 
-    .business-category {
-      color: #75b0ff;
+    .business-top {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 21px 20px 16px;
+    }
+
+    .business-logo {
+      width: 66px;
+      height: 66px;
+      flex: 0 0 66px;
+      border: 1px solid #304563;
+      border-radius: 15px;
+      background: #1a2a43;
+      object-fit: cover;
+      display: grid;
+      place-items: center;
+      font-size: 25px;
+      color: #82b8ff;
+    }
+
+    .business-heading { min-width: 0; flex: 1; }
+
+    .business-heading h2 {
+      margin: 0 0 7px;
+      font-size: 22px;
+      overflow-wrap: anywhere;
+    }
+
+    .category {
+      color: #85baff;
       font-size: 13px;
-      margin-bottom: 12px;
     }
 
-    .business-description,
-    .business-address {
-      color: #aab6ca;
+    .rating-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 20px 17px;
+      flex-wrap: wrap;
+    }
+
+    .stars { color: var(--gold); letter-spacing: 2px; }
+    .rating-number { font-weight: 700; }
+    .muted { color: var(--muted); font-size: 13px; }
+
+    .card-divider {
+      height: 1px;
+      background: #27364d;
+      margin: 0 20px;
+    }
+
+    .business-info {
+      display: grid;
+      gap: 12px;
+      padding: 18px 20px;
+    }
+
+    .info-line {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: #c0ccdd;
+      font-size: 13px;
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+    }
+
+    .info-icon {
+      width: 20px;
+      flex: 0 0 20px;
+      color: #82b8ff;
+      text-align: center;
+    }
+
+    .description {
+      margin: 0;
+      color: var(--muted);
       font-size: 14px;
-      line-height: 1.6;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 20px 18px;
+    }
+
+    .stat {
+      min-width: 0;
+      background: #0b1423;
+      border: 1px solid #243550;
+      border-radius: 12px;
+      padding: 12px 7px;
+      text-align: center;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .stat-label { color: #91a4c2; font-size: 11px; }
+
+    .card-actions {
+      display: flex;
+      gap: 9px;
+      padding: 0 20px 20px;
+    }
+
+    .card-actions button { flex: 1; font-size: 13px; }
+
+    .profile-details {
+      border-top: 1px solid #27364d;
+      padding: 20px;
+      background: #0b1423;
+    }
+
+    .profile-details h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .review {
+      padding: 13px 0;
+      border-bottom: 1px solid #27364d;
+    }
+
+    .review:last-child { border-bottom: 0; }
+
+    .review p {
       margin: 8px 0;
+      font-size: 14px;
+      color: #d4dbea;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .owner-reply {
+      margin-top: 10px;
+      padding: 12px;
+      border-left: 3px solid var(--blue);
+      background: #14233a;
+      border-radius: 0 8px 8px 0;
+      color: #c4d5ee;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .empty {
+      color: #91a4c2;
+      font-size: 13px;
+      line-height: 1.6;
     }
 
     .features {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 16px;
-      max-width: 950px;
-      margin: 15px auto 70px;
+      max-width: 1000px;
+      margin: 65px auto;
       padding: 0 22px;
     }
 
-    .card {
-      padding: 23px;
+    .feature {
+      background: var(--panel);
       border: 1px solid #243149;
-      border-radius: 15px;
-      background: #101827;
+      border-radius: 16px;
+      padding: 23px;
     }
 
-    .icon { font-size: 27px; }
-    h2 { font-size: 18px; }
+    .feature-icon { font-size: 27px; }
+    .feature h3 { margin: 15px 0 9px; }
 
-    .card p {
-      color: #aab6ca;
+    .feature p {
+      margin: 0;
+      color: var(--muted);
       font-size: 14px;
       line-height: 1.65;
     }
 
     footer {
       border-top: 1px solid #202b40;
-      padding: 25px;
+      padding: 26px 20px;
       text-align: center;
       color: #8492aa;
       font-size: 13px;
+      line-height: 1.7;
     }
 
-    @media (max-width: 480px) {
+    [hidden] { display: none !important; }
+
+    @media (max-width: 540px) {
+      header { padding: 17px 5%; }
+      .header-pill { display: none; }
+      .hero { padding-top: 48px; }
       .search { flex-direction: column; }
       .search button { width: 100%; }
-      .hero { padding-top: 55px; }
+      .business-top { padding: 17px 15px 14px; }
+      .business-info { padding: 16px 15px; }
+      .rating-row, .stats { padding-left: 15px; padding-right: 15px; }
+      .card-actions { padding: 0 15px 16px; }
+      .card-actions button { padding: 13px 8px; }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="logo">REPUTI<span>X</span></div>
-    <div class="tag">Opiniones reales. Soluciones reales.</div>
+    <div>
+      <div class="logo">REPUTI<span>X</span></div>
+      <div class="tag">Opiniones reales. Soluciones reales.</div>
+    </div>
+    <div class="header-pill">✦ REPUTACIÓN INTELIGENTE</div>
   </header>
 
   <main>
     <section class="hero">
       <div class="pill">✦ Una nueva forma de confiar</div>
-
-      <h1>Tu opinión puede<br>hacer la <span>diferencia.</span></h1>
-
+      <h1>Tu opinión puede<br>hacer la <span class="accent">diferencia.</span></h1>
       <p class="intro">
-        Descubre experiencias de otros clientes, comparte tu opinión
-        y ayuda a los negocios a mejorar con información útil y real.
+        Descubre negocios, consulta experiencias y encuentra información
+        útil para tomar decisiones con más confianza.
       </p>
 
       <form class="search" id="searchForm">
-        <input
-          id="business"
-          type="search"
+        <input id="business" type="search"
           placeholder="Busca un negocio por nombre..."
-          aria-label="Nombre del negocio"
-          required
-        >
-        <button id="searchButton" type="submit">
+          aria-label="Nombre del negocio" required>
+        <button class="primary" id="searchButton" type="submit">
           Buscar negocio
         </button>
       </form>
@@ -218,36 +404,32 @@
         Busca un negocio para ver sus resultados.
       </p>
 
-      <section
-        class="results"
-        id="results"
-        aria-label="Resultados de negocios"
-      ></section>
+      <section class="results" id="results"
+        aria-label="Resultados de negocios"></section>
     </section>
 
     <section class="features">
-      <article class="card">
-        <div class="icon">🔎</div>
-        <h2>Encuentra negocios</h2>
-        <p>Busca información para tomar decisiones con mayor confianza.</p>
+      <article class="feature">
+        <div class="feature-icon">🔎</div>
+        <h3>Encuentra negocios</h3>
+        <p>Consulta información de negocios en un solo lugar.</p>
       </article>
-
-      <article class="card">
-        <div class="icon">⭐</div>
-        <h2>Comparte tu experiencia</h2>
-        <p>Las opiniones honestas ayudan a otros clientes y empresas.</p>
+      <article class="feature">
+        <div class="feature-icon">⭐</div>
+        <h3>Opiniones auténticas</h3>
+        <p>Las calificaciones se mostrarán cuando haya reseñas disponibles.</p>
       </article>
-
-      <article class="card">
-        <div class="icon">📊</div>
-        <h2>Mejora con estadísticas</h2>
-        <p>Identifica tendencias y oportunidades de mejora.</p>
+      <article class="feature">
+        <div class="feature-icon">📊</div>
+        <h3>Estadísticas inteligentes</h3>
+        <p>Identifica tendencias a partir de opiniones reales, sin inventar datos.</p>
       </article>
     </section>
   </main>
 
   <footer>
-    REPUTIX © 2026 · Opiniones reales. Soluciones reales.
+    REPUTIX © 2026 · Opiniones reales. Soluciones reales.<br>
+    Las calificaciones y estadísticas se basan en los datos disponibles.
   </footer>
 
   <script>
@@ -263,59 +445,163 @@
     const resultsBox = document.getElementById("results");
     const searchButton = document.getElementById("searchButton");
 
-    // Insertar texto como texto, no como HTML.
-    function addTextElement(parent, tag, className, text) {
-      const element = document.createElement(tag);
-      if (className) element.className = className;
-      element.textContent = text;
-      parent.appendChild(element);
-      return element;
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined && text !== null) {
+        node.textContent = String(text);
+      }
+      return node;
     }
 
-    function renderBusinesses(businesses) {
-      resultsBox.replaceChildren();
+    function line(icon, text) {
+      const row = el("div", "info-line");
+      row.append(el("span", "info-icon", icon));
+      row.append(el("span", "", text));
+      return row;
+    }
 
-      businesses.forEach(function (business) {
-        const card = document.createElement("article");
-        card.className = "business-card";
+    function stat(value, label) {
+      const box = el("div", "stat");
+      box.append(el("span", "stat-value", value));
+      box.append(el("span", "stat-label", label));
+      return box;
+    }
 
-        addTextElement(
-          card, "h2", "", business.name || "Negocio sin nombre"
-        );
+    function validUrl(value) {
+      if (!value) return "";
+      try {
+        const url = new URL(value);
+        return ["https:", "http:"].includes(url.protocol)
+          ? url.href : "";
+      } catch (_) {
+        return "";
+      }
+    }
 
-        if (business.category) {
-          addTextElement(
-            card, "div", "business-category",
-            "Categoría: " + business.category
-          );
+    function renderBusiness(business) {
+      const card = el("article", "business-card");
+      const top = el("div", "business-top");
+      const logoUrl = validUrl(
+        business.logo_url || business.image_url || business.photo_url
+      );
+
+      if (logoUrl) {
+        const img = el("img", "business-logo");
+        img.src = logoUrl;
+        img.alt = "Imagen de " + (business.name || "negocio");
+        img.loading = "lazy";
+        img.onerror = function () {
+          const fallback = el("div", "business-logo", "✦");
+          img.replaceWith(fallback);
+        };
+        top.append(img);
+      } else {
+        top.append(el("div", "business-logo", "✦"));
+      }
+
+      const heading = el("div", "business-heading");
+      heading.append(el("h2", "", business.name || "Negocio sin nombre"));
+      heading.append(el("div", "category",
+        business.category || "Categoría no disponible"));
+      top.append(heading);
+      card.append(top);
+
+      const ratingRow = el("div", "rating-row");
+      ratingRow.append(el("span", "stars", "☆☆☆☆☆"));
+      ratingRow.append(el("span", "rating-number", "—"));
+      ratingRow.append(el("span", "muted", "Sin calificaciones"));
+      card.append(ratingRow);
+
+      card.append(el("div", "card-divider"));
+
+      const info = el("div", "business-info");
+      info.append(line("⌖", business.address || "Dirección no disponible"));
+      info.append(line("☎", business.phone || "Teléfono no disponible"));
+      info.append(line("◷", business.hours || business.opening_hours ||
+        "Horario no disponible"));
+
+      if (business.website) {
+        const website = validUrl(business.website);
+        if (website) {
+          const webLine = line("↗", "Sitio web");
+          const link = el("a", "", website);
+          link.href = website;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.style.color = "#85baff";
+          link.style.overflowWrap = "anywhere";
+          webLine.lastChild.replaceChildren(link);
+          info.append(webLine);
         }
+      }
 
-        if (business.description) {
-          addTextElement(
-            card, "p", "business-description",
-            business.description
-          );
-        }
+      if (business.description) {
+        info.append(el("p", "description", business.description));
+      } else {
+        info.append(el("p", "description",
+          "La descripción de este negocio todavía no está disponible."));
+      }
+      card.append(info);
 
-        if (business.address) {
-          addTextElement(
-            card, "p", "business-address",
-            "Dirección: " + business.address
-          );
-        }
+      const stats = el("div", "stats");
+      stats.append(stat("—", "Calificación"));
+      stats.append(stat("0", "Opiniones"));
+      stats.append(stat("—", "Tendencias"));
+      card.append(stats);
 
-        resultsBox.appendChild(card);
+      const actions = el("div", "card-actions");
+      const profileButton = el("button", "primary", "Ver perfil");
+      profileButton.type = "button";
+      const reviewButton = el("button", "secondary", "Opiniones");
+      reviewButton.type = "button";
+      actions.append(profileButton, reviewButton);
+      card.append(actions);
+
+      const details = el("section", "profile-details");
+      details.hidden = true;
+      details.append(el("h3", "", "Reputación y opiniones"));
+
+      const reviewStatus = el("p", "empty",
+        "Las reseñas reales aparecerán aquí cuando se configure su tabla en Supabase.");
+      details.append(reviewStatus);
+
+      const trendsHeading = el("h3", "");
+      trendsHeading.textContent = "Estadísticas inteligentes";
+      trendsHeading.style.marginTop = "22px";
+      details.append(trendsHeading);
+      details.append(el("p", "empty",
+        "Las tendencias se calcularán cuando existan suficientes opiniones reales."));
+
+      const repliesHeading = el("h3", "");
+      repliesHeading.textContent = "Respuestas del propietario";
+      repliesHeading.style.marginTop = "22px";
+      details.append(repliesHeading);
+      details.append(el("p", "empty",
+        "Las respuestas se mostrarán aquí cuando estén disponibles."));
+
+      card.append(details);
+
+      profileButton.addEventListener("click", function () {
+        details.hidden = !details.hidden;
+        profileButton.textContent = details.hidden ? "Ver perfil" : "Cerrar perfil";
       });
+
+      reviewButton.addEventListener("click", function () {
+        details.hidden = false;
+        profileButton.textContent = "Cerrar perfil";
+        details.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+
+      return card;
     }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
+      const query = input.value.trim();
 
-      const business = input.value.trim();
-
-      if (!business) {
-        notice.textContent =
-          "Escribe el nombre de un negocio para comenzar.";
+      if (!query) {
+        notice.textContent = "Escribe el nombre de un negocio.";
         return;
       }
 
@@ -325,47 +611,39 @@
 
       try {
         const params = new URLSearchParams({
-          select: "id,name,description,address,category",
-          name: "ilike.*" + business + "*",
+          select: "*",
+          name: "ilike.*" + query + "*",
           limit: "20"
         });
 
         const response = await fetch(
           SUPABASE_URL + "/rest/v1/businesses?" + params.toString(),
-          {
-            method: "GET",
-            headers: {
-              apikey: SUPABASE_KEY
-            }
-          }
+          { headers: { apikey: SUPABASE_KEY } }
         );
 
         if (!response.ok) {
-          const details = await response.text();
-          console.error(
-            "Error Supabase:", response.status, details
-          );
-          throw new Error("HTTP " + response.status);
+          console.error("Supabase:", response.status, await response.text());
+          throw new Error("No se pudo consultar la base de datos.");
         }
 
         const data = await response.json();
 
         if (!Array.isArray(data) || data.length === 0) {
-          notice.textContent =
-            "No encontramos ese negocio. Prueba con otro nombre.";
+          notice.textContent = "No encontramos ese negocio. Prueba otro nombre.";
           return;
         }
 
-        renderBusinesses(data);
+        data.forEach(function (business) {
+          resultsBox.append(renderBusiness(business));
+        });
 
-        notice.textContent =
-          "Encontramos " + data.length +
+        notice.textContent = "Encontramos " + data.length +
           (data.length === 1 ? " negocio." : " negocios.");
 
       } catch (error) {
-        console.error("Error de búsqueda:", error);
+        console.error(error);
         notice.textContent =
-          "No pudimos completar la búsqueda. Revisa los permisos de Supabase.";
+          "No pudimos completar la búsqueda. Comprueba la conexión y los permisos de Supabase.";
       } finally {
         searchButton.disabled = false;
       }
