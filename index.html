@@ -1,18 +1,24 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080d19">
+  <meta name="description" content="Reputix: descubre negocios, comparte experiencias y encuentra información útil para decidir con confianza.">
   <title>Reputix | Opiniones reales. Soluciones reales.</title>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #080d19;
       color: #f5f7ff;
     }
+
     header {
       padding: 22px 7%;
       display: flex;
@@ -20,23 +26,30 @@
       align-items: center;
       border-bottom: 1px solid #202b40;
     }
+
     .logo {
       font-size: 27px;
       font-weight: 800;
       letter-spacing: -1px;
     }
-    .logo span { color: #3285ff; }
+
+    .logo span {
+      color: #3285ff;
+    }
+
     .tag {
       color: #9eabc2;
       font-size: 12px;
       margin-top: 5px;
     }
+
     .hero {
       max-width: 850px;
       margin: auto;
       padding: 75px 22px 45px;
       text-align: center;
     }
+
     .pill {
       display: inline-block;
       color: #75b0ff;
@@ -46,13 +59,18 @@
       border-radius: 30px;
       font-size: 13px;
     }
+
     h1 {
       font-size: clamp(38px, 8vw, 66px);
       line-height: 1.08;
       margin: 25px 0 18px;
       letter-spacing: -2px;
     }
-    h1 span { color: #3989ff; }
+
+    h1 span {
+      color: #3989ff;
+    }
+
     .intro {
       color: #aab6ca;
       font-size: 17px;
@@ -60,12 +78,14 @@
       max-width: 600px;
       margin: 0 auto 30px;
     }
+
     .search {
       display: flex;
       gap: 10px;
       max-width: 570px;
       margin: auto;
     }
+
     input {
       min-width: 0;
       flex: 1;
@@ -76,6 +96,12 @@
       color: white;
       font-size: 15px;
     }
+
+    input:focus {
+      outline: 2px solid #3989ff;
+      outline-offset: 2px;
+    }
+
     button {
       border: 0;
       border-radius: 10px;
@@ -86,11 +112,79 @@
       font-weight: bold;
       cursor: pointer;
     }
+
+    button:hover:not(:disabled) {
+      background: #3989ff;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
     .notice {
       margin: 16px auto 0;
       color: #8fa1bd;
       font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-line;
     }
+
+    .results {
+      max-width: 850px;
+      margin: 28px auto 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      text-align: left;
+    }
+
+    .business-card {
+      background: #101827;
+      border: 1px solid #2b3c59;
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 8px 28px #00000025;
+      overflow-wrap: anywhere;
+    }
+
+    .business-card h2 {
+      margin: 0 0 10px;
+      font-size: 21px;
+      color: #f5f7ff;
+    }
+
+    .business-category {
+      display: inline-block;
+      color: #75b0ff;
+      background: #101d32;
+      border: 1px solid #244878;
+      border-radius: 20px;
+      padding: 6px 10px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .business-description,
+    .business-address {
+      color: #aab6ca;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+
+    .profile-button {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 11px 16px;
+      border-radius: 9px;
+      background: #202d43;
+      border: 1px solid #34435b;
+      color: #dce8ff;
+      font-size: 13px;
+      cursor: default;
+    }
+
     .features {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -99,19 +193,28 @@
       margin: 15px auto 70px;
       padding: 0 22px;
     }
+
     .card {
       padding: 23px;
       border: 1px solid #243149;
       border-radius: 15px;
       background: #101827;
     }
-    .icon { font-size: 27px; }
-    h2 { font-size: 18px; }
+
+    .icon {
+      font-size: 27px;
+    }
+
+    .card h2 {
+      font-size: 18px;
+    }
+
     .card p {
       color: #aab6ca;
       font-size: 14px;
       line-height: 1.65;
     }
+
     footer {
       border-top: 1px solid #202b40;
       padding: 25px;
@@ -119,13 +222,27 @@
       color: #8492aa;
       font-size: 13px;
     }
+
     @media (max-width: 480px) {
-      .search { flex-direction: column; }
-      .search button { width: 100%; }
-      .hero { padding-top: 55px; }
+      .search {
+        flex-direction: column;
+      }
+
+      .search button {
+        width: 100%;
+      }
+
+      .hero {
+        padding-top: 55px;
+      }
+
+      .business-card {
+        padding: 18px;
+      }
     }
   </style>
 </head>
+
 <body>
   <header>
     <div>
@@ -137,37 +254,66 @@
   <main>
     <section class="hero">
       <div class="pill">✦ Una nueva forma de confiar</div>
-      <h1>Tu opinión puede<br>hacer la <span>diferencia.</span></h1>
+
+      <h1>
+        Tu opinión puede<br>
+        hacer la <span>diferencia.</span>
+      </h1>
+
       <p class="intro">
         Descubre experiencias de otros clientes, comparte tu opinión
         y ayuda a los negocios a mejorar con información útil y real.
       </p>
+
       <form class="search" id="searchForm">
-        <input id="business" type="search"
+        <input
+          id="business"
+          type="search"
           placeholder="Busca un negocio por nombre..."
-          aria-label="Nombre del negocio">
-        <button type="submit">Buscar negocio</button>
+          aria-label="Nombre del negocio"
+          maxlength="150"
+          required
+        >
+        <button id="searchButton" type="submit">
+          Buscar negocio
+        </button>
       </form>
-      <p class="notice" id="notice">
-        Estamos preparando nuestro directorio de negocios.
+
+      <p class="notice" id="notice" role="status" aria-live="polite">
+        Busca un negocio para consultar la información disponible.
       </p>
+
+      <section
+        class="results"
+        id="results"
+        aria-label="Resultados de negocios"
+        hidden
+      ></section>
     </section>
 
     <section class="features">
       <article class="card">
         <div class="icon">🔎</div>
         <h2>Encuentra negocios</h2>
-        <p>Busca información para tomar decisiones con mayor confianza.</p>
+        <p>
+          Busca información para tomar decisiones con mayor confianza.
+        </p>
       </article>
+
       <article class="card">
         <div class="icon">⭐</div>
         <h2>Comparte tu experiencia</h2>
-        <p>Las opiniones honestas ayudan a otros clientes y a las empresas.</p>
+        <p>
+          Las opiniones honestas ayudan a otros clientes y a las empresas.
+        </p>
       </article>
+
       <article class="card">
         <div class="icon">📊</div>
         <h2>Mejora con estadísticas</h2>
-        <p>Identifica tendencias y oportunidades para ofrecer un mejor servicio.</p>
+        <p>
+          Identifica tendencias y oportunidades para ofrecer un mejor servicio.
+        </p>
       </article>
     </section>
   </main>
@@ -177,75 +323,155 @@
   </footer>
 
   <script>
+    const SUPABASE_URL =
+      "https://udvsrmfgjfinwbgvhchs.supabase.co";
 
-const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
-const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+    const SUPABASE_KEY =
+      "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
-const form = document.getElementById("searchForm");
-const input = document.getElementById("business");
-const notice = document.getElementById("notice");
+    const form = document.getElementById("searchForm");
+    const input = document.getElementById("business");
+    const notice = document.getElementById("notice");
+    const resultsContainer = document.getElementById("results");
+    const searchButton = document.getElementById("searchButton");
 
-form.addEventListener("submit", async function (event) {
-  event.preventDefault();
+    function createTextElement(tag, className, text) {
+      const element = document.createElement(tag);
+      element.className = className;
+      element.textContent = text;
+      return element;
+    }
 
-  const business = input.value.trim();
+    function renderBusinesses(businesses) {
+      resultsContainer.replaceChildren();
 
-  if (!business) {
-    notice.textContent = "Escribe el nombre de un negocio para comenzar.";
-    return;
-  }
+      businesses.forEach(function (business) {
+        const card = document.createElement("article");
+        card.className = "business-card";
 
-  notice.style.whiteSpace = "pre-line";
-  notice.textContent = "Buscando negocios...";
+        card.appendChild(
+          createTextElement(
+            "h2",
+            "",
+            business.name || "Negocio sin nombre"
+          )
+        );
 
-  try {
-    const params = new URLSearchParams({
-      select: "id,name,description,address,category",
-      name: `ilike.%${business}%`,
-      limit: "20"
-    });
-
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/businesses?${params}`,
-      {
-        method: "GET",
-        headers: {
-          apikey: SUPABASE_KEY
+        if (business.category) {
+          card.appendChild(
+            createTextElement(
+              "div",
+              "business-category",
+              business.category
+            )
+          );
         }
+
+        if (business.description) {
+          card.appendChild(
+            createTextElement(
+              "p",
+              "business-description",
+              business.description
+            )
+          );
+        }
+
+        if (business.address) {
+          card.appendChild(
+            createTextElement(
+              "p",
+              "business-address",
+              "Dirección: " + business.address
+            )
+          );
+        }
+
+        card.appendChild(
+          createTextElement(
+            "span",
+            "profile-button",
+            "Perfil detallado próximamente"
+          )
+        );
+
+        resultsContainer.appendChild(card);
+      });
+
+      resultsContainer.hidden = false;
+    }
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const business = input.value.trim();
+
+      if (!business) {
+        notice.textContent =
+          "Escribe el nombre de un negocio para comenzar.";
+        input.focus();
+        return;
       }
-    );
 
-    if (!response.ok) {
-      const details = await response.text();
-      console.error("Supabase:", response.status, details);
-      throw new Error(`Error HTTP ${response.status}`);
-    }
+      resultsContainer.replaceChildren();
+      resultsContainer.hidden = true;
+      notice.textContent = "Buscando negocios...";
+      searchButton.disabled = true;
 
-    const results = await response.json();
+      try {
+        const params = new URLSearchParams({
+          select: "id,name,description,address,category",
+          name: "ilike.%" + business + "%",
+          limit: "20",
+          order: "name.asc"
+        });
 
-    if (!Array.isArray(results) || results.length === 0) {
-      notice.textContent =
-        "No encontramos ese negocio. Prueba con otro nombre.";
-      return;
-    }
+        const response = await fetch(
+          SUPABASE_URL + "/rest/v1/businesses?" + params.toString(),
+          {
+            method: "GET",
+            headers: {
+              apikey: SUPABASE_KEY,
+              Accept: "application/json"
+            }
+          }
+        );
 
-    notice.textContent = results.map(function (item) {
-      return [
-        item.name || "Negocio sin nombre",
-        item.category ? "Categoría: " + item.category : "",
-        item.description || "",
-        item.address ? "Dirección: " + item.address : ""
-      ].filter(Boolean).join("\n");
-    }).join("\n\n────────────\n\n");
+        if (!response.ok) {
+          const details = await response.text();
+          console.error(
+            "Error de Supabase:",
+            response.status,
+            details
+          );
 
-  } catch (error) {
-    console.error("Error de búsqueda:", error);
-    notice.textContent =
-      "No pudimos completar la búsqueda. Revisa la conexión y los permisos de Supabase.";
-  }
-});
+          throw new Error("HTTP " + response.status);
+        }
 
-</script>
+        const data = await response.json();
 
+        if (!Array.isArray(data) || data.length === 0) {
+          notice.textContent =
+            "No encontramos ese negocio. Prueba con otro nombre.";
+          return;
+        }
+
+        renderBusinesses(data);
+
+        notice.textContent =
+          data.length === 1
+            ? "Encontramos 1 negocio."
+            : "Encontramos " + data.length + " negocios.";
+
+      } catch (error) {
+        console.error("Error de búsqueda:", error);
+
+        notice.textContent =
+          "No pudimos completar la búsqueda. Comprueba tu conexión y los permisos de lectura de Supabase.";
+      } finally {
+        searchButton.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
