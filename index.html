@@ -177,59 +177,74 @@
   </footer>
 
   <script>
-const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
-const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC;
 
-document.getElementById("searchForm").addEventListener("submit", async function(event) {
+const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+
+const form = document.getElementById("searchForm");
+const input = document.getElementById("business");
+const notice = document.getElementById("notice");
+
+form.addEventListener("submit", async function (event) {
   event.preventDefault();
 
-  const business = document.getElementById("business").value.trim();
-  const notice = document.getElementById("notice");
+  const business = input.value.trim();
 
   if (!business) {
     notice.textContent = "Escribe el nombre de un negocio para comenzar.";
     return;
   }
 
+  notice.style.whiteSpace = "pre-line";
   notice.textContent = "Buscando negocios...";
 
   try {
-    const url = SUPABASE_URL +
-      "/rest/v1/businesses?select=id,name,description,address,category&name=ilike.*" +
-      encodeURIComponent(business) + "*";
+    const params = new URLSearchParams({
+      select: "id,name,description,address,category",
+      name: `ilike.%${business}%`,
+      limit: "20"
+    });
 
-    
+    const response = await fetch(
+      `${SUPABASE_URL}/rest/v1/businesses?${params}`,
+      {
+        method: "GET",
+        headers: {
+          apikey: SUPABASE_KEY
+        }
+      }
+    );
 
-const response = await fetch(url, {
-    headers: {
-        "apikey": SUPABASE_KEY
+    if (!response.ok) {
+      const details = await response.text();
+      console.error("Supabase:", response.status, details);
+      throw new Error(`Error HTTP ${response.status}`);
     }
-});
 
-if (!response.ok) {
-    throw new Error("Error al consultar la base de datos");
-}
+    const results = await response.json();
 
-const results = await response.json();
-
-  
-
-    if (results.length === 0) {
-      notice.textContent = "Todavía no encontramos ese negocio. Puedes intentarlo con otro nombre.";
+    if (!Array.isArray(results) || results.length === 0) {
+      notice.textContent =
+        "No encontramos ese negocio. Prueba con otro nombre.";
       return;
     }
 
-    notice.textContent = results.map(function(item) {
-      return item.name +
-        (item.description ? " — " + item.description : "") +
-        (item.address ? " | Dirección: " + item.address : "");
-    }).join("\n\n");
+    notice.textContent = results.map(function (item) {
+      return [
+        item.name || "Negocio sin nombre",
+        item.category ? "Categoría: " + item.category : "",
+        item.description || "",
+        item.address ? "Dirección: " + item.address : ""
+      ].filter(Boolean).join("\n");
+    }).join("\n\n────────────\n\n");
 
   } catch (error) {
-    console.error(error);
-    notice.textContent = "No pudimos completar la búsqueda. Revisaremos la conexión.";
+    console.error("Error de búsqueda:", error);
+    notice.textContent =
+      "No pudimos completar la búsqueda. Revisa la conexión y los permisos de Supabase.";
   }
 });
+
 </script>
 
 </body>
