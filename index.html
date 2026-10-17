@@ -177,14 +177,57 @@
   </footer>
 
   <script>
-    document.getElementById("searchForm").addEventListener("submit", function(event) {
-      event.preventDefault();
-      const business = document.getElementById("business").value.trim();
-      const notice = document.getElementById("notice");
-      notice.textContent = business
-        ? "El directorio todavía está en preparación. Pronto podrás buscar: " + business
-        : "Escribe el nombre de un negocio para comenzar.";
+const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC;
+
+document.getElementById("searchForm").addEventListener("submit", async function(event) {
+  event.preventDefault();
+
+  const business = document.getElementById("business").value.trim();
+  const notice = document.getElementById("notice");
+
+  if (!business) {
+    notice.textContent = "Escribe el nombre de un negocio para comenzar.";
+    return;
+  }
+
+  notice.textContent = "Buscando negocios...";
+
+  try {
+    const url = SUPABASE_URL +
+      "/rest/v1/businesses?select=id,name,description,address,category&name=ilike.*" +
+      encodeURIComponent(business) + "*";
+
+    const response = await fetch(url, {
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY
+      }
     });
-  </script>
+
+    if (!response.ok) {
+      throw new Error("Error al consultar la base de datos.");
+    }
+
+    const results = await response.json();
+
+    if (results.length === 0) {
+      notice.textContent = "Todavía no encontramos ese negocio. Puedes intentarlo con otro nombre.";
+      return;
+    }
+
+    notice.textContent = results.map(function(item) {
+      return item.name +
+        (item.description ? " — " + item.description : "") +
+        (item.address ? " | Dirección: " + item.address : "");
+    }).join("\n\n");
+
+  } catch (error) {
+    console.error(error);
+    notice.textContent = "No pudimos completar la búsqueda. Revisaremos la conexión.";
+  }
+});
+</script>
+
 </body>
 </html>
