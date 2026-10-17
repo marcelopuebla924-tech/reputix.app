@@ -198,18 +198,21 @@ document.getElementById("searchForm").addEventListener("submit", async function(
       "/rest/v1/businesses?select=id,name,description,address,category&name=ilike.*" +
       encodeURIComponent(business) + "*";
 
-    const response = await fetch(url, {
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": "Bearer " + SUPABASE_KEY
-      }
-    });
+    
 
-    if (!response.ok) {
-      throw new Error("Error al consultar la base de datos.");
+const response = await fetch(url, {
+    headers: {
+        "apikey": SUPABASE_KEY
     }
+});
 
-    const results = await response.json();
+if (!response.ok) {
+    throw new Error("Error al consultar la base de datos");
+}
+
+const results = await response.json();
+
+  
 
     if (results.length === 0) {
       notice.textContent = "Todavía no encontramos ese negocio. Puedes intentarlo con otro nombre.";
