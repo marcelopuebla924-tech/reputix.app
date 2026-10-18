@@ -1,653 +1,627 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#080d19">
-  <meta name="description" content="Reputix: opiniones reales, información útil y reputación de negocios.">
-  <title>Reputix | Opiniones reales. Soluciones reales.</title>
-  <style>
-    :root {
-      --bg: #080d19;
-      --panel: #101827;
-      --panel2: #131f32;
-      --border: #293a56;
-      --blue: #3989ff;
-      --light: #f5f7ff;
-      --muted: #aab6ca;
-      --green: #65d6ad;
-      --gold: #f6c65b;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--light);
-      font-family: Arial, sans-serif;
-    }
-
-    button, input, textarea { font: inherit; }
-    button { cursor: pointer; }
-    button:disabled { opacity: .6; cursor: wait; }
-
-    header {
-      padding: 20px 6%;
-      border-bottom: 1px solid #202b40;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-    }
-
-    .logo {
-      font-size: 27px;
-      font-weight: 900;
-      letter-spacing: -1px;
-    }
-
-    .logo span, .accent { color: var(--blue); }
-
-    .tag {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 5px;
-    }
-
-    .header-pill, .pill {
-      border: 1px solid #244878;
-      background: #101d32;
-      color: #85baff;
-      border-radius: 30px;
-      padding: 9px 13px;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .hero {
-      max-width: 950px;
-      margin: auto;
-      padding: 65px 22px 35px;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: clamp(38px, 7vw, 64px);
-      letter-spacing: -2px;
-      line-height: 1.08;
-      margin: 24px 0 18px;
-    }
-
-    .intro {
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.7;
-      max-width: 620px;
-      margin: 0 auto 30px;
-    }
-
-    .search {
-      display: flex;
-      gap: 10px;
-      max-width: 620px;
-      margin: auto;
-    }
-
-    input, textarea {
-      width: 100%;
-      min-width: 0;
-      padding: 15px;
-      border-radius: 11px;
-      border: 1px solid #34435b;
-      background: #111a2b;
-      color: white;
-      outline: none;
-    }
-
-    input:focus, textarea:focus {
-      border-color: var(--blue);
-    }
-
-    .primary, .secondary {
-      border-radius: 11px;
-      padding: 14px 18px;
-      font-weight: 700;
-      border: 1px solid transparent;
-    }
-
-    .primary {
-      background: var(--blue);
-      color: white;
-    }
-
-    .secondary {
-      background: #15233a;
-      border-color: #344c70;
-      color: white;
-    }
-
-    .search button { white-space: nowrap; }
-
-    .notice {
-      min-height: 22px;
-      margin: 17px auto 0;
-      color: #91a4c2;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .results {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-      gap: 18px;
-      max-width: 1000px;
-      margin: 28px auto 0;
-      text-align: left;
-    }
-
-    .business-card {
-      min-width: 0;
-      overflow: hidden;
-      background: linear-gradient(145deg, #121e31, #0e1625);
-      border: 1px solid var(--border);
-      border-radius: 19px;
-      box-shadow: 0 12px 32px #0003;
-      transition: border-color .2s, transform .2s;
-    }
-
-    .business-card:hover {
-      border-color: #426ca6;
-      transform: translateY(-2px);
-    }
-
-    .business-top {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 21px 20px 16px;
-    }
-
-    .business-logo {
-      width: 66px;
-      height: 66px;
-      flex: 0 0 66px;
-      border: 1px solid #304563;
-      border-radius: 15px;
-      background: #1a2a43;
-      object-fit: cover;
-      display: grid;
-      place-items: center;
-      font-size: 25px;
-      color: #82b8ff;
-    }
-
-    .business-heading { min-width: 0; flex: 1; }
-
-    .business-heading h2 {
-      margin: 0 0 7px;
-      font-size: 22px;
-      overflow-wrap: anywhere;
-    }
-
-    .category {
-      color: #85baff;
-      font-size: 13px;
-    }
-
-    .rating-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 0 20px 17px;
-      flex-wrap: wrap;
-    }
-
-    .stars { color: var(--gold); letter-spacing: 2px; }
-    .rating-number { font-weight: 700; }
-    .muted { color: var(--muted); font-size: 13px; }
-
-    .card-divider {
-      height: 1px;
-      background: #27364d;
-      margin: 0 20px;
-    }
-
-    .business-info {
-      display: grid;
-      gap: 12px;
-      padding: 18px 20px;
-    }
-
-    .info-line {
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
-      color: #c0ccdd;
-      font-size: 13px;
-      line-height: 1.55;
-      overflow-wrap: anywhere;
-    }
-
-    .info-icon {
-      width: 20px;
-      flex: 0 0 20px;
-      color: #82b8ff;
-      text-align: center;
-    }
-
-    .description {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.65;
-      overflow-wrap: anywhere;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 0 20px 18px;
-    }
-
-    .stat {
-      min-width: 0;
-      background: #0b1423;
-      border: 1px solid #243550;
-      border-radius: 12px;
-      padding: 12px 7px;
-      text-align: center;
-    }
-
-    .stat-value {
-      display: block;
-      font-size: 17px;
-      font-weight: 800;
-      margin-bottom: 5px;
-      overflow-wrap: anywhere;
-    }
-
-    .stat-label { color: #91a4c2; font-size: 11px; }
-
-    .card-actions {
-      display: flex;
-      gap: 9px;
-      padding: 0 20px 20px;
-    }
-
-    .card-actions button { flex: 1; font-size: 13px; }
-
-    .profile-details {
-      border-top: 1px solid #27364d;
-      padding: 20px;
-      background: #0b1423;
-    }
-
-    .profile-details h3 {
-      margin: 0 0 12px;
-      font-size: 16px;
-    }
-
-    .review {
-      padding: 13px 0;
-      border-bottom: 1px solid #27364d;
-    }
-
-    .review:last-child { border-bottom: 0; }
-
-    .review p {
-      margin: 8px 0;
-      font-size: 14px;
-      color: #d4dbea;
-      line-height: 1.6;
-      overflow-wrap: anywhere;
-    }
-
-    .owner-reply {
-      margin-top: 10px;
-      padding: 12px;
-      border-left: 3px solid var(--blue);
-      background: #14233a;
-      border-radius: 0 8px 8px 0;
-      color: #c4d5ee;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .empty {
-      color: #91a4c2;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 16px;
-      max-width: 1000px;
-      margin: 65px auto;
-      padding: 0 22px;
-    }
-
-    .feature {
-      background: var(--panel);
-      border: 1px solid #243149;
-      border-radius: 16px;
-      padding: 23px;
-    }
-
-    .feature-icon { font-size: 27px; }
-    .feature h3 { margin: 15px 0 9px; }
-
-    .feature p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.65;
-    }
-
-    footer {
-      border-top: 1px solid #202b40;
-      padding: 26px 20px;
-      text-align: center;
-      color: #8492aa;
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    [hidden] { display: none !important; }
-
-    @media (max-width: 540px) {
-      header { padding: 17px 5%; }
-      .header-pill { display: none; }
-      .hero { padding-top: 48px; }
-      .search { flex-direction: column; }
-      .search button { width: 100%; }
-      .business-top { padding: 17px 15px 14px; }
-      .business-info { padding: 16px 15px; }
-      .rating-row, .stats { padding-left: 15px; padding-right: 15px; }
-      .card-actions { padding: 0 15px 16px; }
-      .card-actions button { padding: 13px 8px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080d19">
+<meta name="description" content="Reputix: opiniones reales, información útil y reputación de negocios.">
+<title>Reputix | Opiniones reales. Soluciones reales.</title>
+<style>
+:root{--bg:#080d19;--panel:#101827;--border:#293a56;--blue:#3989ff;--light:#f5f7ff;--muted:#aab6ca;--gold:#f6c65b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--light);font-family:Arial,sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+header{padding:20px 6%;border-bottom:1px solid #202b40;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.logo{font-size:27px;font-weight:900;letter-spacing:-1px}
+.logo span,.accent{color:var(--blue)}
+.tag{color:var(--muted);font-size:12px;margin-top:5px}
+.header-pill,.pill{border:1px solid #244878;background:#101d32;color:#85baff;border-radius:30px;padding:9px 13px;font-size:12px}
+.hero{max-width:950px;margin:auto;padding:65px 22px 35px;text-align:center}
+h1{font-size:clamp(38px,7vw,64px);letter-spacing:-2px;line-height:1.08;margin:24px 0 18px}
+.intro{color:var(--muted);font-size:17px;line-height:1.7;max-width:620px;margin:0 auto 30px}
+.search{display:flex;gap:10px;max-width:620px;margin:auto}
+input,textarea,select{width:100%;min-width:0;padding:13px;border-radius:11px;border:1px solid #34435b;background:#111a2b;color:white;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--blue)}
+.primary,.secondary{border-radius:11px;padding:14px 18px;font-weight:700;border:1px solid transparent}
+.primary{background:var(--blue);color:white}
+.secondary{background:#15233a;border-color:#344c70;color:white}
+.search button{white-space:nowrap}
+.notice{min-height:22px;margin:17px auto 0;color:#91a4c2;font-size:13px;line-height:1.6}
+.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px;max-width:1000px;margin:28px auto 0;text-align:left}
+.business-card{min-width:0;overflow:hidden;background:linear-gradient(145deg,#121e31,#0e1625);border:1px solid var(--border);border-radius:19px;box-shadow:0 12px 32px #0003}
+.business-top{display:flex;align-items:center;gap:14px;padding:21px 20px 16px}
+.business-logo{width:66px;height:66px;flex:0 0 66px;border:1px solid #304563;border-radius:15px;background:#1a2a43;object-fit:cover;display:grid;place-items:center;font-size:25px;color:#82b8ff}
+.business-heading{min-width:0;flex:1}
+.business-heading h2{margin:0 0 7px;font-size:22px;overflow-wrap:anywhere}
+.category{color:#85baff;font-size:13px}
+.rating-row{display:flex;align-items:center;gap:8px;padding:0 20px 17px;flex-wrap:wrap}
+.stars{color:var(--gold);letter-spacing:2px}
+.rating-number{font-weight:700}
+.muted{color:var(--muted);font-size:13px}
+.card-divider{height:1px;background:#27364d;margin:0 20px}
+.business-info{display:grid;gap:12px;padding:18px 20px}
+.info-line{display:flex;gap:10px;align-items:flex-start;color:#c0ccdd;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+.info-icon{width:20px;flex:0 0 20px;color:#82b8ff;text-align:center}
+.description{margin:0;color:var(--muted);font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 20px 18px}
+.stat{min-width:0;background:#0b1423;border:1px solid #243550;border-radius:12px;padding:12px 7px;text-align:center}
+.stat-value{display:block;font-size:17px;font-weight:800;margin-bottom:5px;overflow-wrap:anywhere}
+.stat-label{color:#91a4c2;font-size:11px}
+.card-actions{display:flex;gap:9px;padding:0 20px 20px}
+.card-actions button{flex:1;font-size:13px}
+.profile-details{border-top:1px solid #27364d;padding:20px;background:#0b1423}
+.profile-details h3{margin:0 0 12px;font-size:16px}
+.review{padding:13px 0;border-bottom:1px solid #27364d}
+.review:last-child{border-bottom:0}
+.review p{margin:8px 0;font-size:14px;color:#d4dbea;line-height:1.6;overflow-wrap:anywhere}
+.empty{color:#91a4c2;font-size:13px;line-height:1.6}
+.review-form{margin-top:18px;padding:15px;border:1px solid #293a56;border-radius:13px;background:#101827}
+.review-form h4{margin:0 0 12px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:grid;gap:6px;text-align:left;color:#c0ccdd;font-size:12px}
+.field.full{grid-column:1/-1}
+.form-message{font-size:13px;line-height:1.5;color:#91a4c2;margin:10px 0 0}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;max-width:1000px;margin:65px auto;padding:0 22px}
+.feature{background:var(--panel);border:1px solid #243149;border-radius:16px;padding:23px}
+.feature-icon{font-size:27px}
+.feature h3{margin:15px 0 9px}
+.feature p{margin:0;color:var(--muted);font-size:14px;line-height:1.65}
+footer{border-top:1px solid #202b40;padding:26px 20px;text-align:center;color:#8492aa;font-size:13px;line-height:1.7}
+[hidden]{display:none!important}
+@media(max-width:540px){
+header{padding:17px 5%}
+.header-pill{display:none}
+.hero{padding-top:48px}
+.search{flex-direction:column}
+.search button{width:100%}
+.business-top{padding:17px 15px 14px}
+.business-info{padding:16px 15px}
+.rating-row,.stats{padding-left:15px;padding-right:15px}
+.card-actions{padding:0 15px 16px}
+.card-actions button{padding:13px 8px}
+.form-grid{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
-  <header>
-    <div>
-      <div class="logo">REPUTI<span>X</span></div>
-      <div class="tag">Opiniones reales. Soluciones reales.</div>
-    </div>
-    <div class="header-pill">✦ REPUTACIÓN INTELIGENTE</div>
-  </header>
+<header>
+  <div>
+    <div class="logo">REPUTI<span>X</span></div>
+    <div class="tag">Opiniones reales. Soluciones reales.</div>
+  </div>
+  <div class="header-pill">✦ REPUTACIÓN INTELIGENTE</div>
+</header>
 
-  <main>
-    <section class="hero">
-      <div class="pill">✦ Una nueva forma de confiar</div>
-      <h1>Tu opinión puede<br>hacer la <span class="accent">diferencia.</span></h1>
-      <p class="intro">
-        Descubre negocios, consulta experiencias y encuentra información
-        útil para tomar decisiones con más confianza.
-      </p>
+<main>
+<section class="hero">
+  <div class="pill">✦ Una nueva forma de confiar</div>
+  <h1>Tu opinión puede<br>hacer la <span class="accent">diferencia.</span></h1>
+  <p class="intro">Descubre negocios, consulta experiencias y encuentra información útil para tomar decisiones con más confianza.</p>
 
-      <form class="search" id="searchForm">
-        <input id="business" type="search"
-          placeholder="Busca un negocio por nombre..."
-          aria-label="Nombre del negocio" required>
-        <button class="primary" id="searchButton" type="submit">
-          Buscar negocio
-        </button>
-      </form>
+  <form class="search" id="searchForm">
+    <input id="business" type="search" placeholder="Busca un negocio por nombre..." aria-label="Nombre del negocio" required>
+    <button class="primary" id="searchButton" type="submit">Buscar negocio</button>
+  </form>
 
-      <p class="notice" id="notice" aria-live="polite">
-        Busca un negocio para ver sus resultados.
-      </p>
+  <p class="notice" id="notice" aria-live="polite">Busca un negocio para ver sus resultados.</p>
+  <section class="results" id="results" aria-label="Resultados de negocios"></section>
+</section>
 
-      <section class="results" id="results"
-        aria-label="Resultados de negocios"></section>
-    </section>
+<section class="features">
+  <article class="feature">
+    <div class="feature-icon">🔎</div>
+    <h3>Encuentra negocios</h3>
+    <p>Consulta información de negocios en un solo lugar.</p>
+  </article>
+  <article class="feature">
+    <div class="feature-icon">⭐</div>
+    <h3>Opiniones auténticas</h3>
+    <p>Las calificaciones se mostrarán cuando haya reseñas disponibles.</p>
+  </article>
+  <article class="feature">
+    <div class="feature-icon">📊</div>
+    <h3>Estadísticas inteligentes</h3>
+    <p>Identifica tendencias a partir de opiniones reales, sin inventar datos.</p>
+  </article>
+</section>
+</main>
 
-    <section class="features">
-      <article class="feature">
-        <div class="feature-icon">🔎</div>
-        <h3>Encuentra negocios</h3>
-        <p>Consulta información de negocios en un solo lugar.</p>
-      </article>
-      <article class="feature">
-        <div class="feature-icon">⭐</div>
-        <h3>Opiniones auténticas</h3>
-        <p>Las calificaciones se mostrarán cuando haya reseñas disponibles.</p>
-      </article>
-      <article class="feature">
-        <div class="feature-icon">📊</div>
-        <h3>Estadísticas inteligentes</h3>
-        <p>Identifica tendencias a partir de opiniones reales, sin inventar datos.</p>
-      </article>
-    </section>
-  </main>
+<footer>
+  REPUTIX © 2026 · Opiniones reales. Soluciones reales.<br>
+  Las calificaciones y estadísticas se basan en los datos disponibles.
+</footer>
 
-  <footer>
-    REPUTIX © 2026 · Opiniones reales. Soluciones reales.<br>
-    Las calificaciones y estadísticas se basan en los datos disponibles.
-  </footer>
+<script>
+const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
-  <script>
-    const SUPABASE_URL =
-      "https://udvsrmfgjfinwbgvhchs.supabase.co";
+const form = document.getElementById("searchForm");
+const input = document.getElementById("business");
+const notice = document.getElementById("notice");
+const resultsBox = document.getElementById("results");
+const searchButton = document.getElementById("searchButton");
 
-    const SUPABASE_KEY =
-      "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined && text !== null) node.textContent = String(text);
+  return node;
+}
 
-    const form = document.getElementById("searchForm");
-    const input = document.getElementById("business");
-    const notice = document.getElementById("notice");
-    const resultsBox = document.getElementById("results");
-    const searchButton = document.getElementById("searchButton");
+function line(icon, text) {
+  const row = el("div", "info-line");
+  row.append(el("span", "info-icon", icon));
+  row.append(el("span", "", text));
+  return row;
+}
 
-    function el(tag, className, text) {
-      const node = document.createElement(tag);
-      if (className) node.className = className;
-      if (text !== undefined && text !== null) {
-        node.textContent = String(text);
-      }
-      return node;
+function stat(value, label) {
+  const box = el("div", "stat");
+  box.append(el("span", "stat-value", value));
+  box.append(el("span", "stat-label", label));
+  return box;
+}
+
+function validUrl(value) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+  } catch (_) {
+    return "";
+  }
+}
+
+async function api(path, options = {}) {
+  const response = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_KEY,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
     }
+  });
 
-    function line(icon, text) {
-      const row = el("div", "info-line");
-      row.append(el("span", "info-icon", icon));
-      row.append(el("span", "", text));
-      return row;
-    }
+  if (!response.ok) {
+    let detail = "";
+    try {
+      detail = await response.text();
+    } catch (_) {}
+    throw new Error("Supabase (" + response.status + "): " + detail);
+  }
 
-    function stat(value, label) {
-      const box = el("div", "stat");
-      box.append(el("span", "stat-value", value));
-      box.append(el("span", "stat-label", label));
-      return box;
-    }
+  return response.status === 204 ? null : response.json();
+}
 
-    function validUrl(value) {
-      if (!value) return "";
-      try {
-        const url = new URL(value);
-        return ["https:", "http:"].includes(url.protocol)
-          ? url.href : "";
-      } catch (_) {
-        return "";
-      }
-    }
+function avgRating(reviews) {
+  const values = [];
 
-    function renderBusiness(business) {
-      const card = el("article", "business-card");
-      const top = el("div", "business-top");
-      const logoUrl = validUrl(
-        business.logo_url || business.image_url || business.photo_url
-      );
-
-      if (logoUrl) {
-        const img = el("img", "business-logo");
-        img.src = logoUrl;
-        img.alt = "Imagen de " + (business.name || "negocio");
-        img.loading = "lazy";
-        img.onerror = function () {
-          const fallback = el("div", "business-logo", "✦");
-          img.replaceWith(fallback);
-        };
-        top.append(img);
-      } else {
-        top.append(el("div", "business-logo", "✦"));
-      }
-
-      const heading = el("div", "business-heading");
-      heading.append(el("h2", "", business.name || "Negocio sin nombre"));
-      heading.append(el("div", "category",
-        business.category || "Categoría no disponible"));
-      top.append(heading);
-      card.append(top);
-
-      const ratingRow = el("div", "rating-row");
-      ratingRow.append(el("span", "stars", "☆☆☆☆☆"));
-      ratingRow.append(el("span", "rating-number", "—"));
-      ratingRow.append(el("span", "muted", "Sin calificaciones"));
-      card.append(ratingRow);
-
-      card.append(el("div", "card-divider"));
-
-      const info = el("div", "business-info");
-      info.append(line("⌖", business.address || "Dirección no disponible"));
-      info.append(line("☎", business.phone || "Teléfono no disponible"));
-      info.append(line("◷", business.hours || business.opening_hours ||
-        "Horario no disponible"));
-
-      if (business.website) {
-        const website = validUrl(business.website);
-        if (website) {
-          const webLine = line("↗", "Sitio web");
-          const link = el("a", "", website);
-          link.href = website;
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-          link.style.color = "#85baff";
-          link.style.overflowWrap = "anywhere";
-          webLine.lastChild.replaceChildren(link);
-          info.append(webLine);
-        }
-      }
-
-      if (business.description) {
-        info.append(el("p", "description", business.description));
-      } else {
-        info.append(el("p", "description",
-          "La descripción de este negocio todavía no está disponible."));
-      }
-      card.append(info);
-
-      const stats = el("div", "stats");
-      stats.append(stat("—", "Calificación"));
-      stats.append(stat("0", "Opiniones"));
-      stats.append(stat("—", "Tendencias"));
-      card.append(stats);
-
-      const actions = el("div", "card-actions");
-      const profileButton = el("button", "primary", "Ver perfil");
-      profileButton.type = "button";
-      const reviewButton = el("button", "secondary", "Opiniones");
-      reviewButton.type = "button";
-      actions.append(profileButton, reviewButton);
-      card.append(actions);
-
-      const details = el("section", "profile-details");
-      details.hidden = true;
-      details.append(el("h3", "", "Reputación y opiniones"));
-
-      const reviewStatus = el("p", "empty",
-        "Las reseñas reales aparecerán aquí cuando se configure su tabla en Supabase.");
-      details.append(reviewStatus);
-
-      const trendsHeading = el("h3", "");
-      trendsHeading.textContent = "Estadísticas inteligentes";
-      trendsHeading.style.marginTop = "22px";
-      details.append(trendsHeading);
-      details.append(el("p", "empty",
-        "Las tendencias se calcularán cuando existan suficientes opiniones reales."));
-
-      const repliesHeading = el("h3", "");
-      repliesHeading.textContent = "Respuestas del propietario";
-      repliesHeading.style.marginTop = "22px";
-      details.append(repliesHeading);
-      details.append(el("p", "empty",
-        "Las respuestas se mostrarán aquí cuando estén disponibles."));
-
-      card.append(details);
-
-      profileButton.addEventListener("click", function () {
-        details.hidden = !details.hidden;
-        profileButton.textContent = details.hidden ? "Ver perfil" : "Cerrar perfil";
-      });
-
-      reviewButton.addEventListener("click", function () {
-        details.hidden = false;
-        profileButton.textContent = "Cerrar perfil";
-        details.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      });
-
-      return card;
-    }
-
-    form.addEventListener("submit", async function (event) {
-      event.preventDefault();
-      const query = input.value.trim();
-
-      if (!query) {
-        notice.textContent = "Escribe el nombre de un negocio.";
-        return;
-      }
-
-      resultsBox.replaceChildren();
-      notice.textContent = "Buscando negocios...";
-      searchButton.disabled = true;
-
-      try {
-        const params = new URLSearchParams({
-          select: "*",
-          name: "ilike.*" + query + "*",
-          limit: "20"
-        });
-
-        const response = await fetch(
-          SUPABASE_URL + "/rest/v1/businesses?" + params.toString(),
-          { headers: { apikey: SUPABASE_KEY } }
-        );
-
-        if (!response.ok) {
-          console.error("Supabase:", response.status, await response.text());
-          throw new Error("No se pudo consultar la base de datos.");
-        }
-
-        const data = await response.json();
-
-        if (!Array.isArray(data) || data.length === 0) {
-          notice.textContent = "No encontramos ese negocio. Prueba otro nombre.";
-          return;
-        }
-
-        data.forEach(function (business) {
-          resultsBox.append(renderBusiness(business));
-        });
-
-        notice.textContent = "Encontramos " + data.length +
-          (data.length === 1 ? " negocio." : " negocios.");
-
-      } catch (error) {
-        console.error(error);
-        notice.textContent =
-          "No pudimos completar la búsqueda. Comprueba la conexión y los permisos de Supabase.";
-      } finally {
-        searchButton.disabled = false;
+  reviews.forEach(review => {
+    [
+      review.cleanliness,
+      review.service_quality,
+      review.product_quality,
+      review.speed,
+      review.value_for_money
+    ].forEach(value => {
+      if (value !== null && value !== undefined && value !== "" &&
+          Number.isFinite(Number(value))) {
+        values.push(Number(value));
       }
     });
-  </script>
+  });
+
+  return values.length
+    ? values.reduce((sum, value) => sum + value, 0) / values.length
+    : null;
+}
+
+function renderReview(review) {
+  const box = el("article", "review");
+  const rating = avgRating([review]);
+  const rounded = Math.round(rating || 0);
+
+  box.append(el("div", "stars",
+    "★".repeat(rounded) + "☆".repeat(5 - rounded)
+  ));
+
+  const date = review.visit_date
+    ? new Date(review.visit_date + "T00:00:00").toLocaleDateString("es-US")
+    : "Fecha no indicada";
+
+  box.append(el("div", "muted",
+    "Visita: " + date +
+    (review.visit_time ? " · " + String(review.visit_time).slice(0, 5) : "")
+  ));
+
+  if (review.comment) {
+    box.append(el("p", "", review.comment));
+  }
+
+  const criteria = [
+    ["Limpieza", review.cleanliness],
+    ["Servicio", review.service_quality],
+    ["Calidad del producto", review.product_quality],
+    ["Rapidez", review.speed],
+    ["Relación calidad-precio", review.value_for_money]
+  ].filter(item => item[1] !== null && item[1] !== undefined);
+
+  if (criteria.length) {
+    box.append(el("div", "muted",
+      criteria.map(item => item[0] + ": " + item[1] + "/5").join(" · ")
+    ));
+  }
+
+  return box;
+}
+
+async function loadReviews(business, list, status, statsBox, ratingRow) {
+  status.textContent = "Cargando opiniones publicadas…";
+  list.replaceChildren();
+
+  try {
+    const params = new URLSearchParams({
+      select: "id,business_id,visit_date,visit_time,cleanliness,service_quality,product_quality,speed,value_for_money,comment,status,created_at",
+      business_id: "eq." + business.id,
+      status: "eq.published",
+      order: "created_at.desc",
+      limit: "100"
+    });
+
+    const reviews = await api("reviews?" + params.toString());
+    status.textContent = "";
+
+    if (!reviews.length) {
+      list.append(el("p", "empty",
+        "Todavía no hay opiniones publicadas. Puedes ser la primera persona en compartir una experiencia real."
+      ));
+    } else {
+      reviews.forEach(review => list.append(renderReview(review)));
+    }
+
+    const rating = avgRating(reviews);
+    const count = reviews.length;
+
+    statsBox.replaceChildren(
+      stat(rating === null ? "—" : rating.toFixed(1) + "/5", "Calificación"),
+      stat(String(count), "Opiniones"),
+      stat(count >= 5 ? "Disponible" : "En desarrollo", "Tendencias")
+    );
+
+    const rounded = Math.round(rating || 0);
+
+    ratingRow.replaceChildren(
+      el("span", "stars",
+        rating === null ? "☆☆☆☆☆" : "★".repeat(rounded) + "☆".repeat(5 - rounded)
+      ),
+      el("span", "rating-number", rating === null ? "—" : rating.toFixed(1) + "/5"),
+      el("span", "muted",
+        count ? count + (count === 1 ? " opinión publicada" : " opiniones publicadas")
+        : "Sin calificaciones"
+      )
+    );
+  } catch (error) {
+    console.error(error);
+    status.textContent =
+      "No pudimos cargar las opiniones. Revisa los permisos de lectura de la tabla reviews en Supabase.";
+  }
+}
+
+function makeReviewForm(business) {
+  const wrapper = el("form", "review-form");
+
+  wrapper.append(
+    el("h4", "", "Comparte tu experiencia"),
+    el("p", "empty",
+      "Tu opinión se enviará para revisión y no aparecerá públicamente hasta ser aprobada."
+    )
+  );
+
+  const grid = el("div", "form-grid");
+
+  const dateLabel = el("label", "field", "Fecha de visita");
+  const dateInput = el("input");
+  dateInput.type = "date";
+  dateInput.name = "visit_date";
+  dateInput.required = true;
+  dateInput.max = new Date().toISOString().slice(0, 10);
+  dateLabel.append(dateInput);
+  grid.append(dateLabel);
+
+  const timeLabel = el("label", "field", "Hora aproximada");
+  const timeInput = el("input");
+  timeInput.type = "time";
+  timeInput.name = "visit_time";
+  timeInput.required = true;
+  timeLabel.append(timeInput);
+  grid.append(timeLabel);
+
+  const criteria = [
+    { key: "cleanliness", label: "Limpieza" },
+    { key: "service_quality", label: "Calidad del servicio" },
+    { key: "product_quality", label: "Calidad del producto" },
+    { key: "speed", label: "Rapidez" },
+    { key: "value_for_money", label: "Relación calidad-precio" }
+  ];
+
+  criteria.forEach(item => {
+    const label = el("label", "field", item.label);
+    const select = el("select");
+    select.name = item.key;
+    select.required = true;
+    select.append(new Option("Selecciona 1–5 estrellas", ""));
+
+    for (let i = 1; i <= 5; i++) {
+      select.append(new Option(i + " / 5 " + "★".repeat(i), String(i)));
+    }
+
+    label.append(select);
+    grid.append(label);
+  });
+
+  const commentLabel = el("label", "field full", "Tu opinión (opcional)");
+  const comment = el("textarea");
+  comment.name = "comment";
+  comment.rows = 4;
+  comment.maxLength = 2000;
+  comment.placeholder = "Describe tu experiencia real…";
+  commentLabel.append(comment);
+  grid.append(commentLabel);
+
+  wrapper.append(grid);
+
+  const submit = el("button", "primary", "Enviar opinión para revisión");
+  submit.type = "submit";
+  submit.style.marginTop = "12px";
+  submit.style.width = "100%";
+
+  const message = el("p", "form-message", "");
+  message.setAttribute("aria-live", "polite");
+
+  wrapper.append(submit, message);
+
+  wrapper.addEventListener("submit", async event => {
+    event.preventDefault();
+    submit.disabled = true;
+    message.textContent = "Enviando opinión…";
+
+    try {
+      const data = new FormData(wrapper);
+
+      const payload = {
+        business_id: business.id,
+        visit_date: data.get("visit_date"),
+        visit_time: data.get("visit_time"),
+        cleanliness: Number(data.get("cleanliness")),
+        service_quality: Number(data.get("service_quality")),
+        product_quality: Number(data.get("product_quality")),
+        speed: Number(data.get("speed")),
+        value_for_money: Number(data.get("value_for_money")),
+        comment: String(data.get("comment") || "").trim() || null,
+        status: "pending"
+      };
+
+      if (!payload.business_id) {
+        throw new Error("Este negocio no tiene un identificador válido.");
+      }
+
+      await api("reviews", {
+        method: "POST",
+        headers: { Prefer: "return=minimal" },
+        body: JSON.stringify(payload)
+      });
+
+      wrapper.reset();
+      message.textContent =
+        "¡Opinión recibida! Quedó pendiente de revisión y aparecerá cuando sea aprobada.";
+    } catch (error) {
+      console.error(error);
+      message.textContent =
+        "No se pudo enviar la opinión. Comprueba los permisos INSERT y la política de la tabla reviews en Supabase.";
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  return wrapper;
+}
+
+function renderBusiness(business) {
+  const card = el("article", "business-card");
+  const top = el("div", "business-top");
+
+  const logoUrl = validUrl(
+    business.logo_url || business.image_url || business.photo_url
+  );
+
+  if (logoUrl) {
+    const image = el("img", "business-logo");
+    image.src = logoUrl;
+    image.alt = "Imagen de " + (business.name || "negocio");
+    image.loading = "lazy";
+    image.onerror = () => image.replaceWith(el("div", "business-logo", "✦"));
+    top.append(image);
+  } else {
+    top.append(el("div", "business-logo", "✦"));
+  }
+
+  const heading = el("div", "business-heading");
+  heading.append(
+    el("h2", "", business.name || "Negocio sin nombre"),
+    el("div", "category", business.category || "Categoría no disponible")
+  );
+
+  top.append(heading);
+  card.append(top);
+
+  const ratingRow = el("div", "rating-row");
+  ratingRow.append(
+    el("span", "stars", "☆☆☆☆☆"),
+    el("span", "rating-number", "—"),
+    el("span", "muted", "Cargando calificaciones…")
+  );
+
+  card.append(ratingRow, el("div", "card-divider"));
+
+  const info = el("div", "business-info");
+
+  info.append(
+    line("⌖", business.address || "Dirección no disponible"),
+    line("☎", business.phone || "Teléfono no disponible"),
+    line("◷", business.hours || business.opening_hours || "Horario no disponible")
+  );
+
+  if (business.website) {
+    const website = validUrl(business.website);
+
+    if (website) {
+      const row = line("↗", "Sitio web");
+      const link = el("a", "", website);
+      link.href = website;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.style.color = "#85baff";
+      row.lastChild.replaceChildren(link);
+      info.append(row);
+    }
+  }
+
+  info.append(el("p", "description",
+    business.description || "La descripción de este negocio todavía no está disponible."
+  ));
+
+  card.append(info);
+
+  const statsBox = el("div", "stats");
+  statsBox.append(
+    stat("—", "Calificación"),
+    stat("…", "Opiniones"),
+    stat("—", "Tendencias")
+  );
+  card.append(statsBox);
+
+  const actions = el("div", "card-actions");
+  const profileButton = el("button", "primary", "Ver perfil");
+  const reviewButton = el("button", "secondary", "Opiniones");
+
+  profileButton.type = "button";
+  reviewButton.type = "button";
+
+  actions.append(profileButton, reviewButton);
+  card.append(actions);
+
+  const details = el("section", "profile-details");
+  details.hidden = true;
+
+  details.append(el("h3", "", "Reputación y opiniones"));
+
+  const reviewStatus = el("p", "empty",
+    "Abre esta sección para cargar las opiniones publicadas."
+  );
+
+  const reviewList = el("div", "");
+  details.append(reviewStatus, reviewList);
+
+  const trendsHeading = el("h3", "", "Estadísticas inteligentes");
+  trendsHeading.style.marginTop = "22px";
+
+  details.append(
+    trendsHeading,
+    el("p", "empty",
+      "Las tendencias se calcularán cuando existan suficientes opiniones reales."
+    )
+  );
+
+  const repliesHeading = el("h3", "", "Respuestas del propietario");
+  repliesHeading.style.marginTop = "22px";
+
+  details.append(
+    repliesHeading,
+    el("p", "empty",
+      "Las respuestas del propietario estarán disponibles en una próxima versión."
+    )
+  );
+
+  details.append(makeReviewForm(business));
+  card.append(details);
+
+  let loaded = false;
+
+  async function openDetails() {
+    details.hidden = false;
+    profileButton.textContent = "Cerrar perfil";
+
+    if (!loaded) {
+      loaded = true;
+      await loadReviews(
+        business, reviewList, reviewStatus, statsBox, ratingRow
+      );
+    }
+  }
+
+  profileButton.addEventListener("click", async () => {
+    if (!details.hidden) {
+      details.hidden = true;
+      profileButton.textContent = "Ver perfil";
+    } else {
+      await openDetails();
+    }
+  });
+
+  reviewButton.addEventListener("click", async () => {
+    await openDetails();
+    details.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+
+  return card;
+}
+
+form.addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const query = input.value.trim();
+
+  if (!query) {
+    notice.textContent = "Escribe el nombre de un negocio.";
+    return;
+  }
+
+  resultsBox.replaceChildren();
+  notice.textContent = "Buscando negocios…";
+  searchButton.disabled = true;
+
+  try {
+    const params = new URLSearchParams({
+      select: "*",
+      name: "ilike.*" + query + "*",
+      limit: "20"
+    });
+
+    const data = await api("businesses?" + params.toString());
+
+    if (!Array.isArray(data) || !data.length) {
+      notice.textContent =
+        "No encontramos ese negocio. Prueba otro nombre.";
+      return;
+    }
+
+    data.forEach(business => {
+      resultsBox.append(renderBusiness(business));
+    });
+
+    notice.textContent = "Encontramos " + data.length +
+      (data.length === 1 ? " negocio." : " negocios.");
+
+  } catch (error) {
+    console.error(error);
+    notice.textContent =
+      "No pudimos completar la búsqueda. Comprueba la conexión y los permisos de Supabase.";
+  } finally {
+    searchButton.disabled = false;
+  }
+});
+</script>
 </body>
 </html>
