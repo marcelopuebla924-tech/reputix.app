@@ -7,405 +7,1061 @@
 <meta name="theme-color" content="#080d19">
 <meta name="description" content="Reputix: opiniones reales. Soluciones reales.">
 <title>Reputix | Opiniones reales. Soluciones reales.</title>
+
 <style>
-:root{--bg:#080d19;--panel:#101827;--border:#293a56;--blue:#3989ff;--light:#f5f7ff;--muted:#aab6ca;--gold:#f6c65b}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--light);font-family:Arial,sans-serif}
-header{padding:20px 6%;border-bottom:1px solid #202b40;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.logo{font-size:28px;font-weight:900}.logo span,.accent{color:var(--blue)}
-.tag,.muted,.notice,.empty{color:var(--muted);font-size:13px;line-height:1.6}
-button,input,textarea,select{font:inherit}
-button{cursor:pointer}
-input,textarea,select{width:100%;min-width:0;padding:13px;border-radius:11px;border:1px solid #34435b;background:#111a2b;color:white}
-button:disabled{opacity:.6}
-.primary,.secondary{padding:13px 17px;border-radius:11px;border:1px solid transparent;font-weight:bold}
-.primary{background:var(--blue);color:white}
-.secondary{background:#15233a;color:white;border-color:#344c70}
-.hero{max-width:1000px;margin:auto;padding:55px 20px 30px;text-align:center}
-.pill{display:inline-block;border:1px solid #244878;background:#101d32;color:#85baff;border-radius:30px;padding:9px 13px;font-size:12px}
-h1{font-size:clamp(38px,7vw,64px);letter-spacing:-2px;line-height:1.08}
-.intro{max-width:650px;margin:20px auto 30px;color:var(--muted);line-height:1.7}
-.search{display:flex;gap:10px;max-width:650px;margin:auto}
-.search button{white-space:nowrap}
-.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));gap:18px;margin:28px auto;text-align:left}
-.business-card{min-width:0;overflow:hidden;background:linear-gradient(145deg,#121e31,#0e1625);border:1px solid var(--border);border-radius:18px}
-.business-top{display:flex;gap:13px;align-items:center;padding:18px}
-.business-logo{width:60px;height:60px;flex-shrink:0;display:grid;place-items:center;border-radius:13px;background:#1a2a43;color:#85baff;font-size:24px;object-fit:cover}
-.business-heading{min-width:0;overflow-wrap:anywhere}
-.business-heading h2{margin:0 0 7px;font-size:21px}
-.category{color:#85baff;font-size:13px}
-.rating-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 18px 17px}
-.stars{color:var(--gold);letter-spacing:2px}
-.divider{height:1px;background:#27364d;margin:0 18px}
-.info{padding:17px 18px;display:grid;gap:11px}
-.info-line{font-size:13px;line-height:1.6;color:#c0ccdd;overflow-wrap:anywhere}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:0 18px 18px}
-.stat{background:#0b1423;border:1px solid #243550;border-radius:10px;padding:11px 5px;text-align:center;min-width:0}
-.stat-value{display:block;font-size:16px;font-weight:bold;overflow-wrap:anywhere}
-.stat-label{display:block;color:#91a4c2;font-size:11px;margin-top:5px}
-.actions{display:flex;gap:9px;padding:0 18px 18px}
-.actions button{flex:1;font-size:13px}
-.details{background:#0b1423;border-top:1px solid #27364d;padding:18px}
-.review{padding:13px 0;border-bottom:1px solid #27364d;overflow-wrap:anywhere}
-.review p{font-size:14px;line-height:1.6}
-.form{margin-top:20px;padding:14px;border:1px solid var(--border);border-radius:13px;background:var(--panel)}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-.field{display:grid;gap:6px;color:#c0ccdd;font-size:12px}
-.full{grid-column:1/-1}
-.form-message{font-size:13px;line-height:1.6;overflow-wrap:anywhere}
-.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;max-width:1000px;margin:45px auto;padding:0 20px}
-.feature{background:var(--panel);border:1px solid #243149;border-radius:15px;padding:22px}
-.feature p{color:var(--muted);font-size:14px;line-height:1.6}
-footer{text-align:center;padding:25px;color:#8492aa;border-top:1px solid #202b40;font-size:13px;line-height:1.7}
-[hidden]{display:none!important}
-@media(max-width:540px){header{padding:16px 5%}.hero{padding-top:40px}.search{flex-direction:column}.search button{width:100%}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.actions button{padding:12px 7px}}
+:root {
+  --bg:#080d19;
+  --panel:#101827;
+  --border:#293a56;
+  --blue:#3989ff;
+  --light:#f5f7ff;
+  --muted:#aab6ca;
+  --gold:#f6c65b;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  background:var(--bg);
+  color:var(--light);
+  font-family:Arial,sans-serif;
+}
+header {
+  padding:20px 6%;
+  border-bottom:1px solid #202b40;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.logo { font-size:28px;font-weight:900; }
+.logo span,.accent { color:var(--blue); }
+.tag,.muted,.notice,.empty {
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.6;
+}
+button,input,textarea,select { font:inherit; }
+button { cursor:pointer; }
+input,textarea,select {
+  width:100%;
+  min-width:0;
+  padding:13px;
+  border-radius:11px;
+  border:1px solid #34435b;
+  background:#111a2b;
+  color:white;
+}
+button:disabled { opacity:.6;cursor:wait; }
+.primary,.secondary {
+  padding:13px 17px;
+  border-radius:11px;
+  border:1px solid transparent;
+  font-weight:bold;
+}
+.primary { background:var(--blue);color:white; }
+.secondary {
+  background:#15233a;
+  color:white;
+  border-color:#344c70;
+}
+.hero {
+  max-width:1000px;
+  margin:auto;
+  padding:55px 20px 30px;
+  text-align:center;
+}
+.pill {
+  display:inline-block;
+  border:1px solid #244878;
+  background:#101d32;
+  color:#85baff;
+  border-radius:30px;
+  padding:9px 13px;
+  font-size:12px;
+}
+h1 {
+  font-size:clamp(38px,7vw,64px);
+  letter-spacing:-2px;
+  line-height:1.08;
+}
+.intro {
+  max-width:650px;
+  margin:20px auto 30px;
+  color:var(--muted);
+  line-height:1.7;
+}
+.search {
+  display:flex;
+  gap:10px;
+  max-width:650px;
+  margin:auto;
+}
+.search button { white-space:nowrap; }
+.results {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));
+  gap:18px;
+  margin:28px auto;
+  text-align:left;
+}
+.business-card {
+  min-width:0;
+  overflow:hidden;
+  background:linear-gradient(145deg,#121e31,#0e1625);
+  border:1px solid var(--border);
+  border-radius:18px;
+}
+.business-top {
+  display:flex;
+  gap:13px;
+  align-items:center;
+  padding:18px;
+}
+.business-logo {
+  width:60px;
+  height:60px;
+  flex-shrink:0;
+  display:grid;
+  place-items:center;
+  border-radius:13px;
+  background:#1a2a43;
+  color:#85baff;
+  font-size:24px;
+  object-fit:cover;
+}
+.business-heading {
+  min-width:0;
+  overflow-wrap:anywhere;
+}
+.business-heading h2 { margin:0 0 7px;font-size:21px; }
+.category { color:#85baff;font-size:13px; }
+.rating-row {
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  padding:0 18px 17px;
+}
+.stars { color:var(--gold);letter-spacing:2px; }
+.divider {
+  height:1px;
+  background:#27364d;
+  margin:0 18px;
+}
+.info {
+  padding:17px 18px;
+  display:grid;
+  gap:11px;
+}
+.info-line {
+  font-size:13px;
+  line-height:1.6;
+  color:#c0ccdd;
+  overflow-wrap:anywhere;
+}
+.stats {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  padding:0 18px 18px;
+}
+.stat {
+  background:#0b1423;
+  border:1px solid #243550;
+  border-radius:10px;
+  padding:11px 5px;
+  text-align:center;
+  min-width:0;
+}
+.stat-value {
+  display:block;
+  font-size:16px;
+  font-weight:bold;
+  overflow-wrap:anywhere;
+}
+.stat-label {
+  display:block;
+  color:#91a4c2;
+  font-size:11px;
+  margin-top:5px;
+}
+.actions { display:flex;gap:9px;padding:0 18px 18px; }
+.actions button { flex:1;font-size:13px; }
+.details {
+  background:#0b1423;
+  border-top:1px solid #27364d;
+  padding:18px;
+}
+.review {
+  padding:13px 0;
+  border-bottom:1px solid #27364d;
+  overflow-wrap:anywhere;
+}
+.review p { font-size:14px;line-height:1.6; }
+.form {
+  margin-top:20px;
+  padding:14px;
+  border:1px solid var(--border);
+  border-radius:13px;
+  background:var(--panel);
+}
+.form-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:11px;
+}
+.field { display:grid;gap:6px;color:#c0ccdd;font-size:12px; }
+.full { grid-column:1/-1; }
+.form-message { font-size:13px;line-height:1.6;overflow-wrap:anywhere; }
+.features {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:15px;
+  max-width:1000px;
+  margin:45px auto;
+  padding:0 20px;
+}
+.feature {
+  background:var(--panel);
+  border:1px solid #243149;
+  border-radius:15px;
+  padding:22px;
+}
+.feature p { color:var(--muted);font-size:14px;line-height:1.6; }
+footer {
+  text-align:center;
+  padding:25px;
+  color:#8492aa;
+  border-top:1px solid #202b40;
+  font-size:13px;
+  line-height:1.7;
+}
+[hidden] { display:none!important; }
+@media(max-width:540px) {
+  header { padding:16px 5%; }
+  .hero { padding-top:40px; }
+  .search { flex-direction:column; }
+  .search button { width:100%; }
+  .form-grid { grid-template-columns:1fr; }
+  .full { grid-column:auto; }
+  .actions button { padding:12px 7px; }
+}
 </style>
 </head>
+
 <body>
 <header>
- <div><div class="logo">REPUTI<span>X</span></div><div class="tag">Opiniones reales. Soluciones reales.</div></div>
- <select id="language" aria-label="Language" style="width:auto">
-  <option value="es">Español</option><option value="en">English</option>
- </select>
+  <div>
+    <div class="logo">REPUTI<span>X</span></div>
+    <div class="tag">Opiniones reales. Soluciones reales.</div>
+  </div>
+  <select id="language" aria-label="Language" style="width:auto">
+    <option value="es">Español</option>
+    <option value="en">English</option>
+  </select>
 </header>
 
 <main>
 <section class="hero">
- <div class="pill" id="pill">✦ Una nueva forma de confiar</div>
- <h1 id="headline">Tu opinión puede<br>hacer la <span class="accent">diferencia.</span></h1>
- <p class="intro" id="intro">Descubre negocios, consulta experiencias y encuentra información útil para tomar decisiones con más confianza.</p>
- <form class="search" id="searchForm">
-  <input id="business" type="search" placeholder="Busca un negocio por nombre..." required>
-  <button class="primary" id="searchButton" type="submit">Buscar negocio</button>
- </form>
- <p class="notice" id="notice" aria-live="polite">Busca un negocio para ver sus resultados.</p>
- <section class="results" id="results"></section>
+  <div class="pill" id="pill">✦ Una nueva forma de confiar</div>
+  <h1 id="headline">Tu opinión puede<br>hacer la <span class="accent">diferencia.</span></h1>
+  <p class="intro" id="intro">
+    Descubre negocios, consulta experiencias y encuentra información útil para tomar decisiones con más confianza.
+  </p>
+
+  <form class="search" id="searchForm">
+    <input id="business" type="search"
+      placeholder="Busca un negocio por nombre..." required>
+    <button class="primary" id="searchButton" type="submit">Buscar negocio</button>
+  </form>
+
+  <p class="notice" id="notice" aria-live="polite">
+    Busca un negocio para ver sus resultados.
+  </p>
+  <section class="results" id="results"></section>
 </section>
+
 <section class="features">
- <article class="feature"><div>🔎</div><h3 id="f1">Encuentra negocios</h3><p id="fd1">Consulta información de negocios en un solo lugar.</p></article>
- <article class="feature"><div>⭐</div><h3 id="f2">Opiniones auténticas</h3><p id="fd2">Calificaciones basadas en opiniones disponibles.</p></article>
- <article class="feature"><div>📊</div><h3 id="f3">Estadísticas inteligentes</h3><p id="fd3">Identifica tendencias a partir de opiniones reales.</p></article>
+  <article class="feature">
+    <div>🔎</div>
+    <h3 id="f1">Encuentra negocios</h3>
+    <p id="fd1">Consulta información de negocios en un solo lugar.</p>
+  </article>
+  <article class="feature">
+    <div>⭐</div>
+    <h3 id="f2">Opiniones auténticas</h3>
+    <p id="fd2">Calificaciones basadas en opiniones disponibles.</p>
+  </article>
+  <article class="feature">
+    <div>📊</div>
+    <h3 id="f3">Estadísticas inteligentes</h3>
+    <p id="fd3">Identifica tendencias a partir de opiniones reales.</p>
+  </article>
 </section>
 </main>
-<footer>REPUTIX © 2026 · Opiniones reales. Soluciones reales.<br>Las estadísticas se basan en datos disponibles.</footer>
+
+<footer>
+  REPUTIX © 2026 · Opiniones reales. Soluciones reales.<br>
+  Las estadísticas se basan en datos disponibles.
+</footer>
 
 <script>
 "use strict";
 
-const SUPABASE_URL="https://udvsrmfgjfinwbgvhchs.supabase.co";
-const SUPABASE_KEY="sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+/* CONFIGURACIÓN DE SUPABASE */
+const SUPABASE_URL =
+  "https://udvsrmfgjfinwbgvhchs.supabase.co";
 
-const $=id=>document.getElementById(id);
-const form=$("searchForm"),input=$("business"),notice=$("notice");
-const resultsBox=$("results"),searchButton=$("searchButton");
+const SUPABASE_KEY =
+  "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
-const translations={
-es:{
-pill:"✦ Una nueva forma de confiar",
-headline:'Tu opinión puede<br>hacer la <span class="accent">diferencia.</span>',
-intro:"Descubre negocios, consulta experiencias y encuentra información útil para tomar decisiones con más confianza.",
-placeholder:"Busca un negocio por nombre...",search:"Buscar negocio",
-initial:"Busca un negocio para ver sus resultados.",
-f1:"Encuentra negocios",fd1:"Consulta información de negocios en un solo lugar.",
-f2:"Opiniones auténticas",fd2:"Calificaciones basadas en opiniones disponibles.",
-f3:"Estadísticas inteligentes",fd3:"Identifica tendencias a partir de opiniones reales.",
-category:"Categoría no disponible",address:"Dirección no disponible",phone:"Teléfono no disponible",
-hours:"Horario no disponible",description:"La descripción todavía no está disponible.",
-profile:"Ver perfil",close:"Cerrar perfil",reviews:"Opiniones",loading:"Cargando opiniones publicadas…",
-none:"Todavía no hay opiniones publicadas. Puedes compartir una experiencia real.",
-share:"Comparte tu experiencia",pending:"Tu opinión se enviará para revisión y no aparecerá públicamente hasta ser aprobada.",
-date:"Fecha de visita",time:"Hora aproximada",comment:"Tu opinión (opcional)",
-commentHint:"Describe tu experiencia real…",send:"Enviar opinión para revisión",
-choose:"Selecciona una calificación",sent:"¡Opinión recibida! Quedó pendiente de revisión.",
-failed:"No se pudo enviar la opinión.",searching:"Buscando negocios…",
-notfound:"No encontramos ese negocio. Prueba otro nombre.",
-found:"negocios encontrados.",noRating:"Sin calificaciones",score:"Calificación",count:"Opiniones",
-reviewError:"No pudimos cargar las opiniones. Comprueba los permisos de lectura de Supabase.",
-network:"No pudimos completar la búsqueda. Revisa la conexión y los permisos de Supabase.",
-criteria:["Limpieza","Calidad del servicio","Calidad del producto","Rapidez","Relación calidad-precio"],
-visit:"Visita",original:"Idioma original",translation:"Ver traducción",translate:"Traducción no disponible."
-},
-en:{
-pill:"✦ A new way to trust",
-headline:'Your opinion can<br>make a <span class="accent">difference.</span>',
-intro:"Discover businesses, explore experiences, and find useful information to make more confident decisions.",
-placeholder:"Search for a business by name...",search:"Search businesses",
-initial:"Search for a business to see results.",
-f1:"Find businesses",fd1:"Explore business information in one place.",
-f2:"Authentic reviews",fd2:"Ratings based on available reviews.",
-f3:"Smart insights",fd3:"Identify trends using real reviews.",
-category:"Category unavailable",address:"Address unavailable",phone:"Phone unavailable",
-hours:"Hours unavailable",description:"Description not available yet.",
-profile:"View profile",close:"Close profile",reviews:"Reviews",loading:"Loading published reviews…",
-none:"No reviews have been published yet. Share a real experience.",
-share:"Share your experience",pending:"Your review will be checked before it appears publicly.",
-date:"Visit date",time:"Approximate time",comment:"Your review (optional)",
-commentHint:"Describe your real experience…",send:"Submit review for moderation",
-choose:"Select a rating",sent:"Review received! It is pending moderation.",
-failed:"The review could not be submitted.",searching:"Searching businesses…",
-notfound:"No business found. Try another name.",
-found:"businesses found.",noRating:"Not yet rated",score:"Rating",count:"Reviews",
-reviewError:"Could not load reviews. Check Supabase read permissions.",
-network:"Search failed. Check your connection and Supabase permissions.",
-criteria:["Cleanliness","Service quality","Product quality","Speed","Value for money"],
-visit:"Visit",original:"Original language",translation:"View translation",translate:"Translation unavailable."
-}};
+const $ = id => document.getElementById(id);
+const form = $("searchForm");
+const input = $("business");
+const notice = $("notice");
+const resultsBox = $("results");
+const searchButton = $("searchButton");
 
-let lang="es";
-function t(key){return translations[lang][key]||translations.es[key]||key}
-function node(tag,cls,text){
- const n=document.createElement(tag);
- if(cls)n.className=cls;
- if(text!==undefined&&text!==null)n.textContent=String(text);
- return n;
-}
-function setLanguage(value){
- lang=value==="en"?"en":"es";
- document.documentElement.lang=lang;
- $("pill").textContent=t("pill");
- $("headline").innerHTML=t("headline");
- $("intro").textContent=t("intro");
- input.placeholder=t("placeholder");
- searchButton.textContent=t("search");
- $("f1").textContent=t("f1");$("fd1").textContent=t("fd1");
- $("f2").textContent=t("f2");$("fd2").textContent=t("fd2");
- $("f3").textContent=t("f3");$("fd3").textContent=t("fd3");
- if(!input.value.trim())notice.textContent=t("initial");
-}
-$("language").addEventListener("change",e=>setLanguage(e.target.value));
-
-async function api(path,options={}){
- const response=await fetch(SUPABASE_URL+"/rest/v1/"+path,{
-  ...options,
-  headers:{
-   apikey:SUPABASE_KEY,
-   Accept:"application/json",
-   "Content-Type":"application/json",
-   ...(options.headers||{})
+const translations = {
+  es: {
+    pill:"✦ Una nueva forma de confiar",
+    headline:'Tu opinión puede<br>hacer la <span class="accent">diferencia.</span>',
+    intro:"Descubre negocios, consulta experiencias y encuentra información útil para tomar decisiones con más confianza.",
+    placeholder:"Busca un negocio por nombre...",
+    search:"Buscar negocio",
+    initial:"Busca un negocio para ver sus resultados.",
+    f1:"Encuentra negocios",
+    fd1:"Consulta información de negocios en un solo lugar.",
+    f2:"Opiniones auténticas",
+    fd2:"Calificaciones basadas en opiniones disponibles.",
+    f3:"Estadísticas inteligentes",
+    fd3:"Identifica tendencias a partir de opiniones reales.",
+    category:"Categoría no disponible",
+    address:"Dirección no disponible",
+    phone:"Teléfono no disponible",
+    hours:"Horario no disponible",
+    description:"La descripción todavía no está disponible.",
+    profile:"Ver perfil",
+    close:"Cerrar perfil",
+    reviews:"Opiniones",
+    loading:"Cargando opiniones publicadas…",
+    none:"Todavía no hay opiniones publicadas. Puedes compartir una experiencia real.",
+    share:"Comparte tu experiencia",
+    pending:"Tu opinión se enviará para revisión y no aparecerá públicamente hasta ser aprobada.",
+    date:"Fecha de visita",
+    time:"Hora aproximada",
+    comment:"Tu opinión (opcional)",
+    commentHint:"Describe tu experiencia real…",
+    send:"Enviar opinión para revisión",
+    choose:"Selecciona una calificación",
+    sent:"¡Opinión recibida! Quedó pendiente de revisión.",
+    failed:"No se pudo enviar la opinión.",
+    searching:"Buscando negocios…",
+    notfound:"No encontramos ese negocio. Prueba otro nombre.",
+    found:"negocios encontrados.",
+    noRating:"Sin calificaciones",
+    score:"Calificación",
+    count:"Opiniones",
+    reviewError:"No pudimos cargar las opiniones. Comprueba los permisos de lectura de Supabase.",
+    network:"No pudimos completar la búsqueda. Revisa la conexión y los permisos de Supabase.",
+    criteria:["Limpieza","Calidad del servicio","Calidad del producto","Rapidez","Relación calidad-precio"],
+    visit:"Visita",
+    original:"Idioma original",
+    translation:"Ver traducción",
+    hideTranslation:"Ocultar traducción",
+    trends:"Tendencias",
+    sending:"Enviando opinión…",
+    invalidBusiness:"El negocio no tiene un identificador válido.",
+    languageUnknown:"No determinado"
+  },
+  en: {
+    pill:"✦ A new way to trust",
+    headline:'Your opinion can<br>make a <span class="accent">difference.</span>',
+    intro:"Discover businesses, explore experiences, and find useful information to make more confident decisions.",
+    placeholder:"Search for a business by name...",
+    search:"Search businesses",
+    initial:"Search for a business to see results.",
+    f1:"Find businesses",
+    fd1:"Explore business information in one place.",
+    f2:"Authentic reviews",
+    fd2:"Ratings based on available reviews.",
+    f3:"Smart insights",
+    fd3:"Identify trends using real reviews.",
+    category:"Category unavailable",
+    address:"Address unavailable",
+    phone:"Phone unavailable",
+    hours:"Hours unavailable",
+    description:"Description not available yet.",
+    profile:"View profile",
+    close:"Close profile",
+    reviews:"Reviews",
+    loading:"Loading published reviews…",
+    none:"No reviews have been published yet. Share a real experience.",
+    share:"Share your experience",
+    pending:"Your review will be checked before it appears publicly.",
+    date:"Visit date",
+    time:"Approximate time",
+    comment:"Your review (optional)",
+    commentHint:"Describe your real experience…",
+    send:"Submit review for moderation",
+    choose:"Select a rating",
+    sent:"Review received! It is pending moderation.",
+    failed:"The review could not be submitted.",
+    searching:"Searching businesses…",
+    notfound:"No business found. Try another name.",
+    found:"businesses found.",
+    noRating:"Not yet rated",
+    score:"Rating",
+    count:"Reviews",
+    reviewError:"Could not load reviews. Check Supabase read permissions.",
+    network:"Search failed. Check your connection and Supabase permissions.",
+    criteria:["Cleanliness","Service quality","Product quality","Speed","Value for money"],
+    visit:"Visit",
+    original:"Original language",
+    translation:"View translation",
+    hideTranslation:"Hide translation",
+    trends:"Trends",
+    sending:"Submitting review…",
+    invalidBusiness:"The business does not have a valid identifier.",
+    languageUnknown:"Undetermined"
   }
- });
- const body=await response.text();
- if(!response.ok)throw new Error("Supabase ("+response.status+"): "+body.slice(0,700));
- if(!body.trim())return null;
- try{return JSON.parse(body)}
- catch(_){throw new Error("Supabase devolvió una respuesta que no es JSON válido.")}
+};
+
+let lang = "es";
+let lastBusinesses = [];
+
+function t(key) {
+  return translations[lang][key] ?? translations.es[key] ?? key;
 }
 
-function average(reviews){
- const fields=["cleanliness","service_quality","product_quality","speed","value_for_money"];
- const values=[];
- reviews.forEach(r=>fields.forEach(k=>{
-  if(r[k]!==null&&r[k]!==undefined&&r[k]!==""&&Number.isFinite(Number(r[k])))values.push(Number(r[k]));
- }));
- return values.length?values.reduce((a,b)=>a+b,0)/values.length:null;
-}
-function stars(n){const r=Math.max(0,Math.min(5,Math.round(n||0)));return "★".repeat(r)+"☆".repeat(5-r)}
-function makeStat(value,label){
- const box=node("div","stat");
- box.append(node("span","stat-value",value),node("span","stat-label",label));
- return box;
-}
-function makeLine(icon,text){
- return node("div","info-line",icon+"  "+text);
-}
-function safeUrl(value){
- try{const u=new URL(value);return ["https:","http:"].includes(u.protocol)?u.href:""}catch(_){return ""}
-}
-function detectLanguage(text){
- const s=(text||"").toLowerCase();
- if(!s.trim())return null;
- const es=(s.match(/\b(el|la|los|las|que|de|del|muy|bueno|malo|servicio|atención|calidad|rápido|lento|cajero|bien|mal|para|con|una|un)\b/g)||[]).length;
- const en=(s.match(/\b(the|and|is|was|were|very|good|bad|service|quality|fast|slow|cashier|with|for|this|that|not|great)\b/g)||[]).length;
- if(es===en)return null;
- return es>en?"es":"en";
-}
-function getOriginalLanguage(r){
- return r.original_language||detectLanguage(r.comment)||"und";
-}
+/* ACTUALIZACIÓN DE IDIOMA */
+function setLanguage(value) {
+  lang = value === "en" ? "en" : "es";
+  document.documentElement.lang = lang;
 
-function renderReview(r){
- const box=node("article","review"),avg=average([r]);
- box.append(node("div","stars",stars(avg)));
- const date=r.visit_date?new Date(r.visit_date+"T00:00:00").toLocaleDateString(lang==="es"?"es-US":"en-US"):"";
- box.append(node("div","muted",t("visit")+": "+(date||"—")+(r.visit_time?" · "+String(r.visit_time).slice(0,5):"")));
- if(r.comment){
-  const original=node("p","",r.comment);
-  box.append(original);
-  const originalLang=getOriginalLanguage(r);
-  box.append(node("div","muted",t("original")+": "+originalLang));
-  if(r.translated_comment){
-   const b=node("button","secondary",t("translation"));
-   b.type="button";
-   const translated=node("p","",r.translated_comment);
-   translated.hidden=true;
-   b.addEventListener("click",()=>{
-    translated.hidden=!translated.hidden;
-    b.textContent=translated.hidden?t("translation"):"Ocultar / Hide";
-   });
-   box.append(b,translated);
+  $("pill").textContent = t("pill");
+  $("headline").innerHTML = t("headline");
+  $("intro").textContent = t("intro");
+  input.placeholder = t("placeholder");
+  searchButton.textContent = t("search");
+
+  $("f1").textContent = t("f1");
+  $("fd1").textContent = t("fd1");
+  $("f2").textContent = t("f2");
+  $("fd2").textContent = t("fd2");
+  $("f3").textContent = t("f3");
+  $("fd3").textContent = t("fd3");
+
+  if (!input.value.trim()) {
+    notice.textContent = t("initial");
   }
- }
- const vals=t("criteria").map((label,i)=>[label,[r.cleanliness,r.service_quality,r.product_quality,r.speed,r.value_for_money][i]]).filter(x=>x[1]!==null&&x[1]!==undefined);
- if(vals.length)box.append(node("div","muted",vals.map(x=>x[0]+": "+x[1]+"/5").join(" · ")));
- return box;
+
+  /* Volver a dibujar los resultados en el idioma elegido. */
+  if (lastBusinesses.length) {
+    resultsBox.replaceChildren(
+      ...lastBusinesses.map(renderBusiness)
+    );
+  }
 }
 
-async function loadReviews(business,list,status,stats,ratingRow){
- status.textContent=t("loading");list.replaceChildren();
- try{
-  const p=new URLSearchParams({
-   select:"id,business_id,visit_date,visit_time,cleanliness,service_quality,product_quality,speed,value_for_money,comment,status,created_at,original_language,translated_comment,translated_language",
-   business_id:"eq."+business.id,status:"eq.published",
-   order:"created_at.desc",limit:"100"
+$("language").addEventListener("change", e => {
+  setLanguage(e.target.value);
+});
+
+/* API DE SUPABASE */
+async function api(path, options = {}) {
+  const response = await fetch(
+    SUPABASE_URL + "/rest/v1/" + path,
+    {
+      ...options,
+      headers: {
+        apikey: SUPABASE_KEY,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        ...(options.headers || {})
+      }
+    }
+  );
+
+  const body = await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      "Supabase (" + response.status + "): " +
+      body.slice(0, 700)
+    );
+  }
+
+  if (!body.trim()) return null;
+
+  try {
+    return JSON.parse(body);
+  } catch (_) {
+    throw new Error("Supabase devolvió una respuesta no válida.");
+  }
+}
+
+/* CALIFICACIONES */
+function average(reviews) {
+  const fields = [
+    "cleanliness",
+    "service_quality",
+    "product_quality",
+    "speed",
+    "value_for_money"
+  ];
+
+  const values = [];
+
+  reviews.forEach(r => {
+    fields.forEach(k => {
+      if (
+        r[k] !== null &&
+        r[k] !== undefined &&
+        r[k] !== "" &&
+        Number.isFinite(Number(r[k]))
+      ) {
+        values.push(Number(r[k]));
+      }
+    });
   });
-  const reviews=await api("reviews?"+p);
-  if(!Array.isArray(reviews))throw new Error("Formato inesperado al cargar opiniones.");
-  status.textContent="";
-  if(!reviews.length)list.append(node("p","empty",t("none")));
-  else reviews.forEach(r=>list.append(renderReview(r)));
-  const avg=average(reviews),count=reviews.length;
-  stats.replaceChildren(
-   makeStat(avg===null?"—":avg.toFixed(1)+"/5",t("score")),
-   makeStat(count,t("count")),
-   makeStat(count>=5?"✓":"—","Tendencias")
-  );
-  ratingRow.replaceChildren(
-   node("span","stars",stars(avg)),
-   node("span","rating-number",avg===null?"—":avg.toFixed(1)+"/5"),
-   node("span","muted",count?count+" "+t("count"):t("noRating"))
-  );
- }catch(err){
-  console.error(err);status.textContent=t("reviewError");
- }
+
+  return values.length
+    ? values.reduce((a, b) => a + b, 0) / values.length
+    : null;
 }
 
-function makeReviewForm(business){
- const f=node("form","form");
- f.append(node("h3","",t("share")),node("p","empty",t("pending")));
- const grid=node("div","form-grid");
- const addField=(label,key,type,full=false)=>{
-  const l=node("label","field"+(full?" full":""),label);
-  let inputEl;
-  if(type==="select"){
-   inputEl=node("select");inputEl.required=true;
-   inputEl.append(new Option(t("choose"),""));
-   for(let i=1;i<=5;i++)inputEl.append(new Option(i+" / 5 "+"★".repeat(i),String(i)));
-  }else if(type==="textarea"){
-   inputEl=node("textarea");inputEl.rows=4;inputEl.maxLength=2000;inputEl.placeholder=t("commentHint");
-  }else{
-   inputEl=node("input");inputEl.type=type;inputEl.required=true;
-   if(type==="date")inputEl.max=new Date().toISOString().slice(0,10);
+function stars(n) {
+  const r = Math.max(0, Math.min(5, Math.round(n || 0)));
+  return "★".repeat(r) + "☆".repeat(5 - r);
+}
+
+function node(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined && text !== null) {
+    n.textContent = String(text);
   }
-  inputEl.name=key;l.append(inputEl);grid.append(l);
- };
- addField(t("date"),"visit_date","date");
- addField(t("time"),"visit_time","time");
- ["cleanliness","service_quality","product_quality","speed","value_for_money"].forEach((key,i)=>addField(t("criteria")[i],key,"select"));
- addField(t("comment"),"comment","textarea",true);
- f.append(grid);
- const submit=node("button","primary",t("send"));submit.type="submit";submit.style.width="100%";submit.style.marginTop="12px";
- const msg=node("p","form-message","");msg.setAttribute("aria-live","polite");
- f.append(submit,msg);
- f.addEventListener("submit",async e=>{
-  e.preventDefault();if(!f.reportValidity())return;
-  submit.disabled=true;msg.textContent="Enviando…";
-  try{
-   const fd=new FormData(f);
-   const comment=String(fd.get("comment")||"").trim();
-   const originalLanguage=detectLanguage(comment);
-   const payload={
-    business_id:business.id,
-    visit_date:fd.get("visit_date"),
-    visit_time:fd.get("visit_time"),
-    cleanliness:Number(fd.get("cleanliness")),
-    service_quality:Number(fd.get("service_quality")),
-    product_quality:Number(fd.get("product_quality")),
-    speed:Number(fd.get("speed")),
-    value_for_money:Number(fd.get("value_for_money")),
-    comment:comment||null,
-    original_language:originalLanguage,
-    translated_comment:null,
-    translated_language:null,
-    status:"pending"
-   };
-   if(!business.id)throw new Error("El negocio no tiene un identificador válido.");
-   await api("reviews",{
-    method:"POST",
-    headers:{Prefer:"return=minimal"},
-    body:JSON.stringify(payload)
-   });
-   f.reset();msg.textContent=t("sent");
-  }catch(err){
-   console.error(err);
-   msg.textContent=t("failed")+" "+(err.message||"Comprueba los permisos INSERT de Supabase.");
-  }finally{submit.disabled=false}
- });
- return f;
+  return n;
 }
 
-function renderBusiness(b){
- const card=node("article","business-card"),top=node("div","business-top");
- const url=safeUrl(b.logo_url||b.image_url||b.photo_url);
- if(url){
-  const img=node("img","business-logo");img.src=url;img.alt=b.name||"Business";img.loading="lazy";
-  img.onerror=()=>img.replaceWith(node("div","business-logo","✦"));top.append(img);
- }else top.append(node("div","business-logo","✦"));
- const heading=node("div","business-heading");
- heading.append(node("h2","",b.name||"Negocio"),node("div","category",b.category||t("category")));
- top.append(heading);card.append(top);
- const rating=node("div","rating-row");
- rating.append(node("span","stars","☆☆☆☆☆"),node("span","rating-number","—"),node("span","muted",t("noRating")));
- card.append(rating,node("div","divider"));
- const info=node("div","info");
- info.append(
-  makeLine("⌖",b.address||t("address")),
-  makeLine("☎",b.phone||t("phone")),
-  makeLine("◷",b.hours||b.opening_hours||t("hours"))
- );
- const website=safeUrl(b.website);
- if(website){
-  const row=node("div","info-line");
-  const a=node("a","",website);a.href=website;a.target="_blank";a.rel="noopener noreferrer";a.style.color="#85baff";
-  row.append("↗ ",a);info.append(row);
- }
- info.append(node("p","muted",b.description||t("description")));card.append(info);
- const stats=node("div","stats");
- stats.append(makeStat("—",t("score")),makeStat("—",t("count")),makeStat("—","Tendencias"));
- card.append(stats);
- const actions=node("div","actions"),profile=node("button","primary",t("profile")),reviewsBtn=node("button","secondary",t("reviews"));
- profile.type=reviewsBtn.type="button";actions.append(profile,reviewsBtn);card.append(actions);
- const details=node("section","details");details.hidden=true;
- details.append(node("h3","",t("reviews")));
- const status=node("p","empty",t("loading")),list=node("div","");
- details.append(status,list,makeReviewForm(b));card.append(details);
- let loaded=false;
- async function openDetails(){
-  details.hidden=false;profile.textContent=t("close");
-  if(!loaded){loaded=true;await loadReviews(b,list,status,stats,rating)}
- }
- profile.addEventListener("click",async()=>{
-  if(details.hidden)await openDetails();
-  else{details.hidden=true;profile.textContent=t("profile")}
- });
- reviewsBtn.addEventListener("click",async()=>{
-  await openDetails();details.scrollIntoView({behavior:"smooth",block:"nearest"});
- });
- return card;
+function makeStat(value, label) {
+  const box = node("div", "stat");
+  box.append(
+    node("span", "stat-value", value),
+    node("span", "stat-label", label)
+  );
+  return box;
 }
 
-form.addEventListener("submit",async e=>{
- e.preventDefault();
- const query=input.value.trim();if(!query){notice.textContent=t("initial");return}
- resultsBox.replaceChildren();notice.textContent=t("searching");searchButton.disabled=true;
- try{
-  const p=new URLSearchParams({select:"*",name:"ilike.*"+query+"*",limit:"20"});
-  const data=await api("businesses?"+p);
-  if(!Array.isArray(data)||!data.length){notice.textContent=t("notfound");return}
-  data.forEach(b=>resultsBox.append(renderBusiness(b)));
-  notice.textContent=data.length+" "+t("found");
- }catch(err){
-  console.error(err);notice.textContent=t("network"); 
- }finally{searchButton.disabled=false}
+function makeLine(icon, text) {
+  return node("div", "info-line", icon + "  " + text);
+}
+
+function safeUrl(value) {
+  try {
+    const u = new URL(value);
+    return ["https:", "http:"].includes(u.protocol)
+      ? u.href
+      : "";
+  } catch (_) {
+    return "";
+  }
+}
+
+/*
+ * DETECCIÓN HEURÍSTICA DEL IDIOMA.
+ * No sustituye un servicio profesional de detección.
+ * Devuelve null cuando no existe evidencia suficiente.
+ */
+function detectLanguage(text) {
+  if (typeof text !== "string" || !text.trim()) {
+    return null;
+  }
+
+  const s = text.toLocaleLowerCase();
+
+  const spanishWords = [
+    "el","la","los","las","que","de","del","muy",
+    "bueno","malo","servicio","atención","calidad",
+    "rápido","lento","bien","mal","para","con","una",
+    "uno","pero","porque","excelente","negocio",
+    "compré","precios","gracias","está","están",
+    "tienda","cliente","amable","fue","son","como"
+  ];
+
+  const englishWords = [
+    "the","and","is","was","were","very","good","bad",
+    "service","quality","fast","slow","with","for",
+    "this","that","not","great","excellent","business",
+    "bought","purchase","prices","thanks","store",
+    "customer","friendly","was","are","but","because"
+  ];
+
+  const countWords = words => {
+    const escaped = words.map(
+      w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    );
+    const pattern = new RegExp(
+      "\\b(" + escaped.join("|") + ")\\b",
+      "giu"
+    );
+    return [...s.matchAll(pattern)].length;
+  };
+
+  const es = countWords(spanishWords);
+  const en = countWords(englishWords);
+
+  if (es === en) return null;
+  return es > en ? "es" : "en";
+}
+
+function getOriginalLanguage(r) {
+  return r.original_language || detectLanguage(r.comment);
+}
+
+/* REPRESENTACIÓN DE OPINIONES */
+function renderReview(r) {
+  const box = node("article", "review");
+  const avg = average([r]);
+
+  box.append(node("div", "stars", stars(avg)));
+
+  const date = r.visit_date
+    ? new Date(r.visit_date + "T00:00:00")
+        .toLocaleDateString(lang === "es" ? "es-US" : "en-US")
+    : "";
+
+  box.append(
+    node(
+      "div",
+      "muted",
+      t("visit") + ": " + (date || "—") +
+      (r.visit_time ? " · " + String(r.visit_time).slice(0, 5) : "")
+    )
+  );
+
+  if (r.comment) {
+    /* El texto original se presenta sin traducir ni modificar. */
+    box.append(node("p", "", r.comment));
+
+    const originalLang = getOriginalLanguage(r);
+
+    box.append(
+      node(
+        "div",
+        "muted",
+        t("original") + ": " +
+        (originalLang || t("languageUnknown"))
+      )
+    );
+
+    if (r.translated_comment) {
+      const b = node("button", "secondary", t("translation"));
+      b.type = "button";
+
+      const translated = node("p", "", r.translated_comment);
+      translated.hidden = true;
+
+      b.addEventListener("click", () => {
+        translated.hidden = !translated.hidden;
+        b.textContent = translated.hidden
+          ? t("translation")
+          : t("hideTranslation");
+      });
+
+      box.append(b, translated);
+    }
+  }
+
+  const values = t("criteria").map((label, i) => [
+    label,
+    [
+      r.cleanliness,
+      r.service_quality,
+      r.product_quality,
+      r.speed,
+      r.value_for_money
+    ][i]
+  ]).filter(x => x[1] !== null && x[1] !== undefined);
+
+  if (values.length) {
+    box.append(
+      node(
+        "div",
+        "muted",
+        values.map(x => x[0] + ": " + x[1] + "/5").join(" · ")
+      )
+    );
+  }
+
+  return box;
+}
+
+/* CARGAR SOLO OPINIONES PUBLICADAS */
+async function loadReviews(
+  business, list, status, stats, ratingRow
+) {
+  status.textContent = t("loading");
+  list.replaceChildren();
+
+  try {
+    const p = new URLSearchParams({
+      select: [
+        "id","business_id","visit_date","visit_time",
+        "cleanliness","service_quality","product_quality",
+        "speed","value_for_money","comment","status",
+        "created_at","original_language",
+        "translated_comment","translated_language"
+      ].join(","),
+      business_id: "eq." + business.id,
+      status: "eq.published",
+      order: "created_at.desc",
+      limit: "100"
+    });
+
+    const reviews = await api("reviews?" + p);
+
+    if (!Array.isArray(reviews)) {
+      throw new Error("Formato inesperado al cargar opiniones.");
+    }
+
+    status.textContent = "";
+
+    if (!reviews.length) {
+      list.append(node("p", "empty", t("none")));
+    } else {
+      reviews.forEach(r => list.append(renderReview(r)));
+    }
+
+    const avg = average(reviews);
+    const count = reviews.length;
+
+    stats.replaceChildren(
+      makeStat(avg === null ? "—" : avg.toFixed(1) + "/5", t("score")),
+      makeStat(count, t("count")),
+      makeStat(count >= 5 ? "✓" : "—", t("trends"))
+    );
+
+    ratingRow.replaceChildren(
+      node("span", "stars", stars(avg)),
+      node("span", "rating-number",
+        avg === null ? "—" : avg.toFixed(1) + "/5"),
+      node("span", "muted",
+        count ? count + " " + t("count") : t("noRating"))
+    );
+  } catch (err) {
+    console.error("Error al cargar opiniones:", err);
+    status.textContent = t("reviewError");
+  }
+}
+
+/* FORMULARIO DE NUEVA OPINIÓN */
+function makeReviewForm(business) {
+  const f = node("form", "form");
+
+  f.append(
+    node("h3", "", t("share")),
+    node("p", "empty", t("pending"))
+  );
+
+  const grid = node("div", "form-grid");
+
+  const addField = (label, key, type, full = false) => {
+    const l = node(
+      "label",
+      "field" + (full ? " full" : ""),
+      label
+    );
+
+    let inputEl;
+
+    if (type === "select") {
+      inputEl = node("select");
+      inputEl.required = true;
+      inputEl.append(new Option(t("choose"), ""));
+
+      for (let i = 1; i <= 5; i++) {
+        inputEl.append(
+          new Option(i + " / 5 " + "★".repeat(i), String(i))
+        );
+      }
+    } else if (type === "textarea") {
+      inputEl = node("textarea");
+      inputEl.rows = 4;
+      inputEl.maxLength = 2000;
+      inputEl.placeholder = t("commentHint");
+    } else {
+      inputEl = node("input");
+      inputEl.type = type;
+      inputEl.required = true;
+
+      if (type === "date") {
+        inputEl.max = new Date().toISOString().slice(0, 10);
+      }
+    }
+
+    inputEl.name = key;
+    l.append(inputEl);
+    grid.append(l);
+  };
+
+  addField(t("date"), "visit_date", "date");
+  addField(t("time"), "visit_time", "time");
+
+  [
+    "cleanliness",
+    "service_quality",
+    "product_quality",
+    "speed",
+    "value_for_money"
+  ].forEach((key, i) => {
+    addField(t("criteria")[i], key, "select");
+  });
+
+  addField(t("comment"), "comment", "textarea", true);
+  f.append(grid);
+
+  const submit = node("button", "primary", t("send"));
+  submit.type = "submit";
+  submit.style.width = "100%";
+  submit.style.marginTop = "12px";
+
+  const msg = node("p", "form-message", "");
+  msg.setAttribute("aria-live", "polite");
+  f.append(submit, msg);
+
+  f.addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!f.reportValidity()) return;
+
+    submit.disabled = true;
+    msg.textContent = t("sending");
+
+    try {
+      const fd = new FormData(f);
+
+      /*
+       * Guardar exactamente el texto introducido.
+       * No se generan traducciones falsas.
+       */
+      const comment = String(fd.get("comment") || "");
+      const originalLanguage = detectLanguage(comment);
+
+      if (!business.id) {
+        throw new Error(t("invalidBusiness"));
+      }
+
+      const payload = {
+        business_id: business.id,
+        visit_date: fd.get("visit_date"),
+        visit_time: fd.get("visit_time"),
+        cleanliness: Number(fd.get("cleanliness")),
+        service_quality: Number(fd.get("service_quality")),
+        product_quality: Number(fd.get("product_quality")),
+        speed: Number(fd.get("speed")),
+        value_for_money: Number(fd.get("value_for_money")),
+        comment: comment.trim() ? comment : null,
+        original_language: originalLanguage,
+        translated_comment: null,
+        translated_language: null,
+        status: "pending"
+      };
+
+      await api("reviews", {
+        method: "POST",
+        headers: {
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      f.reset();
+      msg.textContent = t("sent");
+    } catch (err) {
+      console.error("Error al enviar opinión:", err);
+      msg.textContent =
+        t("failed") + " " +
+        (err.message || "Comprueba los permisos de Supabase.");
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  return f;
+}
+
+/* TARJETAS DE NEGOCIOS */
+function renderBusiness(b) {
+  const card = node("article", "business-card");
+  const top = node("div", "business-top");
+
+  const url = safeUrl(b.logo_url || b.image_url || b.photo_url);
+
+  if (url) {
+    const img = node("img", "business-logo");
+    img.src = url;
+    img.alt = b.name || "Business";
+    img.loading = "lazy";
+
+    img.onerror = () => {
+      img.replaceWith(node("div", "business-logo", "✦"));
+    };
+
+    top.append(img);
+  } else {
+    top.append(node("div", "business-logo", "✦"));
+  }
+
+  const heading = node("div", "business-heading");
+  heading.append(
+    node("h2", "", b.name || "Negocio"),
+    node("div", "category", b.category || t("category"))
+  );
+
+  top.append(heading);
+  card.append(top);
+
+  const rating = node("div", "rating-row");
+  rating.append(
+    node("span", "stars", "☆☆☆☆☆"),
+    node("span", "rating-number", "—"),
+    node("span", "muted", t("noRating"))
+  );
+
+  card.append(rating, node("div", "divider"));
+
+  const info = node("div", "info");
+
+  info.append(
+    makeLine("⌖", b.address || t("address")),
+    makeLine("☎", b.phone || t("phone")),
+    makeLine("◷", b.hours || b.opening_hours || t("hours"))
+  );
+
+  const website = safeUrl(b.website);
+
+  if (website) {
+    const row = node("div", "info-line");
+    const a = node("a", "", website);
+    a.href = website;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.style.color = "#85baff";
+    row.append("↗ ", a);
+    info.append(row);
+  }
+
+  info.append(
+    node("p", "muted", b.description || t("description"))
+  );
+
+  card.append(info);
+
+  const stats = node("div", "stats");
+  stats.append(
+    makeStat("—", t("score")),
+    makeStat("—", t("count")),
+    makeStat("—", t("trends"))
+  );
+
+  card.append(stats);
+
+  const actions = node("div", "actions");
+  const profile = node("button", "primary", t("profile"));
+  const reviewsBtn = node("button", "secondary", t("reviews"));
+
+  profile.type = "button";
+  reviewsBtn.type = "button";
+
+  actions.append(profile, reviewsBtn);
+  card.append(actions);
+
+  const details = node("section", "details");
+  details.hidden = true;
+
+  details.append(node("h3", "", t("reviews")));
+
+  const status = node("p", "empty", t("loading"));
+  const list = node("div", "");
+
+  details.append(status, list, makeReviewForm(b));
+  card.append(details);
+
+  let loaded = false;
+
+  async function openDetails() {
+    details.hidden = false;
+    profile.textContent = t("close");
+
+    if (!loaded) {
+      loaded = true;
+      await loadReviews(b, list, status, stats, rating);
+    }
+  }
+
+  profile.addEventListener("click", async () => {
+    if (details.hidden) {
+      await openDetails();
+    } else {
+      details.hidden = true;
+      profile.textContent = t("profile");
+    }
+  });
+
+  reviewsBtn.addEventListener("click", async () => {
+    await openDetails();
+    details.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
+  });
+
+  return card;
+}
+
+/* BÚSQUEDA DE NEGOCIOS */
+form.addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const query = input.value.trim();
+
+  if (!query) {
+    notice.textContent = t("initial");
+    return;
+  }
+
+  resultsBox.replaceChildren();
+  lastBusinesses = [];
+  notice.textContent = t("searching");
+  searchButton.disabled = true;
+
+  try {
+    const p = new URLSearchParams({
+      select: "*",
+      name: "ilike.*" + query + "*",
+      limit: "20"
+    });
+
+    const data = await api("businesses?" + p);
+
+    if (!Array.isArray(data) || !data.length) {
+      notice.textContent = t("notfound");
+      return;
+    }
+
+    lastBusinesses = data;
+    resultsBox.replaceChildren(
+      ...data.map(renderBusiness)
+    );
+
+    notice.textContent = data.length + " " + t("found");
+  } catch (err) {
+    console.error("Error en la búsqueda:", err);
+    notice.textContent = t("network");
+  } finally {
+    searchButton.disabled = false;
+  }
 });
 
 setLanguage("es");
