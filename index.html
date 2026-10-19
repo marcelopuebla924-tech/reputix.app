@@ -1162,7 +1162,7 @@ form.addEventListener("submit",async e => {
     const params = new URLSearchParams({
       select:"*",
       name:"ilike.*" + query.replace(/[%_]/g,"") + "*",
-      status:"eq.published",
+      status:"eq.approved",
       limit:"20"
     });
 
