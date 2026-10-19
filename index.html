@@ -1,4 +1,4 @@
-
+HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -197,7 +197,7 @@ h1 {
   border-bottom:1px solid #27364d;
   overflow-wrap:anywhere;
 }
-.review p { font-size:14px;line-height:1.6; }
+.review p { font-size:14px;line-height:1.6;white-space:pre-wrap; }
 .form {
   margin-top:20px;
   padding:14px;
@@ -228,6 +228,32 @@ h1 {
   padding:22px;
 }
 .feature p { color:var(--muted);font-size:14px;line-height:1.6; }
+.community { max-width:1000px;margin:20px auto 45px;padding:0 20px; }
+.community-panel {
+  background:linear-gradient(145deg,#121e31,#0e1625);
+  border:1px solid #293a56;
+  border-radius:18px;
+  padding:24px;
+}
+.community-panel h2 { margin-top:0; }
+.community-intro { color:var(--muted);line-height:1.7; }
+.community-options {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));
+  gap:14px;
+  margin-top:20px;
+}
+.community-option {
+  background:#0b1423;
+  border:1px solid #293a56;
+  border-radius:14px;
+  padding:18px;
+  text-align:left;
+  color:var(--light);
+}
+.community-option strong { display:block;font-size:17px;margin:7px 0; }
+.community-option span { color:var(--muted);font-size:13px;line-height:1.6; }
+.community-option[aria-expanded="true"] { border-color:var(--blue); }
 footer {
   text-align:center;
   padding:25px;
@@ -253,7 +279,7 @@ footer {
 <header>
   <div>
     <div class="logo">REPUTI<span>X</span></div>
-    <div class="tag">Opiniones reales. Soluciones reales.</div>
+    <div class="tag" id="tagline">Opiniones reales. Soluciones reales.</div>
   </div>
   <select id="language" aria-label="Language" style="width:auto">
     <option value="es">Español</option>
@@ -268,33 +294,45 @@ footer {
   <p class="intro" id="intro">
     Descubre negocios, consulta experiencias y encuentra información útil para tomar decisiones con más confianza.
   </p>
-
   <form class="search" id="searchForm">
-    <input id="business" type="search"
-      placeholder="Busca un negocio por nombre..." required>
+    <input id="business" type="search" placeholder="Busca un negocio por nombre..." required>
     <button class="primary" id="searchButton" type="submit">Buscar negocio</button>
   </form>
-
-  <p class="notice" id="notice" aria-live="polite">
-    Busca un negocio para ver sus resultados.
-  </p>
+  <p class="notice" id="notice" aria-live="polite">Busca un negocio para ver sus resultados.</p>
   <section class="results" id="results"></section>
+</section>
+
+<section class="community">
+  <div class="community-panel">
+    <h2 id="communityTitle">Ayuda a tu comunidad</h2>
+    <p class="community-intro" id="communityIntro">
+      ¿No encuentras un negocio o profesional en Reputix? Propón agregarlo.
+    </p>
+    <div class="community-options">
+      <button type="button" class="community-option" id="addBusinessChoice" aria-expanded="false">
+        🏪 <strong id="addBusinessTitle">Agregar un negocio</strong>
+        <span id="addBusinessDesc">Tiendas, restaurantes y comercios.</span>
+      </button>
+      <button type="button" class="community-option" id="addProChoice" aria-expanded="false">
+        🛠️ <strong id="addProTitle">Agregar un profesional</strong>
+        <span id="addProDesc">Plomeros, mecánicos y otros servicios.</span>
+      </button>
+    </div>
+    <div id="communityFormWrap" hidden></div>
+  </div>
 </section>
 
 <section class="features">
   <article class="feature">
-    <div>🔎</div>
-    <h3 id="f1">Encuentra negocios</h3>
+    <div>🔎</div><h3 id="f1">Encuentra negocios</h3>
     <p id="fd1">Consulta información de negocios en un solo lugar.</p>
   </article>
   <article class="feature">
-    <div>⭐</div>
-    <h3 id="f2">Opiniones auténticas</h3>
+    <div>⭐</div><h3 id="f2">Opiniones auténticas</h3>
     <p id="fd2">Calificaciones basadas en opiniones disponibles.</p>
   </article>
   <article class="feature">
-    <div>📊</div>
-    <h3 id="f3">Estadísticas inteligentes</h3>
+    <div>📊</div><h3 id="f3">Estadísticas inteligentes</h3>
     <p id="fd3">Identifica tendencias a partir de opiniones reales.</p>
   </article>
 </section>
@@ -309,11 +347,8 @@ footer {
 "use strict";
 
 /* CONFIGURACIÓN DE SUPABASE */
-const SUPABASE_URL =
-  "https://udvsrmfgjfinwbgvhchs.supabase.co";
-
-const SUPABASE_KEY =
-  "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
+const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
 const $ = id => document.getElementById(id);
 const form = $("searchForm");
@@ -323,515 +358,393 @@ const resultsBox = $("results");
 const searchButton = $("searchButton");
 
 const translations = {
-  es: {
-    pill:"✦ Una nueva forma de confiar",
-    headline:'Tu opinión puede<br>hacer la <span class="accent">diferencia.</span>',
-    intro:"Descubre negocios, consulta experiencias y encuentra información útil para tomar decisiones con más confianza.",
-    placeholder:"Busca un negocio por nombre...",
-    search:"Buscar negocio",
-    initial:"Busca un negocio para ver sus resultados.",
-    f1:"Encuentra negocios",
-    fd1:"Consulta información de negocios en un solo lugar.",
-    f2:"Opiniones auténticas",
-    fd2:"Calificaciones basadas en opiniones disponibles.",
-    f3:"Estadísticas inteligentes",
-    fd3:"Identifica tendencias a partir de opiniones reales.",
-    category:"Categoría no disponible",
-    address:"Dirección no disponible",
-    phone:"Teléfono no disponible",
-    hours:"Horario no disponible",
-    description:"La descripción todavía no está disponible.",
-    profile:"Ver perfil",
-    close:"Cerrar perfil",
-    reviews:"Opiniones",
-    loading:"Cargando opiniones publicadas…",
-    none:"Todavía no hay opiniones publicadas. Puedes compartir una experiencia real.",
-    share:"Comparte tu experiencia",
-    pending:"Tu opinión se enviará para revisión y no aparecerá públicamente hasta ser aprobada.",
-    date:"Fecha de visita",
-    time:"Hora aproximada",
-    comment:"Tu opinión (opcional)",
-    commentHint:"Describe tu experiencia real…",
-    send:"Enviar opinión para revisión",
-    choose:"Selecciona una calificación",
-    sent:"¡Opinión recibida! Quedó pendiente de revisión.",
-    failed:"No se pudo enviar la opinión.",
-    searching:"Buscando negocios…",
-    notfound:"No encontramos ese negocio. Prueba otro nombre.",
-    found:"negocios encontrados.",
-    noRating:"Sin calificaciones",
-    score:"Calificación",
-    count:"Opiniones",
-    reviewError:"No pudimos cargar las opiniones. Comprueba los permisos de lectura de Supabase.",
-    network:"No pudimos completar la búsqueda. Revisa la conexión y los permisos de Supabase.",
-    criteria:["Limpieza","Calidad del servicio","Calidad del producto","Rapidez","Relación calidad-precio"],
-    visit:"Visita",
-    original:"Idioma original",
-    translation:"Ver traducción",
-    hideTranslation:"Ocultar traducción",
-    trends:"Tendencias",
-    sending:"Enviando opinión…",
-    invalidBusiness:"El negocio no tiene un identificador válido.",
-    languageUnknown:"No determinado"
-  },
-  en: {
-    pill:"✦ A new way to trust",
-    headline:'Your opinion can<br>make a <span class="accent">difference.</span>',
-    intro:"Discover businesses, explore experiences, and find useful information to make more confident decisions.",
-    placeholder:"Search for a business by name...",
-    search:"Search businesses",
-    initial:"Search for a business to see results.",
-    f1:"Find businesses",
-    fd1:"Explore business information in one place.",
-    f2:"Authentic reviews",
-    fd2:"Ratings based on available reviews.",
-    f3:"Smart insights",
-    fd3:"Identify trends using real reviews.",
-    category:"Category unavailable",
-    address:"Address unavailable",
-    phone:"Phone unavailable",
-    hours:"Hours unavailable",
-    description:"Description not available yet.",
-    profile:"View profile",
-    close:"Close profile",
-    reviews:"Reviews",
-    loading:"Loading published reviews…",
-    none:"No reviews have been published yet. Share a real experience.",
-    share:"Share your experience",
-    pending:"Your review will be checked before it appears publicly.",
-    date:"Visit date",
-    time:"Approximate time",
-    comment:"Your review (optional)",
-    commentHint:"Describe your real experience…",
-    send:"Submit review for moderation",
-    choose:"Select a rating",
-    sent:"Review received! It is pending moderation.",
-    failed:"The review could not be submitted.",
-    searching:"Searching businesses…",
-    notfound:"No business found. Try another name.",
-    found:"businesses found.",
-    noRating:"Not yet rated",
-    score:"Rating",
-    count:"Reviews",
-    reviewError:"Could not load reviews. Check Supabase read permissions.",
-    network:"Search failed. Check your connection and Supabase permissions.",
-    criteria:["Cleanliness","Service quality","Product quality","Speed","Value for money"],
-    visit:"Visit",
-    original:"Original language",
-    translation:"View translation",
-    hideTranslation:"Hide translation",
-    trends:"Trends",
-    sending:"Submitting review…",
-    invalidBusiness:"The business does not have a valid identifier.",
-    languageUnknown:"Undetermined"
-  }
+es: {
+  pill:"✦ Una nueva forma de confiar",
+  headline:'Tu opinión puede<br>hacer la <span class="accent">diferencia.</span>',
+  intro:"Descubre negocios, consulta experiencias y encuentra información útil para decidir con confianza.",
+  placeholder:"Busca un negocio por nombre...",search:"Buscar negocio",
+  initial:"Busca un negocio para ver sus resultados.",
+  f1:"Encuentra negocios",fd1:"Consulta información de negocios en un solo lugar.",
+  f2:"Opiniones auténticas",fd2:"Calificaciones basadas en opiniones disponibles.",
+  f3:"Estadísticas inteligentes",fd3:"Identifica tendencias a partir de opiniones reales.",
+  category:"Categoría no disponible",address:"Dirección no disponible",
+  phone:"Teléfono no disponible",hours:"Horario no disponible",
+  description:"La descripción todavía no está disponible.",
+  profile:"Ver perfil",close:"Cerrar perfil",reviews:"Opiniones",
+  loading:"Cargando opiniones publicadas…",
+  none:"Todavía no hay opiniones publicadas.",
+  share:"Comparte tu experiencia",
+  pending:"Tu opinión se revisará antes de publicarse.",
+  date:"Fecha de visita",time:"Hora aproximada",comment:"Tu opinión (opcional)",
+  commentHint:"Describe tu experiencia real…",send:"Enviar opinión para revisión",
+  choose:"Selecciona una calificación",sent:"Opinión recibida. Quedó pendiente de revisión.",
+  failed:"No se pudo enviar la opinión.",searching:"Buscando negocios…",
+  notfound:"No encontramos ese negocio. Prueba otro nombre.",
+  found:"negocios encontrados.",noRating:"Sin calificaciones",
+  score:"Calificación",count:"Opiniones",reviewError:"No se pudieron cargar las opiniones.",
+  network:"No se pudo completar la búsqueda. Revisa Supabase.",
+  criteria:["Limpieza","Calidad del servicio","Calidad del producto","Rapidez","Relación calidad-precio"],
+  visit:"Visita",original:"Idioma original",translation:"Ver traducción",
+  hideTranslation:"Ocultar traducción",trends:"Tendencias",sending:"Enviando opinión…",
+  invalidBusiness:"El negocio no tiene un identificador válido.",
+  languageUnknown:"No determinado",
+  communityTitle:"Ayuda a tu comunidad",
+  communityIntro:"¿No encuentras un negocio o profesional en Reputix? Propón agregarlo.",
+  addBusinessTitle:"Agregar un negocio",addBusinessDesc:"Tiendas, restaurantes y comercios.",
+  addProTitle:"Agregar un profesional",addProDesc:"Plomeros, mecánicos y otros servicios.",
+  complaints:"Quejas y reclamaciones",
+  complaintIntro:"Comparte una experiencia real. Las quejas se revisan antes de publicarse.",
+  complaintLabel:"Describe tu queja",complaintHint:"Explica qué ocurrió con respeto y detalles relevantes…",
+  complaintSend:"Enviar queja para revisión",complaintSending:"Enviando queja…",
+  complaintSent:"Queja recibida. Está pendiente de revisión.",
+  complaintFailed:"No se pudo enviar la queja.",
+  complaintLoading:"Cargando quejas publicadas…",
+  complaintNone:"Todavía no hay quejas publicadas.",
+  complaintPublic:"Queja publicada",businessResponse:"Respuesta del negocio",
+  complaintReadError:"No se pudieron cargar las quejas.",
+  complaintTooShort:"Escribe una queja de al menos 10 caracteres.",
+  complaintPrivacy:"No incluyas datos personales privados.",
+  submitBusinessTitle:"Proponer negocio o servicio",
+  formName:"Nombre",formCategory:"Categoría",formAddress:"Dirección",
+  formCity:"Ciudad",formZip:"Código postal",formPhone:"Teléfono (opcional)",
+  formHours:"Horario (opcional)",formDescription:"Detalles (opcional)",
+  formNameHint:"Nombre del negocio o profesional",
+  formAddressHint:"Calle y número",formCityHint:"Ciudad",
+  formPhoneHint:"Teléfono público",formHoursHint:"Horario de atención",
+  formDescriptionHint:"Información útil para la comunidad",
+  sendProposal:"Enviar para revisión",
+  proposalPending:"Propuesta recibida. Quedó pendiente de revisión.",
+  proposalFailed:"No se pudo enviar la propuesta.",
+  chooseCategory:"Elige una categoría",
+  businessCategories:["Restaurante o cafetería","Tienda o supermercado","Smoke shop","Ropa y accesorios","Otro comercio"],
+  proCategories:["Plomero","Electricista","Mecánico","Construcción","Pintor","Contratista","Limpieza","Otro servicio"],
+  proposalRequired:"Completa el nombre, la categoría y la ciudad.",
+  proposalNotice:"Los datos serán revisados antes de publicarse."
+},
+en: {
+  pill:"✦ A new way to trust",
+  headline:'Your opinion can<br>make a <span class="accent">difference.</span>',
+  intro:"Discover businesses, explore experiences, and make more confident decisions.",
+  placeholder:"Search for a business by name...",search:"Search businesses",
+  initial:"Search for a business to see results.",
+  f1:"Find businesses",fd1:"Explore business information in one place.",
+  f2:"Authentic reviews",fd2:"Ratings based on available reviews.",
+  f3:"Smart insights",fd3:"Identify trends using real reviews.",
+  category:"Category unavailable",address:"Address unavailable",
+  phone:"Phone unavailable",hours:"Hours unavailable",
+  description:"Description not available yet.",
+  profile:"View profile",close:"Close profile",reviews:"Reviews",
+  loading:"Loading published reviews…",none:"No reviews published yet.",
+  share:"Share your experience",pending:"Your review will be checked before publication.",
+  date:"Visit date",time:"Approximate time",comment:"Your review (optional)",
+  commentHint:"Describe your real experience…",send:"Submit review for moderation",
+  choose:"Select a rating",sent:"Review received. It is pending moderation.",
+  failed:"The review could not be submitted.",searching:"Searching businesses…",
+  notfound:"No business found. Try another name.",found:"businesses found.",
+  noRating:"Not yet rated",score:"Rating",count:"Reviews",
+  reviewError:"Could not load reviews.",network:"Search failed. Check Supabase.",
+  criteria:["Cleanliness","Service quality","Product quality","Speed","Value for money"],
+  visit:"Visit",original:"Original language",translation:"View translation",
+  hideTranslation:"Hide translation",trends:"Trends",sending:"Submitting review…",
+  invalidBusiness:"The business does not have a valid identifier.",
+  languageUnknown:"Undetermined",
+  communityTitle:"Help your community",
+  communityIntro:"Can't find a business or professional on Reputix? Suggest adding it.",
+  addBusinessTitle:"Add a business",addBusinessDesc:"Stores, restaurants, and other businesses.",
+  addProTitle:"Add a professional",addProDesc:"Plumbers, mechanics, and other services.",
+  complaints:"Complaints",
+  complaintIntro:"Share a real experience. Complaints are reviewed before publication.",
+  complaintLabel:"Describe your complaint",complaintHint:"Explain what happened respectfully…",
+  complaintSend:"Submit complaint for review",complaintSending:"Submitting complaint…",
+  complaintSent:"Complaint received. It is pending review.",
+  complaintFailed:"Could not submit complaint.",
+  complaintLoading:"Loading published complaints…",
+  complaintNone:"There are no published complaints yet.",
+  complaintPublic:"Published complaint",businessResponse:"Business response",
+  complaintReadError:"Could not load complaints.",
+  complaintTooShort:"Enter a complaint of at least 10 characters.",
+  complaintPrivacy:"Do not include private personal information.",
+  submitBusinessTitle:"Suggest a business or service",
+  formName:"Name",formCategory:"Category",formAddress:"Address",
+  formCity:"City",formZip:"ZIP code",formPhone:"Phone (optional)",
+  formHours:"Hours (optional)",formDescription:"Details (optional)",
+  formNameHint:"Business or professional name",formAddressHint:"Street address",
+  formCityHint:"City",formPhoneHint:"Public phone number",
+  formHoursHint:"Business hours",formDescriptionHint:"Helpful community information",
+  sendProposal:"Submit for review",
+  proposalPending:"Suggestion received. It is pending moderation.",
+  proposalFailed:"The suggestion could not be submitted.",
+  chooseCategory:"Choose a category",
+  businessCategories:["Restaurant or cafe","Store or supermarket","Smoke shop","Clothing and accessories","Other business"],
+  proCategories:["Plumber","Electrician","Mechanic","Construction","Painter","Contractor","Cleaning","Other service"],
+  proposalRequired:"Enter the name, category, and city.",
+  proposalNotice:"Submissions are reviewed before publication."
+}
 };
 
 let lang = "es";
 let lastBusinesses = [];
+let proposalType = "business";
 
 function t(key) {
   return translations[lang][key] ?? translations.es[key] ?? key;
 }
 
-/* ACTUALIZACIÓN DE IDIOMA */
-function setLanguage(value) {
-  lang = value === "en" ? "en" : "es";
-  document.documentElement.lang = lang;
-
-  $("pill").textContent = t("pill");
-  $("headline").innerHTML = t("headline");
-  $("intro").textContent = t("intro");
-  input.placeholder = t("placeholder");
-  searchButton.textContent = t("search");
-
-  $("f1").textContent = t("f1");
-  $("fd1").textContent = t("fd1");
-  $("f2").textContent = t("f2");
-  $("fd2").textContent = t("fd2");
-  $("f3").textContent = t("f3");
-  $("fd3").textContent = t("fd3");
-
-  if (!input.value.trim()) {
-    notice.textContent = t("initial");
-  }
-
-  /* Volver a dibujar los resultados en el idioma elegido. */
-  if (lastBusinesses.length) {
-    resultsBox.replaceChildren(
-      ...lastBusinesses.map(renderBusiness)
-    );
-  }
-}
-
-$("language").addEventListener("change", e => {
-  setLanguage(e.target.value);
-});
-
-/* API DE SUPABASE */
-async function api(path, options = {}) {
-  const response = await fetch(
-    SUPABASE_URL + "/rest/v1/" + path,
-    {
-      ...options,
-      headers: {
-        apikey: SUPABASE_KEY,
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        ...(options.headers || {})
-      }
-    }
-  );
-
-  const body = await response.text();
-
-  if (!response.ok) {
-    throw new Error(
-      "Supabase (" + response.status + "): " +
-      body.slice(0, 700)
-    );
-  }
-
-  if (!body.trim()) return null;
-
-  try {
-    return JSON.parse(body);
-  } catch (_) {
-    throw new Error("Supabase devolvió una respuesta no válida.");
-  }
-}
-
-/* CALIFICACIONES */
-function average(reviews) {
-  const fields = [
-    "cleanliness",
-    "service_quality",
-    "product_quality",
-    "speed",
-    "value_for_money"
-  ];
-
-  const values = [];
-
-  reviews.forEach(r => {
-    fields.forEach(k => {
-      if (
-        r[k] !== null &&
-        r[k] !== undefined &&
-        r[k] !== "" &&
-        Number.isFinite(Number(r[k]))
-      ) {
-        values.push(Number(r[k]));
-      }
-    });
-  });
-
-  return values.length
-    ? values.reduce((a, b) => a + b, 0) / values.length
-    : null;
-}
-
-function stars(n) {
-  const r = Math.max(0, Math.min(5, Math.round(n || 0)));
-  return "★".repeat(r) + "☆".repeat(5 - r);
-}
-
 function node(tag, cls, text) {
   const n = document.createElement(tag);
   if (cls) n.className = cls;
-  if (text !== undefined && text !== null) {
-    n.textContent = String(text);
-  }
+  if (text !== undefined && text !== null) n.textContent = String(text);
   return n;
 }
 
-function makeStat(value, label) {
-  const box = node("div", "stat");
-  box.append(
-    node("span", "stat-value", value),
-    node("span", "stat-label", label)
-  );
+function setLanguage(value) {
+  lang = value === "en" ? "en" : "es";
+  document.documentElement.lang = lang;
+  $("language").value = lang;
+  $("pill").textContent = t("pill");
+  $("headline").innerHTML = t("headline");
+  $("intro").textContent = t("intro");
+  $("tagline").textContent = lang === "es"
+    ? "Opiniones reales. Soluciones reales."
+    : "Real reviews. Real solutions.";
+  input.placeholder = t("placeholder");
+  searchButton.textContent = t("search");
+
+  ["f1","fd1","f2","fd2","f3","fd3",
+   "communityTitle","communityIntro",
+   "addBusinessTitle","addBusinessDesc","addProTitle","addProDesc"
+  ].forEach(id => $(id).textContent = t(id));
+
+  if (!input.value.trim()) notice.textContent = t("initial");
+
+  if (lastBusinesses.length) {
+    resultsBox.replaceChildren(...lastBusinesses.map(renderBusiness));
+  }
+  if (!$("communityFormWrap").hidden) renderCommunityForm(proposalType);
+}
+
+$("language").addEventListener("change",e => setLanguage(e.target.value));
+
+/* API REST DE SUPABASE */
+async function api(path, options = {}) {
+  const response = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+    ...options,
+    headers: {
+      apikey:SUPABASE_KEY,
+      Accept:"application/json",
+      "Content-Type":"application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  const body = await response.text();
+  if (!response.ok) {
+    throw new Error("Supabase (" + response.status + "): " + body.slice(0,500));
+  }
+  if (!body.trim()) return null;
+  try { return JSON.parse(body); }
+  catch (_) { throw new Error("Supabase devolvió una respuesta no válida."); }
+}
+
+function average(reviews) {
+  const fields = [
+    "cleanliness","service_quality","product_quality","speed","value_for_money"
+  ];
+  const values = [];
+  reviews.forEach(r => fields.forEach(k => {
+    if (r[k] !== null && r[k] !== undefined && r[k] !== "" &&
+        Number.isFinite(Number(r[k]))) values.push(Number(r[k]));
+  }));
+  return values.length ? values.reduce((a,b) => a+b,0) / values.length : null;
+}
+
+function stars(n) {
+  const r = Math.max(0,Math.min(5,Math.round(n || 0)));
+  return "★".repeat(r) + "☆".repeat(5-r);
+}
+
+function makeStat(value,label) {
+  const box = node("div","stat");
+  box.append(node("span","stat-value",value),node("span","stat-label",label));
   return box;
 }
 
-function makeLine(icon, text) {
-  return node("div", "info-line", icon + "  " + text);
+function makeLine(icon,text) {
+  return node("div","info-line",icon + "  " + text);
 }
 
 function safeUrl(value) {
   try {
     const u = new URL(value);
-    return ["https:", "http:"].includes(u.protocol)
-      ? u.href
-      : "";
-  } catch (_) {
-    return "";
-  }
+    return ["https:","http:"].includes(u.protocol) ? u.href : "";
+  } catch (_) { return ""; }
 }
 
-/*
- * DETECCIÓN HEURÍSTICA DEL IDIOMA.
- * No sustituye un servicio profesional de detección.
- * Devuelve null cuando no existe evidencia suficiente.
- */
+/* Detección aproximada del idioma: no traduce el texto. */
 function detectLanguage(text) {
-  if (typeof text !== "string" || !text.trim()) {
-    return null;
-  }
-
+  if (typeof text !== "string" || !text.trim()) return null;
   const s = text.toLocaleLowerCase();
 
-  const spanishWords = [
-    "el","la","los","las","que","de","del","muy",
-    "bueno","malo","servicio","atención","calidad",
-    "rápido","lento","bien","mal","para","con","una",
-    "uno","pero","porque","excelente","negocio",
-    "compré","precios","gracias","está","están",
-    "tienda","cliente","amable","fue","son","como"
+  const esWords = [
+    "el","la","los","las","que","de","del","muy","bueno","malo",
+    "servicio","atención","calidad","rápido","lento","bien","mal",
+    "para","con","una","pero","porque","excelente","negocio",
+    "compré","precios","gracias","está","tienda","cliente","amable",
+    "fue","son","como","no","me","mi","por"
+  ];
+  const enWords = [
+    "the","and","is","was","were","very","good","bad","service",
+    "quality","fast","slow","with","for","this","that","not","great",
+    "excellent","business","bought","prices","thanks","store",
+    "customer","friendly","are","but","because","my","have","they"
   ];
 
-  const englishWords = [
-    "the","and","is","was","were","very","good","bad",
-    "service","quality","fast","slow","with","for",
-    "this","that","not","great","excellent","business",
-    "bought","purchase","prices","thanks","store",
-    "customer","friendly","was","are","but","because"
-  ];
-
-  const countWords = words => {
-    const escaped = words.map(
-      w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    );
-    const pattern = new RegExp(
-      "\\b(" + escaped.join("|") + ")\\b",
-      "giu"
-    );
+  const count = words => {
+    const pattern = new RegExp("\\b(" + words.join("|") + ")\\b","giu");
     return [...s.matchAll(pattern)].length;
   };
 
-  const es = countWords(spanishWords);
-  const en = countWords(englishWords);
-
+  const es = count(esWords);
+  const en = count(enWords);
   if (es === en) return null;
   return es > en ? "es" : "en";
 }
 
-function getOriginalLanguage(r) {
-  return r.original_language || detectLanguage(r.comment);
-}
-
-/* REPRESENTACIÓN DE OPINIONES */
 function renderReview(r) {
-  const box = node("article", "review");
-  const avg = average([r]);
-
-  box.append(node("div", "stars", stars(avg)));
+  const box = node("article","review");
+  box.append(node("div","stars",stars(average([r]))));
 
   const date = r.visit_date
-    ? new Date(r.visit_date + "T00:00:00")
-        .toLocaleDateString(lang === "es" ? "es-US" : "en-US")
-    : "";
+    ? new Date(r.visit_date + "T00:00:00").toLocaleDateString(lang === "es" ? "es-US" : "en-US")
+    : "—";
 
-  box.append(
-    node(
-      "div",
-      "muted",
-      t("visit") + ": " + (date || "—") +
-      (r.visit_time ? " · " + String(r.visit_time).slice(0, 5) : "")
-    )
-  );
+  box.append(node("div","muted",t("visit") + ": " + date +
+    (r.visit_time ? " · " + String(r.visit_time).slice(0,5) : "")));
 
   if (r.comment) {
-    /* El texto original se presenta sin traducir ni modificar. */
-    box.append(node("p", "", r.comment));
-
-    const originalLang = getOriginalLanguage(r);
-
-    box.append(
-      node(
-        "div",
-        "muted",
-        t("original") + ": " +
-        (originalLang || t("languageUnknown"))
-      )
-    );
+    box.append(node("p","",r.comment));
+    box.append(node("div","muted",
+      t("original") + ": " + (r.original_language || detectLanguage(r.comment) || t("languageUnknown"))
+    ));
 
     if (r.translated_comment) {
-      const b = node("button", "secondary", t("translation"));
+      const b = node("button","secondary",t("translation"));
       b.type = "button";
-
-      const translated = node("p", "", r.translated_comment);
+      const translated = node("p","",r.translated_comment);
       translated.hidden = true;
-
-      b.addEventListener("click", () => {
+      b.addEventListener("click",() => {
         translated.hidden = !translated.hidden;
-        b.textContent = translated.hidden
-          ? t("translation")
-          : t("hideTranslation");
+        b.textContent = translated.hidden ? t("translation") : t("hideTranslation");
       });
-
-      box.append(b, translated);
+      box.append(b,translated);
     }
   }
 
-  const values = t("criteria").map((label, i) => [
+  const values = t("criteria").map((label,i) => [
     label,
-    [
-      r.cleanliness,
-      r.service_quality,
-      r.product_quality,
-      r.speed,
-      r.value_for_money
-    ][i]
+    [r.cleanliness,r.service_quality,r.product_quality,r.speed,r.value_for_money][i]
   ]).filter(x => x[1] !== null && x[1] !== undefined);
 
   if (values.length) {
-    box.append(
-      node(
-        "div",
-        "muted",
-        values.map(x => x[0] + ": " + x[1] + "/5").join(" · ")
-      )
-    );
+    box.append(node("div","muted",
+      values.map(x => x[0] + ": " + x[1] + "/5").join(" · ")
+    ));
   }
-
   return box;
 }
 
-/* CARGAR SOLO OPINIONES PUBLICADAS */
-async function loadReviews(
-  business, list, status, stats, ratingRow
-) {
+/* Solo se muestran reseñas publicadas. */
+async function loadReviews(business,list,status,stats,ratingRow) {
   status.textContent = t("loading");
   list.replaceChildren();
 
   try {
-    const p = new URLSearchParams({
-      select: [
-        "id","business_id","visit_date","visit_time",
-        "cleanliness","service_quality","product_quality",
-        "speed","value_for_money","comment","status",
-        "created_at","original_language",
-        "translated_comment","translated_language"
-      ].join(","),
-      business_id: "eq." + business.id,
-      status: "eq.published",
-      order: "created_at.desc",
-      limit: "100"
+    const params = new URLSearchParams({
+      select:"id,business_id,visit_date,visit_time,cleanliness,service_quality,product_quality,speed,value_for_money,comment,status,created_at,original_language,translated_comment,translated_language",
+      business_id:"eq." + business.id,
+      status:"eq.published",
+      order:"created_at.desc",
+      limit:"100"
     });
 
-    const reviews = await api("reviews?" + p);
-
-    if (!Array.isArray(reviews)) {
-      throw new Error("Formato inesperado al cargar opiniones.");
-    }
+    const reviews = await api("reviews?" + params);
+    if (!Array.isArray(reviews)) throw new Error("Formato inesperado");
 
     status.textContent = "";
-
-    if (!reviews.length) {
-      list.append(node("p", "empty", t("none")));
-    } else {
-      reviews.forEach(r => list.append(renderReview(r)));
-    }
+    if (!reviews.length) list.append(node("p","empty",t("none")));
+    else reviews.forEach(r => list.append(renderReview(r)));
 
     const avg = average(reviews);
     const count = reviews.length;
 
     stats.replaceChildren(
-      makeStat(avg === null ? "—" : avg.toFixed(1) + "/5", t("score")),
-      makeStat(count, t("count")),
-      makeStat(count >= 5 ? "✓" : "—", t("trends"))
+      makeStat(avg === null ? "—" : avg.toFixed(1) + "/5",t("score")),
+      makeStat(count,t("count")),
+      makeStat(count >= 5 ? "✓" : "—",t("trends"))
     );
 
     ratingRow.replaceChildren(
-      node("span", "stars", stars(avg)),
-      node("span", "rating-number",
-        avg === null ? "—" : avg.toFixed(1) + "/5"),
-      node("span", "muted",
-        count ? count + " " + t("count") : t("noRating"))
+      node("span","stars",stars(avg)),
+      node("span","rating-number",avg === null ? "—" : avg.toFixed(1) + "/5"),
+      node("span","muted",count ? count + " " + t("count") : t("noRating"))
     );
   } catch (err) {
-    console.error("Error al cargar opiniones:", err);
+    console.error("Error al cargar opiniones:",err);
     status.textContent = t("reviewError");
   }
 }
 
-/* FORMULARIO DE NUEVA OPINIÓN */
+/* Formulario de reseñas */
 function makeReviewForm(business) {
-  const f = node("form", "form");
+  const f = node("form","form");
+  f.append(node("h3","",t("share")),node("p","empty",t("pending")));
+  const grid = node("div","form-grid");
 
-  f.append(
-    node("h3", "", t("share")),
-    node("p", "empty", t("pending"))
-  );
-
-  const grid = node("div", "form-grid");
-
-  const addField = (label, key, type, full = false) => {
-    const l = node(
-      "label",
-      "field" + (full ? " full" : ""),
-      label
-    );
-
-    let inputEl;
+  function addField(label,key,type,full=false) {
+    const l = node("label","field" + (full ? " full" : ""),label);
+    let el;
 
     if (type === "select") {
-      inputEl = node("select");
-      inputEl.required = true;
-      inputEl.append(new Option(t("choose"), ""));
-
-      for (let i = 1; i <= 5; i++) {
-        inputEl.append(
-          new Option(i + " / 5 " + "★".repeat(i), String(i))
-        );
+      el = node("select");
+      el.required = true;
+      el.append(new Option(t("choose"),""));
+      for (let i=1;i<=5;i++) {
+        el.append(new Option(i + " / 5 " + "★".repeat(i),String(i)));
       }
     } else if (type === "textarea") {
-      inputEl = node("textarea");
-      inputEl.rows = 4;
-      inputEl.maxLength = 2000;
-      inputEl.placeholder = t("commentHint");
+      el = node("textarea");
+      el.rows = 4;
+      el.maxLength = 2000;
+      el.placeholder = t("commentHint");
     } else {
-      inputEl = node("input");
-      inputEl.type = type;
-      inputEl.required = true;
-
-      if (type === "date") {
-        inputEl.max = new Date().toISOString().slice(0, 10);
-      }
+      el = node("input");
+      el.type = type;
+      el.required = true;
+      if (type === "date") el.max = new Date().toISOString().slice(0,10);
     }
 
-    inputEl.name = key;
-    l.append(inputEl);
+    el.name = key;
+    l.append(el);
     grid.append(l);
-  };
+  }
 
-  addField(t("date"), "visit_date", "date");
-  addField(t("time"), "visit_time", "time");
-
-  [
-    "cleanliness",
-    "service_quality",
-    "product_quality",
-    "speed",
-    "value_for_money"
-  ].forEach((key, i) => {
-    addField(t("criteria")[i], key, "select");
-  });
-
-  addField(t("comment"), "comment", "textarea", true);
+  addField(t("date"),"visit_date","date");
+  addField(t("time"),"visit_time","time");
+  ["cleanliness","service_quality","product_quality","speed","value_for_money"]
+    .forEach((key,i) => addField(t("criteria")[i],key,"select"));
+  addField(t("comment"),"comment","textarea",true);
   f.append(grid);
 
-  const submit = node("button", "primary", t("send"));
+  const submit = node("button","primary",t("send"));
   submit.type = "submit";
   submit.style.width = "100%";
   submit.style.marginTop = "12px";
 
-  const msg = node("p", "form-message", "");
-  msg.setAttribute("aria-live", "polite");
-  f.append(submit, msg);
+  const msg = node("p","form-message","");
+  msg.setAttribute("aria-live","polite");
+  f.append(submit,msg);
 
-  f.addEventListener("submit", async e => {
+  f.addEventListener("submit",async e => {
     e.preventDefault();
     if (!f.reportValidity()) return;
 
@@ -840,49 +753,35 @@ function makeReviewForm(business) {
 
     try {
       const fd = new FormData(f);
-
-      /*
-       * Guardar exactamente el texto introducido.
-       * No se generan traducciones falsas.
-       */
       const comment = String(fd.get("comment") || "");
-      const originalLanguage = detectLanguage(comment);
 
-      if (!business.id) {
-        throw new Error(t("invalidBusiness"));
-      }
+      if (!business.id) throw new Error(t("invalidBusiness"));
 
-      const payload = {
-        business_id: business.id,
-        visit_date: fd.get("visit_date"),
-        visit_time: fd.get("visit_time"),
-        cleanliness: Number(fd.get("cleanliness")),
-        service_quality: Number(fd.get("service_quality")),
-        product_quality: Number(fd.get("product_quality")),
-        speed: Number(fd.get("speed")),
-        value_for_money: Number(fd.get("value_for_money")),
-        comment: comment.trim() ? comment : null,
-        original_language: originalLanguage,
-        translated_comment: null,
-        translated_language: null,
-        status: "pending"
-      };
-
-      await api("reviews", {
-        method: "POST",
-        headers: {
-          Prefer: "return=minimal"
-        },
-        body: JSON.stringify(payload)
+      await api("reviews",{
+        method:"POST",
+        headers:{Prefer:"return=minimal"},
+        body:JSON.stringify({
+          business_id:business.id,
+          visit_date:fd.get("visit_date"),
+          visit_time:fd.get("visit_time") || null,
+          cleanliness:Number(fd.get("cleanliness")),
+          service_quality:Number(fd.get("service_quality")),
+          product_quality:Number(fd.get("product_quality")),
+          speed:Number(fd.get("speed")),
+          value_for_money:Number(fd.get("value_for_money")),
+          comment:comment.trim() ? comment : null,
+          original_language:detectLanguage(comment),
+          translated_comment:null,
+          translated_language:null,
+          status:"pending"
+        })
       });
 
       f.reset();
       msg.textContent = t("sent");
     } catch (err) {
-      console.error("Error al enviar opinión:", err);
-      msg.textContent =
-        t("failed") + " " +
-        (err.message || "Comprueba los permisos de Supabase.");
+      console.error("Error al enviar reseña:",err);
+      msg.textContent = t("failed") + " " + (err.message || "");
     } finally {
       submit.disabled = false;
     }
@@ -891,101 +790,211 @@ function makeReviewForm(business) {
   return f;
 }
 
-/* TARJETAS DE NEGOCIOS */
-function renderBusiness(b) {
-  const card = node("article", "business-card");
-  const top = node("div", "business-top");
+/* Quejas: el público solo ve las que tengan status=published.
+   Las respuestas se muestran si existen en business_response. */
+function makeComplaintSection(business) {
+  const section = node("section","details");
+  section.append(
+    node("h3","",t("complaints")),
+    node("p","empty",t("complaintIntro"))
+  );
 
+  const status = node("p","empty",t("complaintLoading"));
+  const list = node("div","");
+  section.append(status,list);
+
+  async function loadPublicComplaints() {
+    list.replaceChildren();
+    status.textContent = t("complaintLoading");
+
+    try {
+      const params = new URLSearchParams({
+        select:"id,business_id,complaint,original_language,status,business_response,created_at",
+        business_id:"eq." + business.id,
+        status:"eq.published",
+        order:"created_at.desc",
+        limit:"50"
+      });
+
+      const rows = await api("complaints?" + params);
+      if (!Array.isArray(rows)) throw new Error("Respuesta inesperada");
+
+      status.textContent = "";
+
+      if (!rows.length) {
+        list.append(node("p","empty",t("complaintNone")));
+        return;
+      }
+
+      rows.forEach(item => {
+        const card = node("article","review");
+        card.append(
+          node("div","category",t("complaintPublic")),
+          node("p","",item.complaint || ""),
+          node("div","muted",t("original") + ": " + (item.original_language || "und"))
+        );
+
+        if (item.business_response) {
+          card.append(
+            node("strong","",t("businessResponse")),
+            node("p","",item.business_response)
+          );
+        }
+
+        list.append(card);
+      });
+    } catch (err) {
+      console.error("Error al cargar quejas:",err);
+      status.textContent = t("complaintReadError");
+    }
+  }
+
+  const f = node("form","form");
+  f.append(node("h3","",t("complaintLabel")));
+
+  const label = node("label","field",t("complaintLabel"));
+  const textarea = node("textarea");
+  textarea.name = "complaint";
+  textarea.required = true;
+  textarea.minLength = 10;
+  textarea.maxLength = 5000;
+  textarea.rows = 5;
+  textarea.placeholder = t("complaintHint");
+  label.append(textarea);
+
+  f.append(label,node("p","muted",t("complaintPrivacy")));
+
+  const submit = node("button","primary",t("complaintSend"));
+  submit.type = "submit";
+  submit.style.marginTop = "12px";
+
+  const msg = node("p","form-message","");
+  msg.setAttribute("aria-live","polite");
+  f.append(submit,msg);
+  section.append(f);
+
+  f.addEventListener("submit",async e => {
+    e.preventDefault();
+    const complaint = textarea.value.trim();
+
+    if (!business.id || complaint.length < 10) {
+      msg.textContent = t("complaintTooShort");
+      return;
+    }
+
+    submit.disabled = true;
+    msg.textContent = t("complaintSending");
+
+    try {
+      await api("complaints",{
+        method:"POST",
+        headers:{Prefer:"return=minimal"},
+        body:JSON.stringify({
+          business_id:business.id,
+          complaint:complaint,
+          original_language:detectLanguage(complaint),
+          status:"pending"
+        })
+      });
+
+      f.reset();
+      msg.textContent = t("complaintSent");
+    } catch (err) {
+      console.error("Error al enviar queja:",err);
+      msg.textContent = t("complaintFailed") + " " + (err.message || "");
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  loadPublicComplaints();
+  return section;
+}
+
+/* Perfil de negocio */
+function renderBusiness(b) {
+  const card = node("article","business-card");
+  const top = node("div","business-top");
   const url = safeUrl(b.logo_url || b.image_url || b.photo_url);
 
   if (url) {
-    const img = node("img", "business-logo");
+    const img = node("img","business-logo");
     img.src = url;
     img.alt = b.name || "Business";
     img.loading = "lazy";
-
-    img.onerror = () => {
-      img.replaceWith(node("div", "business-logo", "✦"));
-    };
-
+    img.onerror = () => img.replaceWith(node("div","business-logo","✦"));
     top.append(img);
   } else {
-    top.append(node("div", "business-logo", "✦"));
+    top.append(node("div","business-logo","✦"));
   }
 
-  const heading = node("div", "business-heading");
+  const heading = node("div","business-heading");
   heading.append(
-    node("h2", "", b.name || "Negocio"),
-    node("div", "category", b.category || t("category"))
+    node("h2","",b.name || "Negocio"),
+    node("div","category",b.category || t("category"))
   );
-
   top.append(heading);
   card.append(top);
 
-  const rating = node("div", "rating-row");
+  const rating = node("div","rating-row");
   rating.append(
-    node("span", "stars", "☆☆☆☆☆"),
-    node("span", "rating-number", "—"),
-    node("span", "muted", t("noRating"))
+    node("span","stars","☆☆☆☆☆"),
+    node("span","rating-number","—"),
+    node("span","muted",t("noRating"))
   );
+  card.append(rating,node("div","divider"));
 
-  card.append(rating, node("div", "divider"));
-
-  const info = node("div", "info");
-
+  const info = node("div","info");
   info.append(
-    makeLine("⌖", b.address || t("address")),
-    makeLine("☎", b.phone || t("phone")),
-    makeLine("◷", b.hours || b.opening_hours || t("hours"))
+    makeLine("⌖",b.address || t("address")),
+    makeLine("☎",b.phone || t("phone")),
+    makeLine("◷",b.hours || b.opening_hours || t("hours"))
   );
 
   const website = safeUrl(b.website);
-
   if (website) {
-    const row = node("div", "info-line");
-    const a = node("a", "", website);
+    const row = node("div","info-line");
+    const a = node("a","",website);
     a.href = website;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     a.style.color = "#85baff";
-    row.append("↗ ", a);
+    row.append("↗ ",a);
     info.append(row);
   }
 
-  info.append(
-    node("p", "muted", b.description || t("description"))
-  );
-
+  info.append(node("p","muted",b.description || t("description")));
   card.append(info);
 
-  const stats = node("div", "stats");
+  const stats = node("div","stats");
   stats.append(
-    makeStat("—", t("score")),
-    makeStat("—", t("count")),
-    makeStat("—", t("trends"))
+    makeStat("—",t("score")),
+    makeStat("—",t("count")),
+    makeStat("—",t("trends"))
   );
-
   card.append(stats);
 
-  const actions = node("div", "actions");
-  const profile = node("button", "primary", t("profile"));
-  const reviewsBtn = node("button", "secondary", t("reviews"));
-
+  const actions = node("div","actions");
+  const profile = node("button","primary",t("profile"));
+  const reviewsBtn = node("button","secondary",t("reviews"));
   profile.type = "button";
   reviewsBtn.type = "button";
-
-  actions.append(profile, reviewsBtn);
+  actions.append(profile,reviewsBtn);
   card.append(actions);
 
-  const details = node("section", "details");
+  const details = node("section","details");
   details.hidden = true;
 
-  details.append(node("h3", "", t("reviews")));
+  const reviewStatus = node("p","empty",t("loading"));
+  const reviewList = node("div","");
 
-  const status = node("p", "empty", t("loading"));
-  const list = node("div", "");
-
-  details.append(status, list, makeReviewForm(b));
+  details.append(
+    node("h3","",t("reviews")),
+    reviewStatus,
+    reviewList,
+    makeReviewForm(b),
+    makeComplaintSection(b)
+  );
   card.append(details);
 
   let loaded = false;
@@ -996,11 +1005,11 @@ function renderBusiness(b) {
 
     if (!loaded) {
       loaded = true;
-      await loadReviews(b, list, status, stats, rating);
+      await loadReviews(b,reviewList,reviewStatus,stats,rating);
     }
   }
 
-  profile.addEventListener("click", async () => {
+  profile.addEventListener("click",async () => {
     if (details.hidden) {
       await openDetails();
     } else {
@@ -1009,21 +1018,134 @@ function renderBusiness(b) {
     }
   });
 
-  reviewsBtn.addEventListener("click", async () => {
+  reviewsBtn.addEventListener("click",async () => {
     await openDetails();
-    details.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest"
-    });
+    details.scrollIntoView({behavior:"smooth",block:"nearest"});
   });
 
   return card;
 }
 
-/* BÚSQUEDA DE NEGOCIOS */
-form.addEventListener("submit", async e => {
-  e.preventDefault();
+/* Formulario comunitario: propuestas enviadas como pending. */
+function renderCommunityForm(type) {
+  proposalType = type;
+  const wrap = $("communityFormWrap");
+  wrap.hidden = false;
 
+  $("addBusinessChoice").setAttribute("aria-expanded",String(type === "business"));
+  $("addProChoice").setAttribute("aria-expanded",String(type === "professional"));
+
+  const f = node("form","form community-form");
+  f.append(
+    node("h3","",t("submitBusinessTitle")),
+    node("p","empty",t("proposalNotice"))
+  );
+
+  const grid = node("div","form-grid");
+
+  function addField(labelText,name,kind,placeholder,full=false,required=false) {
+    const label = node("label","field" + (full ? " full" : ""),labelText);
+    let el;
+
+    if (kind === "select") {
+      el = node("select");
+      el.required = required;
+      el.append(new Option(t("chooseCategory"),""));
+      const categories = type === "business" ? t("businessCategories") : t("proCategories");
+      categories.forEach(c => el.append(new Option(c,c)));
+    } else if (kind === "textarea") {
+      el = node("textarea");
+      el.rows = 3;
+      el.maxLength = 1500;
+      el.placeholder = placeholder;
+    } else {
+      el = node("input");
+      el.type = "text";
+      el.maxLength = name === "name" ? 120 : 250;
+      el.placeholder = placeholder;
+      el.required = required;
+    }
+
+    el.name = name;
+    label.append(el);
+    grid.append(label);
+  }
+
+  addField(t("formName"),"name","text",t("formNameHint"),true,true);
+  addField(t("formCategory"),"category","select","",false,true);
+  addField(t("formAddress"),"address","text",t("formAddressHint"));
+  addField(t("formCity"),"city","text",t("formCityHint"),false,true);
+  addField(t("formZip"),"zip","text","90001");
+  addField(t("formPhone"),"phone","text",t("formPhoneHint"));
+  addField(t("formHours"),"hours","text",t("formHoursHint"));
+  addField(t("formDescription"),"description","textarea",t("formDescriptionHint"),true);
+  f.append(grid);
+
+  const submit = node("button","primary",t("sendProposal"));
+  submit.type = "submit";
+  submit.style.marginTop = "14px";
+  submit.style.width = "100%";
+
+  const msg = node("p","form-message","");
+  msg.setAttribute("aria-live","polite");
+  f.append(submit,msg);
+  wrap.replaceChildren(f);
+
+  f.addEventListener("submit",async e => {
+    e.preventDefault();
+    if (!f.reportValidity()) return;
+
+    const fd = new FormData(f);
+    const name = String(fd.get("name") || "").trim();
+    const category = String(fd.get("category") || "").trim();
+    const city = String(fd.get("city") || "").trim();
+
+    if (!name || !category || !city) {
+      msg.textContent = t("proposalRequired");
+      return;
+    }
+
+    submit.disabled = true;
+    msg.textContent = lang === "es" ? "Enviando propuesta…" : "Submitting suggestion…";
+
+    try {
+      await api("businesses",{
+        method:"POST",
+        headers:{Prefer:"return=minimal"},
+        body:JSON.stringify({
+          name,
+          category:type === "professional"
+            ? (lang === "es" ? "Profesional / servicio: " : "Professional / service: ") + category
+            : category,
+          address:String(fd.get("address") || "").trim() || null,
+          city,
+          zip:String(fd.get("zip") || "").trim() || null,
+          phone:String(fd.get("phone") || "").trim() || null,
+          hours:String(fd.get("hours") || "").trim() || null,
+          description:String(fd.get("description") || "").trim() || null,
+          status:"pending"
+        })
+      });
+
+      f.reset();
+      msg.textContent = t("proposalPending");
+    } catch (err) {
+      console.error("Error al proponer negocio:",err);
+      msg.textContent = t("proposalFailed") + " " + (err.message || "");
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  wrap.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+$("addBusinessChoice").addEventListener("click",() => renderCommunityForm("business"));
+$("addProChoice").addEventListener("click",() => renderCommunityForm("professional"));
+
+/* Buscador */
+form.addEventListener("submit",async e => {
+  e.preventDefault();
   const query = input.value.trim();
 
   if (!query) {
@@ -1037,13 +1159,14 @@ form.addEventListener("submit", async e => {
   searchButton.disabled = true;
 
   try {
-    const p = new URLSearchParams({
-      select: "*",
-      name: "ilike.*" + query + "*",
-      limit: "20"
+    const params = new URLSearchParams({
+      select:"*",
+      name:"ilike.*" + query.replace(/[%_]/g,"") + "*",
+      status:"eq.published",
+      limit:"20"
     });
 
-    const data = await api("businesses?" + p);
+    const data = await api("businesses?" + params);
 
     if (!Array.isArray(data) || !data.length) {
       notice.textContent = t("notfound");
@@ -1051,14 +1174,11 @@ form.addEventListener("submit", async e => {
     }
 
     lastBusinesses = data;
-    resultsBox.replaceChildren(
-      ...data.map(renderBusiness)
-    );
-
+    resultsBox.replaceChildren(...data.map(renderBusiness));
     notice.textContent = data.length + " " + t("found");
   } catch (err) {
-    console.error("Error en la búsqueda:", err);
-    notice.textContent = t("network");
+    console.error("Error en búsqueda:",err);
+    notice.textContent = t("network") + " " + (err.message || "");
   } finally {
     searchButton.disabled = false;
   }
