@@ -1185,6 +1185,41 @@ form.addEventListener("submit",async e => {
 });
 
 setLanguage("es");
+  loadApprovedBusinesses();
+  async function loadApprovedBusinesses() {
+resultsBox.replaceChildren();
+lastBusinesses = [];
+
+notice.textContent = lang === "es"
+? "Cargando negocios aprobados..."
+: "Loading approved businesses...";
+
+try {
+const params = new URLSearchParams({
+select: "*",
+status: "eq.approved",
+limit: "20"
+});
+
+const data = await api("businesses?" + params);  
+
+if (!Array.isArray(data) || data.length === 0) {  
+  notice.textContent = lang === "es"  
+    ? "Todavía no hay negocios aprobados para mostrar."  
+    : "There are no approved businesses to display yet.";  
+  return;  
+}  
+
+lastBusinesses = data;  
+resultsBox.replaceChildren(...data.map(renderBusiness));  
+
+notice.textContent = data.length + " " + t("found");
+
+} catch (err) {
+console.error("Error al cargar negocios:", err);
+notice.textContent = t("network");
+}
+}
 </script>
 </body>
 </html>
