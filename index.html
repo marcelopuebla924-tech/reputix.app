@@ -419,7 +419,7 @@ es: {
   businessCategories:["Restaurante o cafetería","Tienda o supermercado","Smoke shop","Ropa y accesorios","Otro comercio"],
   proCategories:["Plomero","Electricista","Mecánico","Construcción","Pintor","Contratista","Limpieza","Otro servicio"],
   proposalRequired:"Completa el nombre, la categoría y la ciudad.",
-  proposalNotice:"Los datos serán revisados antes de publicarse."
+  proposalNotice:"Los negocios se publican al enviarse; asegúrate de que los datos sean correctos."
 },
 en: {
   pill:"✦ A new way to trust",
@@ -478,7 +478,7 @@ en: {
   businessCategories:["Restaurant or cafe","Store or supermarket","Smoke shop","Clothing and accessories","Other business"],
   proCategories:["Plumber","Electrician","Mechanic","Construction","Painter","Contractor","Cleaning","Other service"],
   proposalRequired:"Enter the name, category, and city.",
-  proposalNotice:"Submissions are reviewed before publication."
+  proposalNotice:"Businesses are published when submitted; please make sure the details are accurate."
 }
 };
 
@@ -1123,12 +1123,15 @@ function renderCommunityForm(type) {
           phone:String(fd.get("phone") || "").trim() || null,
           hours:String(fd.get("hours") || "").trim() || null,
           description:String(fd.get("description") || "").trim() || null,
-          status:"pending"
+          status:"approved"
         })
       });
 
       f.reset();
-      msg.textContent = t("proposalPending");
+      msg.textContent = lang === "es"
+        ? "¡Negocio registrado! Ya puede aparecer en las búsquedas."
+        : "Business registered! It can now appear in search results.";
+      await loadApprovedBusinesses();
     } catch (err) {
       console.error("Error al proponer negocio:",err);
       msg.textContent = t("proposalFailed") + " " + (err.message || "");
@@ -1185,8 +1188,9 @@ form.addEventListener("submit",async e => {
 });
 
 setLanguage("es");
-  loadApprovedBusinesses();
-  async function loadApprovedBusinesses() {
+loadApprovedBusinesses();
+
+async function loadApprovedBusinesses() {
 resultsBox.replaceChildren();
 lastBusinesses = [];
 
