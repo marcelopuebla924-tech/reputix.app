@@ -39,6 +39,28 @@ header {
   background:rgba(3,9,22,.86);
   box-shadow:0 8px 35px rgba(0,0,0,.25);
 }
+.header-actions { display:flex;align-items:center;gap:10px; }
+.account-access {
+  padding:10px 15px;
+  border:1px solid #168fe0;
+  border-radius:22px;
+  color:#fff;
+  background:linear-gradient(135deg,#087fdc,#08b6ee);
+  font-size:13px;
+  font-weight:700;
+  box-shadow:0 0 15px rgba(0,153,255,.22);
+  white-space:nowrap;
+}
+.account-access:hover { filter:brightness(1.12); }
+@media(max-width:520px) {
+  header { padding:12px 3%; }
+  .logo { font-size:23px; }
+  .logo::before { width:29px;height:29px;font-size:18px;margin-right:6px; }
+  .tag { font-size:10px; }
+  .header-actions { gap:6px; }
+  .account-access { padding:9px 10px;font-size:11px; }
+  #language { font-size:12px;padding:9px 6px; }
+}
 .logo { font-size:30px;font-weight:900;letter-spacing:-1.5px;text-shadow:0 0 20px rgba(0,153,255,.25); }
 .logo span,.accent { color:var(--blue); }
 .logo::before {
@@ -722,10 +744,13 @@ footer {
     <div class="logo">REPUTI<span>X</span></div>
     <div class="tag" id="tagline">Opiniones reales. Soluciones reales.</div>
   </div>
-  <select id="language" aria-label="Language" style="width:auto">
-    <option value="es">Español</option>
-    <option value="en">English</option>
-  </select>
+  <div class="header-actions">
+    <button class="account-access" type="button" id="accountAccessBtn">Registrarse / Iniciar sesión</button>
+    <select id="language" aria-label="Language" style="width:auto">
+      <option value="es">Español</option>
+      <option value="en">English</option>
+    </select>
+  </div>
 </header>
 
 <main>
@@ -1021,6 +1046,9 @@ function setLanguage(value) {
   $("tagline").textContent = lang === "es"
     ? "Opiniones reales. Soluciones reales."
     : "Real reviews. Real solutions.";
+  $("accountAccessBtn").textContent = lang === "es"
+    ? "Registrarse / Iniciar sesión"
+    : "Sign up / Sign in";
   $("googleDiscoveryTitle").textContent = lang === "es"
     ? "Próximamente: descubrimiento con Google"
     : "Coming soon: Google business discovery";
@@ -1061,6 +1089,14 @@ function setLanguage(value) {
   }
   if (!$("communityFormWrap").hidden) renderCommunityForm(proposalType);
 }
+
+$("accountAccessBtn").addEventListener("click",() => {
+  $("ownerArea").scrollIntoView({behavior:"smooth",block:"start"});
+  window.setTimeout(() => {
+    if(!ownerSession) $("ownerEmail").focus({preventScroll:true});
+    else $("ownerDashboard").scrollIntoView({behavior:"smooth",block:"center"});
+  },450);
+});
 
 $("language").addEventListener("change",e => {
   setLanguage(e.target.value);
