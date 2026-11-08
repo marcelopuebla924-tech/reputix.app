@@ -704,6 +704,13 @@ footer {
 .owner-metric strong {display:block;font-size:21px;color:#55c5ff;}
 .owner-metric span {font-size:10px;color:var(--muted);}
 .owner-insight {font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px;}
+.admin-claim {padding:13px;border:1px solid #244668;border-radius:12px;background:#071426;margin:10px 0;}
+.admin-claim-title {font-weight:800;font-size:13px;}
+.admin-claim-meta {font-size:10px;color:var(--muted);margin:5px 0;word-break:break-word;}
+.admin-claim-evidence {font-size:12px;line-height:1.5;margin:8px 0;}
+.admin-claim-actions {display:flex;gap:8px;}
+.admin-claim-actions button {flex:1;}
+.admin-warning {font-size:11px;line-height:1.5;color:#ffd78a;margin:10px 0;}
 @media(max-width:600px){.owner-area{padding:0 12px}.owner-panel{padding:14px}.owner-grid{grid-template-columns:1fr}.owner-field.full{grid-column:auto}}
 
 </style>
@@ -831,6 +838,12 @@ footer {
         <div id="ownerDashboardList"></div>
         <p class="owner-insight" id="ownerDashboardNote">Los datos se calculan únicamente con opiniones publicadas. Los patrones por horario requieren un mínimo de 3 opiniones en cada franja.</p>
       </div>
+      <section id="adminClaimsPanel" hidden>
+        <div class="divider"></div>
+        <h3 id="adminClaimsTitle">🛡️ Revisión administrativa</h3>
+        <p class="admin-warning" id="adminClaimsWarning">Solo verifica una solicitud cuando hayas comprobado la identidad y una prueba válida de relación con el negocio. No aceptes únicamente una declaración escrita.</p>
+        <div id="adminClaimsList"></div>
+      </section>
     </div>
   </section>
 </section>
@@ -1029,6 +1042,8 @@ function setLanguage(value) {
   $("claimEvidenceLabel").textContent = lang === "es" ? "Prueba de relación con el negocio" : "Proof of relationship to the business";
   $("claimSubmit").textContent = lang === "es" ? "Enviar solicitud" : "Submit request";
   $("dashboardTitle").textContent = lang === "es" ? "Tus estadísticas" : "Your analytics";
+  $("adminClaimsTitle").textContent = lang === "es" ? "🛡️ Revisión administrativa" : "🛡️ Admin review";
+  $("adminClaimsWarning").textContent = lang === "es" ? "Verifica una solicitud solo después de comprobar la identidad y una prueba válida de relación con el negocio. Una declaración escrita por sí sola no es suficiente." : "Verify a claim only after checking identity and valid proof of relationship to the business. A written statement alone is not sufficient.";
   $("ownerDashboardNote").textContent = lang === "es" ? "Los datos se calculan únicamente con opiniones publicadas. Los patrones por horario requieren un mínimo de 3 opiniones en cada franja." : "Data uses published reviews only. Time-of-day patterns require at least 3 reviews per time slot.";
   input.placeholder = t("placeholder");
   searchButton.textContent = t("search");
@@ -2076,7 +2091,14 @@ function ownerSetSession(session) {
   $("ownerSignUp").hidden=!!session;
   $("ownerSignOut").hidden=!session;
   $("ownerClaimArea").hidden=!session;
-  if(session) loadOwnerClaims();
+  const isAdmin = !!(session?.user?.app_metadata?.reputix_role === "admin");
+  $("adminClaimsPanel").hidden = !isAdmin;
+  if(session) {
+    loadOwnerClaims();
+    if(isAdmin) loadAdminClaims();
+  } else {
+    $("adminClaimsList").replaceChildren();
+  }
 }
 async function ownerSignIn() {
   $("ownerAuthMessage").textContent=ownerText("Ingresando…","Signing in…");
@@ -2121,6 +2143,58 @@ async function loadOwnerClaims() {
     $("ownerClaimMessage").textContent=ownerText("No se pudieron cargar tus solicitudes. Vuelve a iniciar sesión.","Could not load your claims. Please sign in again.");
   }
 }
+
+async function loadAdminClaims() {
+  const list=$("adminClaimsList");
+  list.replaceChildren();
+  try {
+    const claims=await api("business_owner_claims?select=id,business_id,user_id,evidence_note,created_at,status&status=eq.pending&order=created_at.asc");
+    if(!Array.isArray(claims)||!claims.length) {
+      list.append(node("p","insight-empty",ownerText("No hay solicitudes pendientes.","No pending ownership claims.")));
+      return;
+    }
+    for(const claim of claims) {
+      const businesses=await api("businesses?select=id,name,address,city&id=eq."+encodeURIComponent(claim.business_id)+"&limit=1");
+      const business=businesses?.[0];
+      const card=node("article","admin-claim");
+      card.append(node("div","admin-claim-title",business?.name || ownerText("Negocio no disponible","Business unavailable")));
+      card.append(node("div","admin-claim-meta",ownerText("ID de usuario: ","User ID: ")+claim.user_id));
+      card.append(node("div","admin-claim-meta",ownerText("Solicitud: ","Submitted: ")+new Date(claim.created_at).toLocaleString()));
+      if(business?.address||business?.city) card.append(node("div","admin-claim-meta",[business.address,business.city].filter(Boolean).join(" · ")));
+      card.append(node("p","admin-claim-evidence",claim.evidence_note || ownerText("Sin detalles adicionales.","No additional details.")));
+      const actions=node("div","admin-claim-actions");
+      const approve=node("button","primary",ownerText("Verificar propietario","Verify owner"));
+      const reject=node("button","secondary",ownerText("Rechazar","Reject"));
+      approve.type=reject.type="button";
+      approve.addEventListener("click",()=>reviewOwnerClaim(claim.id,"verified",approve,reject));
+      reject.addEventListener("click",()=>reviewOwnerClaim(claim.id,"rejected",approve,reject));
+      actions.append(approve,reject);card.append(actions);list.append(card);
+    }
+  } catch(err) {
+    console.error("Admin claims:",err);
+    list.append(node("p","insight-empty",ownerText("No fue posible cargar solicitudes. Confirma que la sesión tenga el rol administrativo autorizado.","Could not load claims. Confirm the session has the authorized admin role.")));
+  }
+}
+async function reviewOwnerClaim(id,status,approve,reject) {
+  if(ownerSession?.user?.app_metadata?.reputix_role!=="admin") return;
+  const label=status==="verified"
+    ? ownerText("¿Confirmaste identidad y documentos del propietario?","Have you verified the owner's identity and documents?")
+    : ownerText("¿Quieres rechazar esta solicitud?","Do you want to reject this claim?");
+  if(!window.confirm(label)) return;
+  approve.disabled=reject.disabled=true;
+  try {
+    await api("business_owner_claims?id=eq."+encodeURIComponent(id),{
+      method:"PATCH",
+      headers:{Prefer:"return=minimal"},
+      body:JSON.stringify({status,reviewed_at:new Date().toISOString()})
+    });
+    await loadAdminClaims();
+  } catch(err) {
+    window.alert(ownerText("No se pudo actualizar. Si ya existe otro propietario verificado, primero debe resolverse esa solicitud.","Could not update. If another owner is already verified, that claim must be resolved first."));
+    approve.disabled=reject.disabled=false;
+  }
+}
+
 async function loadOwnerDashboard() {
   const wrap=$("ownerDashboard"),list=$("ownerDashboardList");
   list.replaceChildren();
