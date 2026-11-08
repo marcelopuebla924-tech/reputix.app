@@ -477,6 +477,41 @@ footer {
 }
 .business-tile strong,.business-tile span { position:relative;z-index:1; }
 
+
+/* Strong mobile layout overrides */
+#topDiscoveryRail .business-tile,
+#bottomDiscoveryRail .business-tile {
+  flex:0 0 190px !important;
+  width:190px !important;
+  min-height:96px !important;
+  height:96px !important;
+  max-height:96px !important;
+}
+#topDiscoveryRail,#bottomDiscoveryRail {
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+  scrollbar-width:none;
+}
+#topDiscoveryRail::-webkit-scrollbar,#bottomDiscoveryRail::-webkit-scrollbar { display:none; }
+#results[hidden] { display:none !important; }
+@media(max-width:540px) {
+  #topDiscoveryRail .business-tile,
+  #bottomDiscoveryRail .business-tile {
+    flex:0 0 164px !important;
+    width:164px !important;
+    min-height:82px !important;
+    height:82px !important;
+    max-height:82px !important;
+    padding:8px !important;
+  }
+  #topDiscoveryRail .business-tile strong,
+  #bottomDiscoveryRail .business-tile strong { font-size:12px !important; }
+  #topDiscoveryRail .business-tile span,
+  #bottomDiscoveryRail .business-tile span { font-size:9px !important; }
+}
+
 </style>
 </head>
 
@@ -1583,8 +1618,8 @@ form.addEventListener("submit",async e => {
     return;
   }
 
+  resultsBox.hidden = false;
   resultsBox.replaceChildren();
-  lastBusinesses = [];
   notice.textContent = t("searching");
   searchButton.disabled = true;
 
@@ -1604,6 +1639,7 @@ form.addEventListener("submit",async e => {
     }
 
     lastBusinesses = data;
+    resultsBox.hidden = false;
     resultsBox.replaceChildren(...data.map(renderBusiness));
     renderDiscoveryRails();
     notice.textContent = data.length + " " + t("found");
@@ -1643,10 +1679,13 @@ if (!Array.isArray(data) || data.length === 0) {
 }  
 
 lastBusinesses = data;
-resultsBox.replaceChildren(...data.map(renderBusiness));
+resultsBox.replaceChildren();
+resultsBox.hidden = true;
 startDiscoveryRotation();
 
-notice.textContent = data.length + " " + t("found");
+notice.textContent = lang === "es"
+  ? "Descubre negocios aprobados en Reputix."
+  : "Discover approved businesses on Reputix.";
 
 } catch (err) {
 console.error("Error al cargar negocios:", err);
