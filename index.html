@@ -409,6 +409,53 @@ footer {
   .google-discovery { border-radius:17px;align-items:flex-start;text-align:left; }
   .business-tile { min-height:100px; }
 }
+
+/* Compact Reputix discovery showcase */
+.hero { max-width:1500px; padding:14px 18px 24px; }
+.hero-layout { grid-template-columns:minmax(145px,1fr) minmax(390px,2.9fr) minmax(145px,1fr); gap:14px; }
+.hero-center { padding:16px 10px 8px; border-radius:28px; }
+.hero-center h1 { margin:8px 0 4px; font-size:clamp(54px,7vw,92px); letter-spacing:-4px; }
+.hero-center .intro { margin:8px auto 14px; font-size:clamp(15px,1.6vw,20px); }
+.edge-rail { gap:10px; }
+.business-tile { min-height:105px; padding:10px 11px; border-radius:16px; }
+.business-tile strong { font-size:14px; }
+.business-tile span { font-size:10px; margin-top:4px; }
+.discovery-strip { gap:11px; margin:8px auto; padding:3px 2px 9px; }
+.discovery-strip .business-tile { min-height:105px; }
+.google-discovery { margin:12px auto 6px; padding:9px 15px; font-size:12px; }
+.search { margin:16px auto 7px; }
+.search input { padding:12px 16px; font-size:15px; }
+.search button { padding:11px 20px; }
+.carousel-status { margin-top:7px; }
+@media(max-width:900px) {
+  .hero { padding:10px 14px 22px; }
+  .hero-layout { grid-template-columns:1fr; gap:6px; }
+  .edge-rail { display:none; }
+  .hero-center { padding:12px 5px 5px; }
+  .hero-center h1 { font-size:clamp(48px,9vw,70px); }
+  .discovery-strip { gap:9px; margin:6px auto; }
+  .discovery-strip .business-tile { flex:0 0 30vw; min-height:96px; }
+}
+@media(max-width:540px) {
+  .hero { padding:8px 10px 18px; }
+  .hero-center { padding:10px 0 4px; }
+  .hero-center h1 { font-size:46px; letter-spacing:-2.5px; margin:6px 0 2px; }
+  .hero-center .intro { font-size:14px;line-height:1.45;margin:6px auto 10px; }
+  .discovery-strip { margin:5px -10px; padding:4px 10px 8px; }
+  .discovery-strip .business-tile { flex:0 0 42vw; min-height:82px; padding:8px 9px; border-radius:13px; }
+  .business-tile strong { font-size:12px; }
+  .business-tile span { font-size:9px; }
+  .search { margin:12px auto 6px; padding:4px; }
+  .search input { font-size:13px; padding:10px 8px; }
+  .search button { padding:10px 13px; font-size:12px; }
+  .google-discovery { margin:10px auto 4px; padding:9px 10px; font-size:11px; line-height:1.35; }
+  .google-mark { font-size:21px; }
+  .notice { font-size:11px; margin:6px 0; }
+  .results { margin:12px -10px; padding:4px 10px 10px; gap:11px; }
+  .business-card { flex-basis:min(82vw,320px); }
+  .carousel-status { font-size:10px; }
+}
+
 </style>
 </head>
 
@@ -744,6 +791,15 @@ function makeDiscoveryTile(business) {
   const title = node("strong","",business.name || "Negocio");
   const category = node("span","tile-category",business.category || "Categoría");
   const place = [business.city,business.zip].filter(Boolean).join(" · ") || business.address || "En Reputix";
+  const picture = safeUrl(business.logo_url || business.image_url || business.photo_url);
+  if (picture) {
+    const img = node("img","tile-photo");
+    img.src = picture;
+    img.alt = "";
+    img.loading = "lazy";
+    img.onerror = () => img.remove();
+    tile.append(img);
+  }
   tile.append(title,category,node("span","",place));
   tile.setAttribute("role","button");
   tile.tabIndex = 0;
