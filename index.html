@@ -439,8 +439,8 @@ footer {
       </form>
       <div class="google-discovery">
         <span class="google-mark">G</span>
-        <strong>Google nos ayudará a descubrir más negocios</strong>
-        <span>Las opiniones y calificaciones serán propias de Reputix.</span>
+        <strong id="googleDiscoveryTitle">Próximamente: descubrimiento con Google</strong>
+        <span id="googleDiscoveryNote">Google ayudará a encontrar negocios; las opiniones y calificaciones serán propias de Reputix.</span>
       </div>
       <p class="notice" id="notice" aria-live="polite">Busca un negocio para ver sus resultados.</p>
       <section class="results" id="results"></section>
@@ -508,10 +508,10 @@ const searchButton = $("searchButton");
 
 const translations = {
 es: {
-  pill:"✦ Una nueva forma de confiar",
-  headline:'Tu opinión puede<br>hacer la <span class="accent">diferencia.</span>',
-  intro:"Descubre negocios, consulta experiencias y encuentra información útil para decidir con confianza.",
-  placeholder:"Busca un negocio por nombre...",search:"Buscar negocio",
+  pill:"✦ Opiniones reales. Soluciones reales.",
+  headline:'<span class="accent">REPUTIX</span>',
+  intro:"Descubre, califica y recomienda los mejores negocios de tu ciudad.",
+  placeholder:"Busca negocios, servicios o categorías...",search:"Buscar",
   initial:"Busca un negocio para ver sus resultados.",
   f1:"Encuentra negocios",fd1:"Consulta información de negocios en un solo lugar.",
   f2:"Opiniones auténticas",fd2:"Calificaciones basadas en opiniones disponibles.",
@@ -568,13 +568,13 @@ es: {
   businessCategories:["Restaurante o cafetería","Tienda o supermercado","Smoke shop","Ropa y accesorios","Otro comercio"],
   proCategories:["Plomero","Electricista","Mecánico","Construcción","Pintor","Contratista","Limpieza","Otro servicio"],
   proposalRequired:"Completa el nombre, la categoría y la ciudad.",
-  proposalNotice:"Los negocios se publican al enviarse; asegúrate de que los datos sean correctos."
+  proposalNotice:"Tu propuesta será revisada y el negocio aparecerá cuando sea aprobado."
 },
 en: {
-  pill:"✦ A new way to trust",
-  headline:'Your opinion can<br>make a <span class="accent">difference.</span>',
-  intro:"Discover businesses, explore experiences, and make more confident decisions.",
-  placeholder:"Search for a business by name...",search:"Search businesses",
+  pill:"✦ Real reviews. Real solutions.",
+  headline:'<span class="accent">REPUTIX</span>',
+  intro:"Discover, rate, and recommend the best businesses in your city.",
+  placeholder:"Search businesses, services, or categories...",search:"Search",
   initial:"Search for a business to see results.",
   f1:"Find businesses",fd1:"Explore business information in one place.",
   f2:"Authentic reviews",fd2:"Ratings based on available reviews.",
@@ -656,6 +656,12 @@ function setLanguage(value) {
   $("tagline").textContent = lang === "es"
     ? "Opiniones reales. Soluciones reales."
     : "Real reviews. Real solutions.";
+  $("googleDiscoveryTitle").textContent = lang === "es"
+    ? "Próximamente: descubrimiento con Google"
+    : "Coming soon: Google business discovery";
+  $("googleDiscoveryNote").textContent = lang === "es"
+    ? "Google ayudará a encontrar negocios; las opiniones y calificaciones serán propias de Reputix."
+    : "Google will help discover businesses; reviews and ratings will belong to Reputix.";
   input.placeholder = t("placeholder");
   searchButton.textContent = t("search");
 
