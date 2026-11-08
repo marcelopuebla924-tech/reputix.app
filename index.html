@@ -671,7 +671,7 @@ async function loadApprovedBusinessPhotos(businessId,container) {
       const signed = data.signedURL || data.signedUrl;
       if (!signed) continue;
       const img = node("img","business-photo");
-      img.src = /^https?:\\/\\//i.test(signed)
+      img.src = (signed.startsWith("https://") || signed.startsWith("http://"))
         ? signed
         : SUPABASE_URL + "/storage/v1" + (signed.startsWith("/") ? signed : "/" + signed);
       img.alt = lang === "es" ? "Foto aprobada del negocio" : "Approved business photo";
