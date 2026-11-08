@@ -646,7 +646,17 @@ footer {
 
 
 /* Reputix live reputation and insight panels */
-.feature { cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s; }
+.feature {
+  appearance:none;
+  -webkit-appearance:none;
+  width:100%;
+  min-width:0;
+  color:var(--light);
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+}
 .feature:hover,.feature:focus-visible { transform:translateY(-3px);border-color:#168ed8;box-shadow:0 0 20px rgba(0,153,255,.15);outline:none; }
 .insights-wrap { max-width:1120px;margin:22px auto 30px;padding:0 18px; }
 .insight-panel { padding:19px;border:1px solid #174d83;border-radius:18px;background:linear-gradient(145deg,#0c2038,#061326);margin-bottom:14px; }
