@@ -512,6 +512,103 @@ footer {
   #bottomDiscoveryRail .business-tile span { font-size:9px !important; }
 }
 
+
+/* Community and bottom section redesign */
+.community {
+  max-width:1120px;
+  margin:24px auto 28px;
+  padding:0 18px;
+}
+.community-panel {
+  padding:22px;
+  border-radius:22px;
+  background:linear-gradient(145deg,rgba(13,31,55,.98),rgba(5,16,31,.98));
+  border-color:rgba(27,139,220,.42);
+  box-shadow:0 12px 36px rgba(0,0,0,.18),0 0 22px rgba(0,120,220,.07);
+}
+.community-panel h2 { margin:0 0 8px;font-size:clamp(21px,3vw,28px); }
+.community-intro { margin:0;max-width:650px;font-size:14px; }
+.community-options {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:16px;
+}
+.community-option {
+  position:relative;
+  min-width:0;
+  min-height:132px;
+  padding:17px;
+  border-radius:17px;
+  background:linear-gradient(145deg,#0b1c32,#071426);
+  border-color:#1b4770;
+  box-shadow:inset 0 1px rgba(255,255,255,.025);
+  transition:border-color .2s,transform .2s,box-shadow .2s;
+}
+.community-option:hover,.community-option:focus-visible {
+  border-color:#18aaff;
+  transform:translateY(-2px);
+  box-shadow:0 0 18px rgba(0,155,255,.16);
+  outline:none;
+}
+.community-option[aria-expanded="true"] {
+  border-color:#14aaff;
+  background:linear-gradient(145deg,#0e2b4a,#08182c);
+  box-shadow:0 0 18px rgba(0,155,255,.18);
+}
+.community-option strong { margin:9px 0 5px;font-size:16px; }
+.community-option span:not(.option-action) { display:block;font-size:12px;line-height:1.45; }
+.community-option .option-action {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:13px;
+  padding-top:10px;
+  border-top:1px solid rgba(67,148,210,.22);
+  color:#62c8ff;
+  font-size:12px;
+  font-weight:700;
+}
+.features {
+  max-width:1120px;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin:26px auto 32px;
+  padding:0 18px;
+}
+.feature {
+  min-width:0;
+  padding:17px;
+  border-radius:17px;
+  background:linear-gradient(145deg,#0b1c32,#071426);
+  border-color:#1a3d60;
+}
+.feature > div { font-size:20px;margin-bottom:8px; }
+.feature h3 { margin:0 0 7px;font-size:15px;line-height:1.3; }
+.feature p { margin:0;font-size:12px;line-height:1.5; }
+footer {
+  padding:20px 16px 26px;
+  background:rgba(4,13,26,.78);
+  border-top:1px solid rgba(32,112,174,.3);
+}
+@media(max-width:600px) {
+  .community { margin:18px auto 22px;padding:0 14px; }
+  .community-panel { padding:17px;border-radius:18px; }
+  .community-panel h2 { font-size:21px; }
+  .community-intro { font-size:13px;line-height:1.5; }
+  .community-options { grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:13px; }
+  .community-option { min-height:136px;padding:12px 11px;border-radius:14px;font-size:13px; }
+  .community-option strong { font-size:14px;line-height:1.25; }
+  .community-option span:not(.option-action) { font-size:11px; }
+  .community-option .option-action { margin-top:10px;padding-top:8px;font-size:11px; }
+  .features { grid-template-columns:1fr;gap:9px;margin:20px auto 24px;padding:0 14px; }
+  .feature { display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:10px;align-items:center;padding:13px 15px; }
+  .feature > div { grid-row:1 / span 2;margin:0;font-size:21px; }
+  .feature h3 { font-size:14px;margin:0 0 3px; }
+  .feature p { font-size:11px;line-height:1.4; }
+  footer { font-size:11px;padding:17px 12px 22px; }
+}
+
 </style>
 </head>
 
@@ -564,10 +661,12 @@ footer {
       <button type="button" class="community-option" id="addBusinessChoice" aria-expanded="false">
         🏪 <strong id="addBusinessTitle">Agregar un negocio</strong>
         <span id="addBusinessDesc">Tiendas, restaurantes y comercios.</span>
+        <span class="option-action" id="addBusinessAction">Comenzar <span aria-hidden="true">→</span></span>
       </button>
       <button type="button" class="community-option" id="addProChoice" aria-expanded="false">
         🛠️ <strong id="addProTitle">Agregar un profesional</strong>
         <span id="addProDesc">Plomeros, mecánicos y otros servicios.</span>
+        <span class="option-action" id="addProAction">Comenzar <span aria-hidden="true">→</span></span>
       </button>
     </div>
     <div id="communityFormWrap" hidden></div>
@@ -765,6 +864,8 @@ function setLanguage(value) {
   $("googleDiscoveryNote").textContent = lang === "es"
     ? "Google ayudará a encontrar negocios; las opiniones y calificaciones serán propias de Reputix."
     : "Google will help discover businesses; reviews and ratings will belong to Reputix.";
+  $("addBusinessAction").innerHTML = lang === "es" ? 'Comenzar <span aria-hidden="true">→</span>' : 'Get started <span aria-hidden="true">→</span>';
+  $("addProAction").innerHTML = lang === "es" ? 'Comenzar <span aria-hidden="true">→</span>' : 'Get started <span aria-hidden="true">→</span>';
   input.placeholder = t("placeholder");
   searchButton.textContent = t("search");
 
