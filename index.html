@@ -609,6 +609,41 @@ footer {
   footer { font-size:11px;padding:17px 12px 22px; }
 }
 
+
+/* Force the two community actions to share one row on phones */
+.community-options {
+  display:flex !important;
+  flex-flow:row nowrap !important;
+  align-items:stretch;
+  gap:12px !important;
+}
+.community-options > .community-option {
+  display:flex;
+  flex:1 1 0 !important;
+  flex-direction:column;
+  width:50% !important;
+  min-width:0 !important;
+  max-width:50%;
+}
+.community-option .option-action {
+  display:flex !important;
+  visibility:visible !important;
+  margin-top:auto !important;
+  padding-top:12px !important;
+}
+@media(max-width:600px) {
+  .community { padding-left:12px;padding-right:12px; }
+  .community-panel { padding:15px 12px; }
+  .community-options { gap:8px !important; }
+  .community-options > .community-option {
+    min-height:142px;
+    padding:11px 9px;
+  }
+  .community-option strong { font-size:13px !important; }
+  .community-option span:not(.option-action) { font-size:10px !important; }
+  .community-option .option-action { font-size:10px !important; }
+}
+
 </style>
 </head>
 
