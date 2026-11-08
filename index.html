@@ -644,6 +644,39 @@ footer {
   .community-option .option-action { font-size:10px !important; }
 }
 
+
+/* Reputix live reputation and insight panels */
+.feature { cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s; }
+.feature:hover,.feature:focus-visible { transform:translateY(-3px);border-color:#168ed8;box-shadow:0 0 20px rgba(0,153,255,.15);outline:none; }
+.insights-wrap { max-width:1120px;margin:22px auto 30px;padding:0 18px; }
+.insight-panel { padding:19px;border:1px solid #174d83;border-radius:18px;background:linear-gradient(145deg,#0c2038,#061326);margin-bottom:14px; }
+.insight-panel h2 { margin:0 0 7px;font-size:20px; }
+.insight-subtitle { color:var(--muted);font-size:12px;line-height:1.5;margin:0 0 14px; }
+.ranking-list,.hourly-list { display:grid;gap:9px; }
+.ranking-item,.hourly-item { display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #1a3c5e;border-radius:12px;background:rgba(3,13,27,.65); }
+.ranking-position { color:#55c5ff;font-weight:900;font-size:17px; }
+.ranking-name { font-weight:700;font-size:13px; }
+.ranking-meta { color:var(--muted);font-size:10px;margin-top:3px; }
+.ranking-score { color:#ffd35a;font-weight:800;font-size:13px;white-space:nowrap; }
+.review-ticker { display:flex;gap:11px;overflow-x:auto;scroll-snap-type:x mandatory;padding:3px 2px 10px;scrollbar-width:thin; }
+.ticker-card { flex:0 0 min(78vw,300px);scroll-snap-align:start;padding:13px;border:1px solid #1b4a73;border-radius:14px;background:#071426; }
+.ticker-business { font-size:13px;font-weight:800; }
+.ticker-meta { color:#91b6d7;font-size:10px;margin:5px 0 8px; }
+.ticker-quote { color:#e5efff;font-size:12px;line-height:1.5; }
+.ticker-stars { color:#ffd15a;font-size:12px; }
+.insight-empty { color:var(--muted);font-size:12px;padding:10px 2px; }
+.hourly-item { grid-template-columns:minmax(0,1fr) auto; }
+.hourly-time { font-size:12px;font-weight:700; }
+.hourly-detail { font-size:10px;color:var(--muted);margin-top:3px; }
+.staff-field-note { color:var(--muted);font-size:10px;line-height:1.4;margin-top:4px; }
+@media(max-width:600px) {
+ .insights-wrap { padding:0 12px;margin:17px auto 22px; }
+ .insight-panel { padding:14px;border-radius:15px; }
+ .insight-panel h2 { font-size:17px; }
+ .ranking-item { padding:9px;grid-template-columns:27px minmax(0,1fr) auto; }
+ .ticker-card { flex-basis:78vw; }
+}
+
 </style>
 </head>
 
@@ -708,19 +741,32 @@ footer {
   </div>
 </section>
 
-<section class="features">
-  <article class="feature">
+<section class="features" aria-label="Herramientas de Reputix">
+  <button type="button" class="feature" id="featureFind">
     <div>🔎</div><h3 id="f1">Encuentra negocios</h3>
     <p id="fd1">Consulta información de negocios en un solo lugar.</p>
-  </article>
-  <article class="feature">
+  </button>
+  <button type="button" class="feature" id="featureReviews">
     <div>⭐</div><h3 id="f2">Opiniones auténticas</h3>
     <p id="fd2">Calificaciones basadas en opiniones disponibles.</p>
-  </article>
-  <article class="feature">
+  </button>
+  <button type="button" class="feature" id="featureStats">
     <div>📊</div><h3 id="f3">Estadísticas inteligentes</h3>
     <p id="fd3">Identifica tendencias a partir de opiniones reales.</p>
-  </article>
+  </button>
+</section>
+
+<section class="insights-wrap" id="reputixInsights">
+  <section class="insight-panel" id="weeklyRankingPanel">
+    <h2 id="weeklyTitle">🏆 Mejor calificados esta semana</h2>
+    <p class="insight-subtitle" id="weeklySubtitle">Negocios con al menos 5 opiniones publicadas durante esta semana. Ranking propio de Reputix.</p>
+    <div class="ranking-list" id="weeklyRankingList"><p class="insight-empty">Preparando estadísticas…</p></div>
+  </section>
+  <section class="insight-panel" id="reviewTickerPanel">
+    <h2 id="tickerTitle">💬 Lo que cuenta la comunidad</h2>
+    <p class="insight-subtitle" id="tickerSubtitle">Experiencias recientes compartidas en Reputix.</p>
+    <div class="review-ticker" id="reviewTicker"><p class="insight-empty">Cargando reseñas publicadas…</p></div>
+  </section>
 </section>
 </main>
 
@@ -918,7 +964,12 @@ function setLanguage(value) {
   if (!$("communityFormWrap").hidden) renderCommunityForm(proposalType);
 }
 
-$("language").addEventListener("change",e => setLanguage(e.target.value));
+$("language").addEventListener("change",e => {
+  setLanguage(e.target.value);
+  loadWeeklyRankings();
+  loadReviewTicker();
+});
+setupFeatureButtons();
 
 /* API REST DE SUPABASE */
 async function api(path, options = {}) {
@@ -1184,6 +1235,115 @@ function detectLanguage(text) {
   return es > en ? "es" : "en";
 }
 
+async function loadHourlyPatterns(business,list) {
+  list.replaceChildren();
+  try {
+    const params = new URLSearchParams({
+      select:"visit_hour,review_count,average_score,average_speed,average_service_quality,average_cleanliness",
+      business_id:"eq." + business.id,
+      order:"visit_hour.asc"
+    });
+    const rows = await api("business_hourly_patterns?" + params);
+    if (!Array.isArray(rows) || !rows.length) {
+      list.append(node("p","insight-empty",lang === "es"
+        ? "Aún no hay suficientes opiniones por horario para mostrar patrones."
+        : "Not enough reviews by time slot to show patterns yet."));
+      return;
+    }
+    rows.forEach(row => {
+      const item = node("div","hourly-item");
+      const hour = Number(row.visit_hour);
+      const time = (hour % 12 || 12) + ":00 " + (hour < 12 ? "AM" : "PM");
+      const left = node("div","");
+      left.append(node("div","hourly-time",time));
+      left.append(node("div","hourly-detail",(lang === "es" ? "Atención " : "Service ") + row.average_service_quality + "/5 · " +
+        (lang === "es" ? "Rapidez " : "Speed ") + row.average_speed + "/5 · " + row.review_count + (lang === "es" ? " opiniones" : " reviews")));
+      item.append(left,node("div","ranking-score",Number(row.average_score).toFixed(1) + " ★"));
+      list.append(item);
+    });
+  } catch(err) {
+    console.error("Error loading hourly patterns:",err);
+    list.append(node("p","insight-empty",lang === "es"
+      ? "No se pudieron cargar los patrones por horario."
+      : "Could not load hourly patterns."));
+  }
+}
+
+async function loadWeeklyRankings() {
+  const list = $("weeklyRankingList");
+  list.replaceChildren();
+  try {
+    const rows = await api("weekly_business_rankings?select=weekly_rank,business_id,business_name,category,city,review_count,average_score,positive_reviews&order=weekly_rank.asc&limit=10");
+    if (!Array.isArray(rows) || !rows.length) {
+      list.append(node("p","insight-empty",lang === "es"
+        ? "Esta semana todavía no hay negocios con 5 opiniones publicadas. ¡Ayúdanos a crear el ranking!"
+        : "No businesses have 5 published reviews this week yet. Help us build the ranking!"));
+      return;
+    }
+    rows.forEach(row => {
+      const item = node("div","ranking-item");
+      item.append(node("div","ranking-position","#" + row.weekly_rank));
+      const info = node("div","");
+      info.append(node("div","ranking-name",row.business_name));
+      info.append(node("div","ranking-meta",[row.category,row.city,row.review_count + (lang === "es" ? " opiniones" : " reviews")].filter(Boolean).join(" · ")));
+      item.append(info,node("div","ranking-score",Number(row.average_score).toFixed(1) + " ★"));
+      list.append(item);
+    });
+  } catch(err) {
+    console.error("Weekly rankings:",err);
+    list.append(node("p","insight-empty",lang === "es"
+      ? "Las estadísticas semanales estarán disponibles cuando termine la configuración."
+      : "Weekly statistics will appear once setup is complete."));
+  }
+}
+
+async function loadReviewTicker() {
+  const rail = $("reviewTicker");
+  rail.replaceChildren();
+  try {
+    const rows = await api("recent_review_highlights?select=review_id,business_id,business_name,visit_date,visit_time,average_score,review_excerpt&order=visit_date.desc&limit=12");
+    if (!Array.isArray(rows) || !rows.length) {
+      rail.append(node("p","insight-empty",lang === "es" ? "Todavía no hay reseñas recientes." : "No recent reviews yet."));
+      return;
+    }
+    rows.forEach(row => {
+      const card = node("article","ticker-card");
+      card.append(node("div","ticker-business",row.business_name));
+      const visit = row.visit_date ? new Date(row.visit_date + "T00:00:00").toLocaleDateString(lang === "es" ? "es-US" : "en-US") : "";
+      card.append(node("div","ticker-meta",(visit ? visit + " · " : "") + (row.visit_time ? String(row.visit_time).slice(0,5) : "")));
+      card.append(node("div","ticker-stars",stars(Number(row.average_score)) + " · " + Number(row.average_score).toFixed(1) + "/5"));
+      if (row.review_excerpt) card.append(node("p","ticker-quote","“" + row.review_excerpt + "”"));
+      rail.append(card);
+    });
+    if (rows.length > 2) {
+      let offset = 0;
+      setInterval(() => {
+        if (rail.matches(":hover")) return;
+        offset = (offset + 1) % rows.length;
+        const card = rail.children[offset];
+        if (card) card.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+      },7000);
+    }
+  } catch(err) {
+    console.error("Review ticker:",err);
+    rail.append(node("p","insight-empty",lang === "es" ? "No se pudieron cargar las reseñas." : "Could not load reviews."));
+  }
+}
+
+function setupFeatureButtons() {
+  $("featureFind").addEventListener("click",() => {
+    $("searchForm").scrollIntoView({behavior:"smooth",block:"center"});
+    input.focus({preventScroll:true});
+  });
+  $("featureReviews").addEventListener("click",() => {
+    $("reviewTickerPanel").scrollIntoView({behavior:"smooth",block:"start"});
+  });
+  $("featureStats").addEventListener("click",() => {
+    $("weeklyRankingPanel").scrollIntoView({behavior:"smooth",block:"start"});
+    loadWeeklyRankings();
+  });
+}
+
 function renderReview(r) {
   const box = node("article","review");
   box.append(node("div","stars",stars(average([r]))));
@@ -1304,6 +1464,11 @@ function makeReviewForm(business) {
 
   addField(t("date"),"visit_date","date");
   addField(t("time"),"visit_time","time");
+  addField(lang === "es" ? "¿Quién te atendió? (opcional)" : "Who served you? (optional)","staff_name","text");
+  const staffHint = node("p","staff-field-note",lang === "es"
+    ? "Usaremos esta información para detectar patrones con suficientes opiniones. No publicaremos comparaciones individuales."
+    : "We use this to detect patterns with enough reviews. Individual comparisons will not be public.");
+  grid.append(staffHint);
   ["cleanliness","service_quality","product_quality","speed","value_for_money"]
     .forEach((key,i) => addField(t("criteria")[i],key,"select"));
   addField(t("comment"),"comment","textarea",true);
@@ -1338,6 +1503,7 @@ function makeReviewForm(business) {
           business_id:business.id,
           visit_date:fd.get("visit_date"),
           visit_time:fd.get("visit_time") || null,
+          staff_name:String(fd.get("staff_name") || "").trim() || null,
           cleanliness:Number(fd.get("cleanliness")),
           service_quality:Number(fd.get("service_quality")),
           product_quality:Number(fd.get("product_quality")),
@@ -1559,11 +1725,21 @@ function renderBusiness(b) {
 
   const details = node("section","details");
   details.hidden = true;
+  const hourlyPanel = node("section","details");
+  hourlyPanel.append(
+    node("h3","",lang === "es" ? "Atención por horario" : "Service by time of day"),
+    node("p","empty",lang === "es"
+      ? "Se mostrarán patrones cuando existan al menos 5 opiniones por horario."
+      : "Patterns appear once there are at least 5 reviews per time slot.")
+  );
+  const hourlyList = node("div","hourly-list");
+  hourlyPanel.append(hourlyList);
 
   const reviewStatus = node("p","empty",t("loading"));
   const reviewList = node("div","");
 
   details.append(
+    hourlyPanel,
     node("h3","",t("reviews")),
     reviewStatus,
     reviewList,
@@ -1581,7 +1757,10 @@ function renderBusiness(b) {
 
     if (!loaded) {
       loaded = true;
-      await loadReviews(b,reviewList,reviewStatus,stats,rating);
+      await Promise.all([
+        loadReviews(b,reviewList,reviewStatus,stats,rating),
+        loadHourlyPatterns(b,hourlyList)
+      ]);
     }
   }
 
@@ -1789,6 +1968,8 @@ form.addEventListener("submit",async e => {
 
 setLanguage("es");
 loadApprovedBusinesses();
+loadWeeklyRankings();
+loadReviewTicker();
 
 async function loadApprovedBusinesses() {
 resultsBox.replaceChildren();
