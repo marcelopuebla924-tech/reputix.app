@@ -687,6 +687,25 @@ footer {
  .ticker-card { flex-basis:78vw; }
 }
 
+
+.owner-area {max-width:1120px;margin:20px auto 34px;padding:0 18px;}
+.owner-panel {border:1px solid #174d83;border-radius:18px;padding:18px;background:linear-gradient(145deg,#101f35,#071426);}
+.owner-panel h2 {margin:0 0 7px;font-size:21px;}
+.owner-copy {font-size:12px;color:var(--muted);line-height:1.55;margin:0 0 15px;}
+.owner-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.owner-field {display:grid;gap:5px;font-size:12px;color:var(--muted);}
+.owner-field.full {grid-column:1/-1;}
+.owner-field input,.owner-field select,.owner-field textarea {width:100%;padding:12px;border:1px solid #244668;border-radius:10px;background:#061225;color:var(--light);font:inherit;}
+.owner-actions {display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;}
+.owner-actions button {flex:1;min-width:125px;}
+.owner-message {font-size:12px;line-height:1.5;color:#9fdcff;min-height:18px;margin:10px 0 0;}
+.owner-metrics {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px;}
+.owner-metric {padding:13px;border:1px solid #1a3c5e;border-radius:12px;background:#071426;}
+.owner-metric strong {display:block;font-size:21px;color:#55c5ff;}
+.owner-metric span {font-size:10px;color:var(--muted);}
+.owner-insight {font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px;}
+@media(max-width:600px){.owner-area{padding:0 12px}.owner-panel{padding:14px}.owner-grid{grid-template-columns:1fr}.owner-field.full{grid-column:auto}}
+
 </style>
 </head>
 
@@ -777,6 +796,44 @@ footer {
     <p class="insight-subtitle" id="tickerSubtitle">Experiencias recientes compartidas en Reputix.</p>
     <div class="review-ticker" id="reviewTicker"><p class="insight-empty">Cargando reseñas publicadas…</p></div>
   </section>
+
+<section class="owner-area" id="ownerArea">
+  <section class="owner-panel">
+    <h2 id="ownerTitle">🏪 Panel para propietarios</h2>
+    <p class="owner-copy" id="ownerIntro">Regístrate o inicia sesión para solicitar la verificación de tu negocio y consultar sus estadísticas privadas.</p>
+    <form id="ownerAuthForm">
+      <div class="owner-grid">
+        <label class="owner-field"><span id="ownerEmailLabel">Correo electrónico</span><input id="ownerEmail" type="email" autocomplete="email" required></label>
+        <label class="owner-field"><span id="ownerPasswordLabel">Contraseña</span><input id="ownerPassword" type="password" autocomplete="current-password" minlength="8" required></label>
+      </div>
+      <div class="owner-actions">
+        <button class="primary" type="button" id="ownerSignIn">Iniciar sesión</button>
+        <button class="secondary" type="button" id="ownerSignUp">Crear cuenta</button>
+        <button class="secondary" type="button" id="ownerSignOut" hidden>Cerrar sesión</button>
+      </div>
+    </form>
+    <p class="owner-message" id="ownerAuthMessage" aria-live="polite"></p>
+    <div id="ownerClaimArea" hidden>
+      <div class="divider"></div>
+      <h3 id="claimTitle">Solicitar acceso al negocio</h3>
+      <p class="owner-copy" id="claimIntro">Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada.</p>
+      <form id="ownerClaimForm">
+        <div class="owner-grid">
+          <label class="owner-field full"><span id="claimBusinessLabel">Negocio</span><select id="claimBusiness" required><option value="">Selecciona un negocio</option></select></label>
+          <label class="owner-field full"><span id="claimEvidenceLabel">Prueba de relación con el negocio</span><textarea id="claimEvidence" rows="3" maxlength="700" required placeholder="Ej. Soy propietario y puedo presentar licencia comercial..."></textarea></label>
+        </div>
+        <div class="owner-actions"><button class="primary" type="submit" id="claimSubmit">Enviar solicitud</button></div>
+      </form>
+      <p class="owner-message" id="ownerClaimMessage" aria-live="polite"></p>
+      <div id="ownerDashboard" hidden>
+        <div class="divider"></div>
+        <h3 id="dashboardTitle">Tus estadísticas</h3>
+        <div id="ownerDashboardList"></div>
+        <p class="owner-insight" id="ownerDashboardNote">Los datos se calculan únicamente con opiniones publicadas. Los patrones por horario requieren un mínimo de 3 opiniones en cada franja.</p>
+      </div>
+    </div>
+  </section>
+</section>
 </section>
 </main>
 
@@ -798,6 +855,8 @@ const input = $("business");
 const notice = $("notice");
 const resultsBox = $("results");
 const searchButton = $("searchButton");
+let ownerSession = null;
+try { ownerSession = JSON.parse(sessionStorage.getItem("reputix_owner_session") || "null"); } catch (_) { ownerSession = null; }
 
 const translations = {
 es: {
@@ -989,6 +1048,7 @@ async function api(path, options = {}) {
       apikey:SUPABASE_KEY,
       Accept:"application/json",
       "Content-Type":"application/json",
+      ...(ownerSession?.access_token ? {Authorization:"Bearer " + ownerSession.access_token} : {}),
       ...(options.headers || {})
     }
   });
@@ -1981,7 +2041,149 @@ loadApprovedBusinesses();
 loadWeeklyRankings();
 loadReviewTicker();
 
-async function loadApprovedBusinesses() {
+async 
+/* Propietarios: Auth de Supabase y panel privado */
+async function ownerAuthRequest(path,payload) {
+  const response = await fetch(SUPABASE_URL + "/auth/v1/" + path,{
+    method:"POST",
+    headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+  const body = await response.json().catch(()=>({}));
+  if (!response.ok) throw new Error(body.msg || body.message || body.error_description || body.error || "No se pudo completar la solicitud.");
+  return body;
+}
+function ownerText(es,en){return lang==="es"?es:en;}
+function ownerSetSession(session) {
+  ownerSession=session;
+  if(session) sessionStorage.setItem("reputix_owner_session",JSON.stringify(session));
+  else sessionStorage.removeItem("reputix_owner_session");
+  $("ownerSignIn").hidden=!!session;
+  $("ownerSignUp").hidden=!!session;
+  $("ownerSignOut").hidden=!session;
+  $("ownerClaimArea").hidden=!session;
+  if(session) loadOwnerClaims();
+}
+async function ownerSignIn() {
+  $("ownerAuthMessage").textContent=ownerText("Ingresando…","Signing in…");
+  try {
+    const session=await ownerAuthRequest("token?grant_type=password",{
+      email:$("ownerEmail").value.trim(),password:$("ownerPassword").value
+    });
+    ownerSetSession(session);
+    $("ownerAuthMessage").textContent=ownerText("Sesión iniciada.","Signed in.");
+  } catch(err) {
+    $("ownerAuthMessage").textContent=err.message;
+  }
+}
+async function ownerSignUp() {
+  $("ownerAuthMessage").textContent=ownerText("Creando cuenta…","Creating account…");
+  try {
+    const result=await ownerAuthRequest("signup",{
+      email:$("ownerEmail").value.trim(),password:$("ownerPassword").value
+    });
+    if(result.access_token) {
+      ownerSetSession(result);
+      $("ownerAuthMessage").textContent=ownerText("Cuenta creada y sesión iniciada.","Account created and signed in.");
+    } else {
+      $("ownerAuthMessage").textContent=ownerText("Cuenta creada. Revisa tu correo para confirmar la dirección y después inicia sesión.","Account created. Check your email to confirm your address, then sign in.");
+    }
+  } catch(err) {
+    $("ownerAuthMessage").textContent=err.message;
+  }
+}
+async function loadOwnerClaims() {
+  const select=$("claimBusiness");
+  select.replaceChildren(new Option(ownerText("Selecciona un negocio","Choose a business"),""));
+  lastBusinesses.filter(b=>b.status==="approved").forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+  $("ownerClaimMessage").textContent="";
+  $("ownerDashboard").hidden=true;
+  try {
+    const claims=await api("business_owner_claims?select=id,business_id,status,evidence_note,created_at&order=created_at.desc");
+    const pending=(claims||[]).filter(c=>c.status==="pending");
+    if(pending.length) $("ownerClaimMessage").textContent=ownerText("Tu solicitud está pendiente de verificación.","Your ownership request is pending verification.");
+    await loadOwnerDashboard();
+  } catch(err) {
+    $("ownerClaimMessage").textContent=ownerText("No se pudieron cargar tus solicitudes. Vuelve a iniciar sesión.","Could not load your claims. Please sign in again.");
+  }
+}
+async function loadOwnerDashboard() {
+  const wrap=$("ownerDashboard"),list=$("ownerDashboardList");
+  list.replaceChildren();
+  try {
+    const rows=await api("owner_business_dashboard?select=business_id,business_name,category,city,published_reviews,average_score,average_cleanliness,average_service_quality,average_product_quality,average_speed,average_value_for_money,reviews_last_7_days");
+    if(!Array.isArray(rows)||!rows.length){wrap.hidden=true;return;}
+    wrap.hidden=false;
+    for(const row of rows) {
+      const block=node("section","insight-panel");
+      block.append(node("h3","",row.business_name));
+      block.append(node("p","insight-subtitle",[row.category,row.city].filter(Boolean).join(" · ")));
+      const metrics=node("div","owner-metrics");
+      const metric=(value,label)=>{
+        const m=node("div","owner-metric");
+        m.append(node("strong","",value===null||value===undefined?"—":String(value)));
+        m.append(node("span","",label));metrics.append(m);
+      };
+      metric(row.average_score===null?"—":Number(row.average_score).toFixed(1)+"/5",ownerText("Calificación promedio","Average rating"));
+      metric(row.published_reviews,ownerText("Opiniones publicadas","Published reviews"));
+      metric(row.reviews_last_7_days,ownerText("Últimos 7 días","Last 7 days"));
+      metric(row.average_service_quality===null?"—":Number(row.average_service_quality).toFixed(1)+"/5",ownerText("Calidad del servicio","Service quality"));
+      metric(row.average_speed===null?"—":Number(row.average_speed).toFixed(1)+"/5",ownerText("Rapidez","Speed"));
+      metric(row.average_cleanliness===null?"—":Number(row.average_cleanliness).toFixed(1)+"/5",ownerText("Limpieza","Cleanliness"));
+      metric(row.average_product_quality===null?"—":Number(row.average_product_quality).toFixed(1)+"/5",ownerText("Calidad del producto","Product quality"));
+      metric(row.average_value_for_money===null?"—":Number(row.average_value_for_money).toFixed(1)+"/5",ownerText("Relación calidad-precio","Value for money"));
+      block.append(metrics);
+      const hourly=node("div","hourly-list");
+      const hp=await api("owner_business_hourly_patterns?select=visit_hour,review_count,average_service_quality,average_speed,average_cleanliness,average_score&business_id=eq."+encodeURIComponent(row.business_id)+"&order=visit_hour.asc");
+      if(hp.length) {
+        block.append(node("h4","",ownerText("Resultados por horario","Results by time of day")));
+        hp.forEach(h=>{
+          const hour=Number(h.visit_hour),time=(hour%12||12)+":00 "+(hour<12?"AM":"PM");
+          const item=node("div","hourly-item"),left=node("div","");
+          left.append(node("div","hourly-time",time));
+          left.append(node("div","hourly-detail",ownerText("Servicio ","Service ")+h.average_service_quality+"/5 · "+ownerText("Rapidez ","Speed ")+h.average_speed+"/5 · "+h.review_count+ownerText(" opiniones"," reviews")));
+          item.append(left,node("div","ranking-score",Number(h.average_score).toFixed(1)+" ★"));hourly.append(item);
+        });
+        block.append(hourly);
+      } else {
+        block.append(node("p","insight-empty",ownerText("Aún no hay suficientes opiniones para comparar horarios (mínimo 3 por franja).","Not enough reviews to compare time slots yet (minimum 3 per slot).")));
+      }
+      list.append(block);
+    }
+  } catch(err) {
+    console.error("Owner dashboard:",err);
+    wrap.hidden=true;
+  }
+}
+$("ownerSignIn").addEventListener("click",ownerSignIn);
+$("ownerSignUp").addEventListener("click",ownerSignUp);
+$("ownerSignOut").addEventListener("click",()=>{
+  ownerSetSession(null);
+  $("ownerAuthMessage").textContent=ownerText("Sesión cerrada.","Signed out.");
+});
+$("ownerClaimForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const businessId=$("claimBusiness").value;
+  const evidence=$("claimEvidence").value.trim();
+  if(!businessId||!evidence)return;
+  $("claimSubmit").disabled=true;
+  $("ownerClaimMessage").textContent=ownerText("Enviando solicitud…","Submitting request…");
+  try {
+    await api("business_owner_claims",{
+      method:"POST",
+      headers:{Prefer:"return=minimal"},
+      body:JSON.stringify({business_id:businessId,user_id:ownerSession.user.id,evidence_note:evidence,status:"pending"})
+    });
+    $("claimEvidence").value="";
+    $("ownerClaimMessage").textContent=ownerText("Solicitud enviada. El equipo de Reputix debe verificar la propiedad antes de habilitar estadísticas privadas.","Request submitted. Reputix must verify ownership before enabling private analytics.");
+    await loadOwnerClaims();
+  } catch(err) {
+    $("ownerClaimMessage").textContent=ownerText("No se pudo enviar. Puede que ya exista una solicitud para este negocio.","Could not submit. A request for this business may already exist.");
+  } finally {$("claimSubmit").disabled=false;}
+});
+if(ownerSession?.access_token) ownerSetSession(ownerSession);
+
+function loadApprovedBusinesses() {
 resultsBox.replaceChildren();
 lastBusinesses = [];
 
