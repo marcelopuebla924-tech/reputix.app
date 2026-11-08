@@ -98,13 +98,19 @@ h1 {
 }
 .search button { white-space:nowrap; }
 .results {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,310px),1fr));
+  display:flex;
   gap:18px;
   margin:28px auto;
+  padding:4px 2px 16px;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:thin;
   text-align:left;
 }
 .business-card {
+  flex:0 0 min(88vw,360px);
+  scroll-snap-align:start;
   min-width:0;
   overflow:hidden;
   background:linear-gradient(145deg,#121e31,#0e1625);
@@ -116,6 +122,22 @@ h1 {
   gap:13px;
   align-items:center;
   padding:18px;
+}
+.business-photo-gallery {
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
+  padding:0 18px 16px;
+  scroll-snap-type:x mandatory;
+}
+.business-photo {
+  flex:0 0 220px;
+  width:220px;
+  height:145px;
+  object-fit:cover;
+  border-radius:12px;
+  border:1px solid var(--border);
+  scroll-snap-align:start;
 }
 .business-logo {
   width:60px;
@@ -580,6 +602,120 @@ function safeUrl(value) {
   } catch (_) { return ""; }
 }
 
+function photoPathUrl(path) {
+  return path.split("/").map(encodeURIComponent).join("/");
+}
+
+async function uploadBusinessPhoto(file,businessId) {
+  if (!file) return;
+  const allowed = ["image/jpeg","image/png","image/webp"];
+  if (!allowed.includes(file.type)) throw new Error(lang === "es" ? "Usa JPG, PNG o WebP." : "Use JPG, PNG or WebP.");
+  if (file.size > 5 * 1024 * 1024) throw new Error(lang === "es" ? "La foto debe pesar 5 MB o menos." : "Photo must be 5 MB or less.");
+
+  const ext = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+  const path = "proposals/" + businessId + "/" + crypto.randomUUID() + "." + ext;
+  const response = await fetch(SUPABASE_URL + "/storage/v1/object/business-photos/" + photoPathUrl(path), {
+    method:"POST",
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:"Bearer " + SUPABASE_KEY,
+      "Content-Type":file.type,
+      "x-upsert":"false"
+    },
+    body:file
+  });
+  if (!response.ok) throw new Error("Storage (" + response.status + "): " + (await response.text()).slice(0,300));
+
+  try {
+    await api("business_photos",{
+      method:"POST",
+      headers:{Prefer:"return=minimal"},
+      body:JSON.stringify({
+        business_id:String(businessId),
+        storage_path:path,
+        original_filename:file.name,
+        content_type:file.type,
+        file_size:file.size,
+        status:"pending"
+      })
+    });
+  } catch (err) {
+    throw new Error((lang === "es" ? "La foto se cargó, pero no se pudo enviar a revisión: " : "Photo uploaded but could not be submitted for review: ") + err.message);
+  }
+}
+
+async function loadApprovedBusinessPhotos(businessId,container) {
+  try {
+    const params = new URLSearchParams({
+      select:"storage_path",
+      business_id:"eq." + businessId,
+      status:"eq.approved",
+      order:"created_at.asc",
+      limit:"12"
+    });
+    const rows = await api("business_photos?" + params);
+    if (!Array.isArray(rows) || !rows.length) return;
+    const gallery = node("div","business-photo-gallery");
+    for (const row of rows) {
+      const response = await fetch(SUPABASE_URL + "/storage/v1/object/sign/business-photos/" + photoPathUrl(row.storage_path),{
+        method:"POST",
+        headers:{
+          apikey:SUPABASE_KEY,
+          Authorization:"Bearer " + SUPABASE_KEY,
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({expiresIn:3600})
+      });
+      if (!response.ok) continue;
+      const data = await response.json();
+      const signed = data.signedURL || data.signedUrl;
+      if (!signed) continue;
+      const img = node("img","business-photo");
+      img.src = /^https?:\\/\\//i.test(signed)
+        ? signed
+        : SUPABASE_URL + "/storage/v1" + (signed.startsWith("/") ? signed : "/" + signed);
+      img.alt = lang === "es" ? "Foto aprobada del negocio" : "Approved business photo";
+      img.loading = "lazy";
+      gallery.append(img);
+    }
+    if (gallery.childElementCount) container.append(gallery);
+  } catch (err) {
+    console.error("Error al cargar fotos aprobadas:",err);
+  }
+}
+
+function makeBusinessPhotoForm(business) {
+  const f = node("form","form");
+  f.append(node("h3","",lang === "es" ? "Agregar una foto" : "Add a photo"));
+  const label = node("label","field",lang === "es" ? "Foto (JPG, PNG o WebP; máximo 5 MB)" : "Photo (JPG, PNG or WebP; 5 MB max)");
+  const input = node("input");
+  input.type = "file";
+  input.name = "photo";
+  input.accept = "image/jpeg,image/png,image/webp";
+  input.required = true;
+  label.append(input);
+  const submit = node("button","secondary",lang === "es" ? "Enviar foto a revisión" : "Submit photo for review");
+  submit.type = "submit";
+  const msg = node("p","form-message","");
+  f.append(label,submit,msg);
+  f.addEventListener("submit",async e => {
+    e.preventDefault();
+    if (!input.files || !input.files[0]) return;
+    submit.disabled = true;
+    msg.textContent = lang === "es" ? "Subiendo foto…" : "Uploading photo…";
+    try {
+      await uploadBusinessPhoto(input.files[0],business.id);
+      f.reset();
+      msg.textContent = lang === "es" ? "Foto enviada. Se mostrará cuando sea aprobada." : "Photo submitted. It will appear once approved.";
+    } catch(err) {
+      msg.textContent = err.message || (lang === "es" ? "No se pudo enviar la foto." : "Could not submit photo.");
+    } finally {
+      submit.disabled = false;
+    }
+  });
+  return f;
+}
+
 /* Detección aproximada del idioma: no traduce el texto. */
 function detectLanguage(text) {
   if (typeof text !== "string" || !text.trim()) return null;
@@ -965,6 +1101,7 @@ function renderBusiness(b) {
 
   info.append(node("p","muted",b.description || t("description")));
   card.append(info);
+  loadApprovedBusinessPhotos(b.id,card);
 
   const stats = node("div","stats");
   stats.append(
@@ -993,6 +1130,7 @@ function renderBusiness(b) {
     reviewStatus,
     reviewList,
     makeReviewForm(b),
+    makeBusinessPhotoForm(b),
     makeComplaintSection(b)
   );
   card.append(details);
@@ -1079,6 +1217,16 @@ function renderCommunityForm(type) {
   addField(t("formPhone"),"phone","text",t("formPhoneHint"));
   addField(t("formHours"),"hours","text",t("formHoursHint"));
   addField(t("formDescription"),"description","textarea",t("formDescriptionHint"),true);
+
+  const photoLabel = node("label","field full",lang === "es"
+    ? "Foto del negocio (opcional; JPG, PNG o WebP; máximo 5 MB)"
+    : "Business photo (optional; JPG, PNG or WebP; 5 MB max)");
+  const photoInput = node("input");
+  photoInput.type = "file";
+  photoInput.name = "photo";
+  photoInput.accept = "image/jpeg,image/png,image/webp";
+  photoLabel.append(photoInput);
+  grid.append(photoLabel);
   f.append(grid);
 
   const submit = node("button","primary",t("sendProposal"));
@@ -1109,29 +1257,41 @@ function renderCommunityForm(type) {
     msg.textContent = lang === "es" ? "Enviando propuesta…" : "Submitting suggestion…";
 
     try {
-      await api("businesses",{
+      const created = await api("rpc/submit_business_proposal",{
         method:"POST",
-        headers:{Prefer:"return=minimal"},
         body:JSON.stringify({
-          name,
-          category:type === "professional"
+          p_name:name,
+          p_category:type === "professional"
             ? (lang === "es" ? "Profesional / servicio: " : "Professional / service: ") + category
             : category,
-          address:String(fd.get("address") || "").trim() || null,
-          city,
-          zip:String(fd.get("zip") || "").trim() || null,
-          phone:String(fd.get("phone") || "").trim() || null,
-          hours:String(fd.get("hours") || "").trim() || null,
-          description:String(fd.get("description") || "").trim() || null,
-          status:"approved"
+          p_address:String(fd.get("address") || "").trim() || null,
+          p_city:city,
+          p_zip:String(fd.get("zip") || "").trim() || null,
+          p_phone:String(fd.get("phone") || "").trim() || null,
+          p_hours:String(fd.get("hours") || "").trim() || null,
+          p_description:String(fd.get("description") || "").trim() || null
         })
       });
+      const businessId = typeof created === "string" ? created : created && created.id;
+      if (!businessId) throw new Error(lang === "es" ? "El negocio se envió, pero no recibimos su identificador. No vuelvas a enviarlo; contacta soporte." : "Business submitted, but its ID was not returned. Do not submit again; contact support.");
+
+      const photo = photoInput.files && photoInput.files[0];
+      let photoMessage = "";
+      if (photo) {
+        try {
+          await uploadBusinessPhoto(photo,businessId);
+          photoMessage = lang === "es" ? " La foto también quedó enviada a revisión." : " The photo was also submitted for review.";
+        } catch(photoErr) {
+          photoMessage = lang === "es"
+            ? " El negocio quedó enviado, pero la foto no: " + photoErr.message
+            : " The business was submitted, but the photo was not: " + photoErr.message;
+        }
+      }
 
       f.reset();
       msg.textContent = lang === "es"
-        ? "¡Negocio registrado! Ya puede aparecer en las búsquedas."
-        : "Business registered! It can now appear in search results.";
-      await loadApprovedBusinesses();
+        ? "¡Propuesta recibida! El negocio aparecerá cuando sea aprobado." + photoMessage
+        : "Proposal received! The business will appear once approved." + photoMessage;
     } catch (err) {
       console.error("Error al proponer negocio:",err);
       msg.textContent = t("proposalFailed") + " " + (err.message || "");
