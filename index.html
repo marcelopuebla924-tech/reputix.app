@@ -456,6 +456,27 @@ footer {
   .carousel-status { font-size:10px; }
 }
 
+
+.business-tile { isolation:isolate; }
+.business-tile .tile-photo {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  z-index:-2;
+  opacity:.88;
+}
+.business-tile::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:linear-gradient(180deg,rgba(0,0,0,.04) 5%,rgba(0,0,0,.82) 100%);
+  pointer-events:none;
+}
+.business-tile strong,.business-tile span { position:relative;z-index:1; }
+
 </style>
 </head>
 
