@@ -2183,7 +2183,7 @@ $("ownerClaimForm").addEventListener("submit",async e=>{
 });
 if(ownerSession?.access_token) ownerSetSession(ownerSession);
 
-function loadApprovedBusinesses() {
+async function loadApprovedBusinesses() {
 resultsBox.replaceChildren();
 lastBusinesses = [];
 
