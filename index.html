@@ -1016,6 +1016,20 @@ function setLanguage(value) {
     : "Google will help discover businesses; reviews and ratings will belong to Reputix.";
   $("addBusinessAction").innerHTML = lang === "es" ? 'Comenzar <span aria-hidden="true">→</span>' : 'Get started <span aria-hidden="true">→</span>';
   $("addProAction").innerHTML = lang === "es" ? 'Comenzar <span aria-hidden="true">→</span>' : 'Get started <span aria-hidden="true">→</span>';
+  $("ownerTitle").textContent = lang === "es" ? "🏪 Panel para propietarios" : "🏪 Business owner dashboard";
+  $("ownerIntro").textContent = lang === "es" ? "Regístrate o inicia sesión para solicitar la verificación de tu negocio y consultar sus estadísticas privadas." : "Create an account or sign in to request business verification and view private analytics.";
+  $("ownerEmailLabel").textContent = lang === "es" ? "Correo electrónico" : "Email address";
+  $("ownerPasswordLabel").textContent = lang === "es" ? "Contraseña" : "Password";
+  $("ownerSignIn").textContent = lang === "es" ? "Iniciar sesión" : "Sign in";
+  $("ownerSignUp").textContent = lang === "es" ? "Crear cuenta" : "Create account";
+  $("ownerSignOut").textContent = lang === "es" ? "Cerrar sesión" : "Sign out";
+  $("claimTitle").textContent = lang === "es" ? "Solicitar acceso al negocio" : "Request business access";
+  $("claimIntro").textContent = lang === "es" ? "Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada." : "Select the business and briefly explain how you can prove you are its owner or authorized representative. Your request will be reviewed.";
+  $("claimBusinessLabel").textContent = lang === "es" ? "Negocio" : "Business";
+  $("claimEvidenceLabel").textContent = lang === "es" ? "Prueba de relación con el negocio" : "Proof of relationship to the business";
+  $("claimSubmit").textContent = lang === "es" ? "Enviar solicitud" : "Submit request";
+  $("dashboardTitle").textContent = lang === "es" ? "Tus estadísticas" : "Your analytics";
+  $("ownerDashboardNote").textContent = lang === "es" ? "Los datos se calculan únicamente con opiniones publicadas. Los patrones por horario requieren un mínimo de 3 opiniones en cada franja." : "Data uses published reviews only. Time-of-day patterns require at least 3 reviews per time slot.";
   input.placeholder = t("placeholder");
   searchButton.textContent = t("search");
 
