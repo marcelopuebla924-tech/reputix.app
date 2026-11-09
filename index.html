@@ -773,6 +773,11 @@ footer {
   .independent-join h3 { font-size:15px; }
   .independent-join-button { width:100%; }
 }
+
+/* Reputix private neon dashboard */
+.private-space{margin-top:18px;padding:20px;border:1px solid #087fff;border-radius:24px;background:radial-gradient(ellipse at 50% 0%,rgba(0,139,255,.16),transparent 55%),linear-gradient(145deg,#030d1d,#061a31);box-shadow:0 0 8px #08a9ff,0 0 22px rgba(0,145,255,.48),inset 0 0 22px rgba(0,122,255,.12)}
+.private-space-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.private-kicker{color:#55caff;font-size:10px;font-weight:900;letter-spacing:1.5px}.private-space-head h2{margin:7px 0;font-size:clamp(26px,5vw,38px);text-shadow:0 0 16px rgba(0,162,255,.5)}.private-space-head p,.private-tile p{color:#b9cce3;font-size:13px;line-height:1.5;margin:5px 0 12px}.private-active{white-space:nowrap;color:#5dffb0;background:rgba(0,210,130,.12);border:1px solid rgba(0,220,140,.5);border-radius:24px;padding:8px 11px;font-size:11px;font-weight:800;box-shadow:0 0 12px rgba(0,220,140,.18)}.private-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.private-tile{min-width:0;padding:16px;border:1px solid #079cff;border-radius:17px;background:linear-gradient(145deg,rgba(8,34,61,.96),rgba(3,16,32,.98));box-shadow:0 0 12px rgba(0,151,255,.22),inset 0 0 14px rgba(0,123,255,.08)}.private-tile h3{margin:5px 0;font-size:17px}.private-tile small,.private-tile .muted{color:#b9cce3}.private-icon{color:#39caff;font-size:25px;text-shadow:0 0 12px #008dff}.private-wide{grid-column:1/-1}.private-entry{padding:10px 0;border-top:1px solid rgba(68,160,220,.25);font-size:12px;line-height:1.5;overflow-wrap:anywhere}.private-tile button{margin-top:8px}@media(max-width:600px){.private-space{padding:14px;border-radius:19px}.private-grid{gap:9px}.private-tile{padding:12px;border-radius:14px}.private-tile h3{font-size:14px}.private-tile p{font-size:11px}.private-space-head{flex-direction:column}.private-active{align-self:flex-start}}
+
 </style>
 </head>
 
@@ -893,6 +898,21 @@ footer {
       </div>
     </form>
     <p class="owner-message" id="ownerAuthMessage" aria-live="polite"></p>
+    <section class="private-space" id="privateSpace" hidden>
+      <div class="private-space-head">
+        <div><span class="private-kicker">REPUTIX · ÁREA PRIVADA</span><h2 id="privateWelcome">Mi espacio</h2><p id="privateIntro">Tu actividad y tus negocios en un solo lugar.</p></div>
+        <span class="private-active" id="privateStatus">● Cuenta activa</span>
+      </div>
+      <div class="private-grid">
+        <article class="private-tile"><span class="private-icon">◉</span><h3 id="privateProfileTitle">Mi perfil</h3><p id="privateProfileDesc">Datos y configuración</p><div id="privateProfileContent"></div></article>
+        <article class="private-tile"><span class="private-icon">▣</span><h3 id="privateBusinessTitle">Mis negocios</h3><p id="privateBusinessDesc">Administración y estadísticas</p><div id="privateBusinessContent"></div></article>
+        <article class="private-tile"><span class="private-icon">◌</span><h3 id="privateMessagesTitle">Mensajes</h3><p id="privateMessagesDesc">Comunicación con clientes</p><div id="privateMessagesContent"><small id="privateMessagesNote">La mensajería privada se habilitará en una próxima etapa.</small></div></article>
+        <article class="private-tile"><span class="private-icon">▤</span><h3 id="privateComplaintsTitle">Reclamos</h3><p id="privateComplaintsDesc">Seguimiento y respuestas</p><div id="privateComplaintsContent"></div></article>
+        <article class="private-tile private-wide"><span class="private-icon">☆</span><h3 id="privateReviewsTitle">Opiniones de mis clientes</h3><p id="privateReviewsDesc">Comentarios y calificaciones</p><div id="privateReviewsContent"></div></article>
+        <article class="private-tile private-wide"><h3 id="privatePostsTitle">Mis publicaciones</h3><form id="privatePostForm"><label class="owner-field"><span id="privatePostLabel">Comparte algo con la comunidad</span><textarea id="privatePostBody" rows="3" maxlength="5000" required></textarea></label><button class="primary" type="submit" id="privatePostSubmit">Publicar</button><p class="owner-message" id="privatePostMessage" aria-live="polite"></p></form><div id="privatePostsList"></div></article>
+        <article class="private-tile private-wide"><h3 id="privateDiscoverTitle">Descubre otros negocios</h3><p id="privateDiscoverDesc">Sugerencias, tendencias y recomendaciones de Reputix.</p><div id="privateDiscoverContent"></div></article>
+      </div>
+    </section>
     <div id="ownerClaimArea" hidden>
       <div class="divider"></div>
       <h3 id="claimTitle">Solicitar acceso al negocio</h3>
@@ -1709,6 +1729,7 @@ function makeReviewForm(business) {
         headers:{Prefer:"return=minimal"},
         body:JSON.stringify({
           business_id:business.id,
+          user_id:ownerSession?.user?.id || null,
           visit_date:fd.get("visit_date"),
           visit_time:fd.get("visit_time") || null,
           staff_name:String(fd.get("staff_name") || "").trim() || null,
@@ -1839,6 +1860,7 @@ function makeComplaintSection(business) {
         headers:{Prefer:"return=minimal"},
         body:JSON.stringify({
           business_id:business.id,
+          user_id:ownerSession?.user?.id || null,
           complaint:complaint,
           original_language:detectLanguage(complaint),
           status:"pending"
@@ -2204,13 +2226,19 @@ function ownerSetSession(session) {
   $("ownerSignUp").hidden=!!session;
   $("ownerSignOut").hidden=!session;
   $("ownerClaimArea").hidden=!session;
+  $("privateSpace").hidden=!session;
   const isAdmin = !!(session?.user?.app_metadata?.reputix_role === "admin");
   $("adminClaimsPanel").hidden = !isAdmin;
   if(session) {
     loadOwnerClaims();
+    loadPrivateSpace();
+    $("privateSpace").scrollIntoView({behavior:"smooth",block:"start"});
     if(isAdmin) loadAdminClaims();
   } else {
     $("adminClaimsList").replaceChildren();
+    $("privatePostsList").replaceChildren();
+    $("privateReviewsContent").replaceChildren();
+    $("privateComplaintsContent").replaceChildren();
   }
 }
 async function ownerSignIn() {
@@ -2307,6 +2335,51 @@ async function reviewOwnerClaim(id,status,approve,reject) {
     approve.disabled=reject.disabled=false;
   }
 }
+
+
+async function loadPrivateSpace() {
+  if(!ownerSession?.access_token || !ownerSession?.user?.id) return;
+  const userId=ownerSession.user.id;
+  const email=ownerSession.user.email || "";
+  $("privateProfileContent").replaceChildren(node("div","private-entry",email));
+  $("privateDiscoverContent").replaceChildren(node("div","private-entry",ownerText("Los negocios recomendados siguen disponibles en la página principal.","Recommended businesses remain available on the main page.")));
+  const [profile,posts,reviews,complaints] = await Promise.allSettled([
+    api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(userId)),
+    api("user_publications?select=id,body,status,created_at&order=created_at.desc&limit=30"),
+    api("reviews?select=id,business_id,comment,status,created_at&user_id=eq."+encodeURIComponent(userId)+"&order=created_at.desc&limit=30"),
+    api("complaints?select=id,business_id,complaint,status,business_response,created_at&user_id=eq."+encodeURIComponent(userId)+"&order=created_at.desc&limit=30")
+  ]);
+  if(profile.status==="fulfilled" && profile.value?.[0]?.display_name) $("privateWelcome").textContent=ownerText("Hola, ","Hello, ")+profile.value[0].display_name;
+  const postList=$("privatePostsList");postList.replaceChildren();
+  if(posts.status==="fulfilled") {
+    (posts.value||[]).forEach(p=>{const item=node("div","private-entry");item.append(node("p","",p.body),node("small","",new Date(p.created_at).toLocaleString()));postList.append(item);});
+    if(!postList.childElementCount) postList.append(node("small","",ownerText("Todavía no tienes publicaciones.","You have no posts yet.")));
+  } else postList.append(node("small","",ownerText("No se pudieron cargar tus publicaciones.","Could not load your posts.")));
+  const reviewList=$("privateReviewsContent");reviewList.replaceChildren();
+  if(reviews.status==="fulfilled") {
+    (reviews.value||[]).forEach(r=>{const item=node("div","private-entry");item.append(node("p","",r.comment||ownerText("Opinión sin comentario","Review without a comment")),node("small","",ownerText("Estado: ","Status: ")+r.status));reviewList.append(item);});
+    if(!reviewList.childElementCount) reviewList.append(node("small","",ownerText("Tus opiniones aparecerán aquí cuando las envíes con tu cuenta iniciada.","Your reviews will appear here when submitted while signed in.")));
+  } else reviewList.append(node("small","",ownerText("No se pudieron cargar tus opiniones.","Could not load your reviews.")));
+  const complaintList=$("privateComplaintsContent");complaintList.replaceChildren();
+  if(complaints.status==="fulfilled") {
+    (complaints.value||[]).forEach(c=>{const item=node("div","private-entry");item.append(node("p","",c.complaint),node("small","",ownerText("Estado: ","Status: ")+c.status));if(c.business_response)item.append(node("p","",ownerText("Respuesta: ","Response: ")+c.business_response));complaintList.append(item);});
+    if(!complaintList.childElementCount) complaintList.append(node("small","",ownerText("Tus reclamos aparecerán aquí.","Your complaints will appear here.")));
+  } else complaintList.append(node("small","",ownerText("No se pudieron cargar tus reclamos.","Could not load your complaints.")));
+  const claims=await api("business_owner_claims?select=id,business_id,status&user_id=eq."+encodeURIComponent(userId)+"&status=eq.verified").catch(()=>[]);
+  $("privateBusinessContent").replaceChildren();
+  if(claims.length) claims.forEach(cl=>{const b=lastBusinesses.find(x=>x.id===cl.business_id);$("privateBusinessContent").append(node("div","private-entry",b?.name||ownerText("Negocio verificado","Verified business")));});
+  else $("privateBusinessContent").append(node("small","",ownerText("Aún no tienes negocios verificados. Puedes solicitar acceso abajo.","No verified businesses yet. You can request access below.")));
+}
+$("privatePostForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const body=$("privatePostBody").value.trim();if(!body||!ownerSession?.user?.id)return;
+  $("privatePostSubmit").disabled=true;$("privatePostMessage").textContent=ownerText("Publicando…","Publishing…");
+  try {
+    await api("user_publications",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({user_id:ownerSession.user.id,body,status:"published"})});
+    $("privatePostBody").value="";$("privatePostMessage").textContent=ownerText("Publicación guardada.","Post saved.");await loadPrivateSpace();
+  } catch(err) {$("privatePostMessage").textContent=ownerText("No se pudo publicar: ","Could not publish: ")+err.message;}
+  finally {$("privatePostSubmit").disabled=false;}
+});
 
 async function loadOwnerDashboard() {
   const wrap=$("ownerDashboard"),list=$("ownerDashboardList");
