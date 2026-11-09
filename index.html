@@ -2378,21 +2378,19 @@ function renderDiscoveryRails() {
       : "Featured businesses on Reputix";
     return;
   }
-  const rails = [
-    ["topDiscoveryRail",5,0],
-    ["leftDiscoveryRail",3,5],
-    ["rightDiscoveryRail",3,8],
-    ["bottomDiscoveryRail",5,11]
-  ];
-  rails.forEach(([id,count,offset]) => {
-    const rail = $(id);
-    if (!rail) return;
+  // Renderizar un solo carrusel inferior, sin duplicar tarjetas.
+  ["topDiscoveryRail","leftDiscoveryRail","rightDiscoveryRail"].forEach(id => {
+    const extra = $(id);
+    if (extra) extra.replaceChildren();
+  });
+  const rail = $("bottomDiscoveryRail");
+  if (rail) {
     rail.replaceChildren();
-    for (let i=0;i<Math.min(count,businesses.length);i++) {
-      const business = businesses[(discoveryOffset + offset + i) % businesses.length];
+    for (let i=0;i<Math.min(5,businesses.length);i++) {
+      const business = businesses[(discoveryOffset + i) % businesses.length];
       rail.append(makeDiscoveryTile(business));
     }
-  });
+  }
   $("carouselStatus").textContent = lang === "es"
     ? "Negocios aprobados por Reputix · Se actualiza cada 40 segundos"
     : "Businesses approved by Reputix · Refreshes every 40 seconds";
@@ -4108,6 +4106,23 @@ async function loadApprovedBusinesses() {
 #bottomDiscoveryRail>.business-tile .tile-contact{font-size:8px!important;padding:4px 5px!important}
 #bottomDiscoveryRail>.quick-cleaning-tile{border:1px solid #ffd36b!important;box-shadow:0 0 12px rgba(255,195,77,.3)!important}
 #bottomDiscoveryRail>.tamos-chelo-tile{border:1px solid #ffd166!important;box-shadow:0 0 12px rgba(255,190,35,.28)!important}
+</style>
+<style id="reputix-blue-compact-carousel-final-20261109">
+#topDiscoveryRail,#leftDiscoveryRail,#rightDiscoveryRail{display:none!important}
+#bottomDiscoveryRail{display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:0!important;gap:9px!important;margin:8px auto 10px!important;padding:6px 10px 12px!important;overflow-x:auto!important;overflow-y:hidden!important;scroll-snap-type:x mandatory!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:thin!important}
+#bottomDiscoveryRail>.business-tile{position:relative!important;isolation:isolate!important;box-sizing:border-box!important;display:flex!important;flex:0 0 148px!important;width:148px!important;min-width:148px!important;max-width:148px!important;height:124px!important;min-height:124px!important;max-height:124px!important;padding:8px!important;gap:5px!important;overflow:hidden!important;border-radius:15px!important;border:1.5px solid #08baff!important;box-shadow:0 0 12px rgba(0,174,255,.3)!important;scroll-snap-align:start!important;background:#061426!important;align-items:center!important;justify-content:flex-end!important}
+#bottomDiscoveryRail>.business-tile .tile-photo{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;object-fit:cover!important;object-position:center 42%!important;z-index:0!important;opacity:1!important;pointer-events:none!important}
+#bottomDiscoveryRail>.business-tile:after{content:""!important;position:absolute!important;inset:0!important;z-index:1!important;background:linear-gradient(180deg,rgba(0,5,15,.06) 0%,rgba(0,8,20,.3) 36%,rgba(0,7,18,.94) 100%)!important;pointer-events:none!important}
+#bottomDiscoveryRail>.business-tile .tile-heading,#bottomDiscoveryRail>.business-tile .tile-contacts{position:relative!important;z-index:2!important;width:100%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important;gap:3px!important}
+#bottomDiscoveryRail>.business-tile .tile-business-name{display:block!important;width:100%!important;text-align:center!important;color:#f4fbff!important;font-size:12px!important;font-weight:900!important;line-height:1.12!important;overflow-wrap:anywhere!important;text-shadow:0 1px 5px #000!important}
+#bottomDiscoveryRail>.business-tile .tile-business-category,#bottomDiscoveryRail>.business-tile .tile-business-location{display:block!important;width:100%!important;text-align:center!important;color:#bcecff!important;font-size:9px!important;font-weight:650!important;line-height:1.14!important;overflow-wrap:anywhere!important;text-shadow:0 1px 5px #000!important}
+#bottomDiscoveryRail>.business-tile .tile-contacts{flex-direction:row!important;flex-wrap:wrap!important;gap:3px!important}
+#bottomDiscoveryRail>.business-tile .tile-contact{display:inline-flex!important;justify-content:center!important;align-items:center!important;max-width:100%!important;padding:3px 5px!important;font-size:8px!important;line-height:1.1!important;border:1px solid #08baff!important;border-radius:9px!important;color:#fff!important;background:rgba(0,24,48,.9)!important;overflow-wrap:anywhere!important}
+#bottomDiscoveryRail>.business-tile .tile-contact.instagram{border-color:#08baff!important;background:rgba(0,24,48,.9)!important}
+#bottomDiscoveryRail>.quick-cleaning-tile,#bottomDiscoveryRail>.tamos-chelo-tile{border:1.5px solid #08baff!important;box-shadow:0 0 13px rgba(0,174,255,.34)!important}
+#bottomDiscoveryRail>.quick-cleaning-tile .tile-business-name,#bottomDiscoveryRail>.tamos-chelo-tile .tile-business-name{color:#f4fbff!important}
+#bottomDiscoveryRail>.quick-cleaning-tile .tile-business-category,#bottomDiscoveryRail>.quick-cleaning-tile .tile-business-location,#bottomDiscoveryRail>.tamos-chelo-tile .tile-business-category,#bottomDiscoveryRail>.tamos-chelo-tile .tile-business-location{color:#bcecff!important}
+@media(max-width:600px){#bottomDiscoveryRail{margin:7px -10px 9px!important;width:calc(100% + 20px)!important;padding:5px 10px 11px!important}#bottomDiscoveryRail>.business-tile{flex-basis:148px!important;width:148px!important;min-width:148px!important;max-width:148px!important;height:124px!important;min-height:124px!important;max-height:124px!important}}
 </style>
 </body>
 </html>
