@@ -508,9 +508,12 @@ footer {
   .discovery-strip .business-tile { flex:0 0 42vw; min-height:82px; padding:8px 9px; border-radius:13px; }
   .business-tile strong { font-size:12px; }
   .business-tile span { font-size:9px; }
-  .discovery-strip .business-tile.quick-cleaning-tile { flex-basis:78vw; min-height:148px; padding:13px; justify-content:flex-end; gap:6px; }
-  .business-tile.quick-cleaning-tile strong { font-size:17px; }
-  .business-tile.quick-cleaning-tile span { font-size:12px; }
+  .discovery-strip .business-tile.quick-cleaning-tile { flex:0 0 calc(100vw - 36px); min-height:190px; padding:18px; justify-content:flex-end; gap:8px; border:1px solid rgba(220,178,91,.9); border-radius:20px; background:radial-gradient(ellipse at 78% 12%,rgba(194,145,48,.32),transparent 42%),linear-gradient(135deg,#17120b 0%,#050608 58%,#17120b 100%); box-shadow:0 0 22px rgba(210,165,75,.2),inset 0 0 30px rgba(214,172,91,.08); }
+  .business-tile.quick-cleaning-tile::before { content:"TC";position:absolute;right:14px;top:8px;z-index:1;font-size:74px;font-weight:1000;letter-spacing:-7px;color:rgba(218,177,93,.17);text-shadow:0 0 22px rgba(218,177,93,.22);pointer-events:none; }
+  .business-tile.quick-cleaning-tile::after { background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.82) 100%); }
+  .business-tile.quick-cleaning-tile strong { position:relative;z-index:2;font-size:22px;color:#ffe3a1;text-shadow:0 2px 12px #000; }
+  .business-tile.quick-cleaning-tile span { position:relative;z-index:2;font-size:14px;color:#f1dfbd; }
+  .business-tile.quick-cleaning-tile .tile-contact { font-size:12px!important;color:#fff; }
   .tile-contacts { position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px; }
   .tile-contact { display:inline-flex;align-items:center;padding:6px 8px;border-radius:9px;border:1px solid #43d4ff;background:rgba(0,13,32,.88);color:#fff;font-size:11px!important;font-weight:800;text-decoration:none; }
   .tile-contact.instagram { border-color:#ff75c8;background:rgba(42,9,48,.9); }
