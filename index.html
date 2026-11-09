@@ -2115,7 +2115,12 @@ async function loadDiscoveryTilePhoto(business,tile) {
 }
 
 function makeDiscoveryTile(business) {
-  const isQuickCleaning = business.id === "a2861806-7e33-4eff-907f-f6206535fb7c";
+  const quickCleaningPhone = String(business.phone || "").replace(/\\D/g,"");
+  const isQuickCleaning = business.id === "a2861806-7e33-4eff-907f-f6206535fb7c" ||
+    /quick\\s*cleaning/i.test(String(business.name || "")) ||
+    quickCleaningPhone.endsWith("2137062826") ||
+    (/south gate/i.test(String(business.address || business.city || "")) &&
+     /cleaning|limpieza/i.test(String(business.category || "")));
   const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : ""));
   const heading = node("div","tile-heading");
   heading.style.cssText = "display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;position:relative!important;z-index:10!important;width:100%!important;visibility:visible!important;opacity:1!important;";
