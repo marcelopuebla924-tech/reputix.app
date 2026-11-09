@@ -1647,6 +1647,55 @@ header:after{
   #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{height:205px!important;min-height:205px!important;max-height:205px!important;}
 }
 
+
+/* FINAL CARD RESET: every discovery tile uses the same compact footprint */
+#topDiscoveryRail .business-tile,
+#bottomDiscoveryRail .business-tile{
+ flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
+ height:190px!important;min-height:190px!important;max-height:190px!important;
+ box-sizing:border-box!important;position:relative!important;overflow:hidden!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
+ flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
+ height:190px!important;min-height:190px!important;max-height:190px!important;
+ padding:11px!important;
+}
+#topDiscoveryRail .business-tile .tile-photo,
+#bottomDiscoveryRail .business-tile .tile-photo{
+ display:block!important;position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;object-fit:cover!important;
+ object-position:center!important;z-index:0!important;opacity:1!important;
+}
+#topDiscoveryRail .business-tile .tile-heading,
+#bottomDiscoveryRail .business-tile .tile-heading,
+#topDiscoveryRail .business-tile .tile-contacts,
+#bottomDiscoveryRail .business-tile .tile-contacts{
+ position:relative!important;z-index:3!important;width:100%!important;min-width:0!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name{
+ font-size:15px!important;line-height:1.15!important;color:#ffe3a1!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category,
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location{font-size:10px!important;}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-contact,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-contact{
+ font-size:9px!important;padding:5px 7px!important;white-space:nowrap!important;
+}
+@media(max-width:600px){
+ #topDiscoveryRail .business-tile,
+ #bottomDiscoveryRail .business-tile,
+ #topDiscoveryRail .business-tile.quick-cleaning-tile,
+ #bottomDiscoveryRail .business-tile.quick-cleaning-tile{
+  flex:0 0 42vw!important;width:42vw!important;min-width:42vw!important;max-width:42vw!important;
+  height:190px!important;min-height:190px!important;max-height:190px!important;
+  padding:10px!important;
+ }
+}
+
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 <style>
@@ -2254,7 +2303,7 @@ function makeDiscoveryTile(business) {
     tile.append(contacts);
   }
   if (isQuickCleaning) {
-    const cover = "https://raw.githubusercontent.com/marcelopuebla924-tech/reputix.app/main/assets/quick-cleaning-cover.jpg?v=20261109";
+    const cover = "https://raw.githubusercontent.com/marcelopuebla924-tech/reputix.app/main/assets/quick-cleaning-cover.jpg?v=20261109-cardfix";
     const coverImage = node("img","tile-photo");
     coverImage.src = cover;
     coverImage.alt = "Quick Cleaning Services";
