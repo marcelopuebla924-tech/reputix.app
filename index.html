@@ -1169,6 +1169,98 @@ footer {
   #privateSpace #privateMessagesContent textarea { min-height:96px !important; }
 }
 
+
+/* Full-width mobile layout: cards use the entire available screen */
+#ownerArea {
+  width:100vw !important;
+  max-width:none !important;
+  margin-left:calc(50% - 50vw) !important;
+  margin-right:calc(50% - 50vw) !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+}
+#privateSpace {
+  display:block !important;
+  width:100% !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:22px clamp(18px,4vw,36px) !important;
+  box-sizing:border-box !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  background:linear-gradient(145deg,#030d1d,#061a31) !important;
+}
+#privateSpace .private-grid {
+  display:grid !important;
+  width:100% !important;
+  max-width:none !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  gap:24px !important;
+  box-sizing:border-box !important;
+}
+#privateSpace .private-grid > article.private-tile,
+#privateSpace .private-grid > article.private-tile.private-wide {
+  display:flex !important;
+  flex-direction:column !important;
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  height:auto !important;
+  box-sizing:border-box !important;
+  padding:18px 0 24px !important;
+  margin:0 !important;
+  border:0 !important;
+  border-bottom:1px solid rgba(40,170,255,.16) !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
+#privateSpace .private-tile > * { max-width:100% !important; }
+#privateSpace #privateMessagesContent,
+#privateSpace #privateComplaintsContent,
+#privateSpace #privateProfileContent,
+#privateSpace #privateBusinessContent {
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+}
+#privateSpace #privateMessagesContent .message-compose,
+#privateSpace #privateMessagesContent .message-inbox,
+#privateSpace #privateMessagesContent .message-thread {
+  width:100% !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  padding:18px 0 !important;
+  margin:14px 0 0 !important;
+  border:0 !important;
+  border-top:1px solid rgba(40,170,255,.16) !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
+@media(max-width:1000px) {
+  #ownerArea { width:100vw !important; max-width:none !important; padding:0 !important; }
+  #privateSpace { padding:20px 22px !important; }
+  #privateSpace .private-grid { grid-template-columns:minmax(0,1fr) !important; gap:22px !important; }
+  #privateSpace .private-grid > article.private-tile,
+  #privateSpace .private-grid > article.private-tile.private-wide {
+    width:100% !important;
+    padding:18px 0 24px !important;
+  }
+  #privateSpace .private-tile h3 { font-size:20px !important; }
+  #privateSpace .private-tile p { font-size:15px !important; }
+  #privateSpace #privateMessagesContent input,
+  #privateSpace #privateMessagesContent select,
+  #privateSpace #privateMessagesContent textarea {
+    width:100% !important;
+    max-width:none !important;
+    box-sizing:border-box !important;
+  }
+}
+
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 </head>
