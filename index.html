@@ -2295,6 +2295,9 @@ async function loadDiscoveryTilePhoto(business,tile) {
   }
 }
 
+<script id="reputix-tamos-photo-recovery">
+const REPUTIX_TAMOS_CHELO_PHOTO="data:image/jpeg;base64,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";
+</script>
 function makeDiscoveryTile(business) {
   const quickCleaningPhone = String(business.phone || "").replace(/\D/g,"");
   const isQuickCleaning = business.id === "a2861806-7e33-4eff-907f-f6206535fb7c" ||
@@ -2302,7 +2305,8 @@ function makeDiscoveryTile(business) {
     quickCleaningPhone.endsWith("2137062826") ||
     (/south gate/i.test(String(business.address || business.city || "")) &&
      /cleaning|limpieza/i.test(String(business.category || "")));
-  const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : ""));
+  const isTamosChelo = /tamos\\s*chelo/i.test(String(business.name || ""));
+  const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : (isTamosChelo ? " tamos-chelo-tile" : "")));
   const heading = node("div","tile-heading");
   heading.style.cssText = "display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;position:relative!important;z-index:10!important;width:100%!important;visibility:visible!important;opacity:1!important;";
   const title = node("div","tile-business-name",isQuickCleaning ? "Quick Cleaning Services" : (business.name || "Negocio"));
@@ -2341,6 +2345,16 @@ function makeDiscoveryTile(business) {
     tile.style.backgroundImage = "linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.85) 100%)";
     tile.style.backgroundSize = "cover";
     tile.style.backgroundPosition = "center";
+    tile.classList.add("has-business-photo");
+  } else if (isTamosChelo) {
+    const coverImage=node("img","tile-photo");
+    coverImage.src=REPUTIX_TAMOS_CHELO_PHOTO;
+    coverImage.alt="Letrero original de Tamos Chelo";
+    coverImage.loading="eager";
+    tile.prepend(coverImage);
+    tile.style.backgroundImage="linear-gradient(180deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.78) 100%)";
+    tile.style.backgroundSize="cover";
+    tile.style.backgroundPosition="center 42%";
     tile.classList.add("has-business-photo");
   } else {
     loadDiscoveryTilePhoto(business,tile);
@@ -4027,5 +4041,22 @@ async function loadApprovedBusinesses() {
 }
 </style>
 
+<style id="reputix-photo-cards-final-20261109">
+#bottomDiscoveryRail .business-tile .tile-photo{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ display:block!important;object-fit:cover!important;object-position:center 42%!important;
+ z-index:0!important;opacity:1!important;pointer-events:none!important;
+}
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-photo{
+ object-position:center 38%!important;
+}
+#bottomDiscoveryRail .business-tile.tamos-chelo-tile{
+ border:1px solid rgba(255,201,40,.95)!important;
+ box-shadow:0 0 14px rgba(255,190,35,.3)!important;
+}
+#bottomDiscoveryRail .business-tile.tamos-chelo-tile .tile-business-name{
+ color:#ffe3a1!important;
+}
+</style>
 </body>
 </html>
