@@ -1360,6 +1360,42 @@ footer {
   }
 }
 
+
+/* Portadas visuales por categoría: foto del negocio como imagen principal */
+.business-card { position:relative; }
+.business-cover {
+  position:relative;isolation:isolate;display:flex;align-items:flex-end;
+  min-height:190px;width:100%;overflow:hidden;padding:18px;
+  background:radial-gradient(circle at 78% 24%,rgba(0,190,255,.38),transparent 28%),linear-gradient(135deg,#063b68,#071426 70%);
+}
+.business-cover::before {
+  content:"";position:absolute;inset:0;z-index:-1;opacity:.38;
+  background-image:radial-gradient(rgba(90,205,255,.8) 1px,transparent 1px);background-size:18px 18px;
+}
+.business-cover-art {
+  position:absolute;right:7%;top:2%;font-size:clamp(76px,18vw,145px);line-height:1;
+  color:rgba(126,214,255,.22);text-shadow:0 0 32px rgba(0,166,255,.28);
+  transform:rotate(-10deg);pointer-events:none;
+}
+.business-cover-caption { position:relative;z-index:2;display:grid;gap:4px;max-width:88%;text-shadow:0 2px 8px #000; }
+.business-cover-caption strong { font-size:clamp(20px,5vw,27px);line-height:1.12;overflow-wrap:anywhere; }
+.business-cover-caption span { color:#d0eaff;font-size:13px;font-weight:700; }
+.business-cover.has-photo { padding:18px; }
+.business-cover-image { position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }
+.business-cover.has-photo::after {
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(1,8,20,.02) 20%,rgba(1,8,20,.84) 100%);
+  z-index:1;pointer-events:none;
+}
+.cover-smoke { background:radial-gradient(ellipse at 70% 20%,#087cbd 0%,transparent 40%),linear-gradient(135deg,#061d35,#020814 75%); }
+.cover-food { background:radial-gradient(ellipse at 70% 25%,#a94a12 0%,transparent 42%),linear-gradient(135deg,#48200d,#120b0a 75%); }
+.cover-construction { background:linear-gradient(135deg,#66501a,#25200e 55%,#101827); }
+.cover-auto { background:radial-gradient(ellipse at 70% 25%,#176e79 0%,transparent 42%),linear-gradient(135deg,#092b3c,#08111d 75%); }
+.cover-fashion { background:radial-gradient(ellipse at 70% 25%,#743b8e 0%,transparent 42%),linear-gradient(135deg,#24132f,#080c1a 75%); }
+.cover-market { background:radial-gradient(ellipse at 70% 25%,#2d8a55 0%,transparent 42%),linear-gradient(135deg,#0b3b2b,#07151a 75%); }
+.business-top { position:relative; }
+@media(max-width:540px) { .business-cover { min-height:165px; } }
+
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 </head>
@@ -1985,7 +2021,7 @@ async function uploadBusinessPhoto(file,businessId) {
   }
 }
 
-async function loadApprovedBusinessPhotos(businessId,container) {
+async function loadApprovedBusinessPhotos(businessId,card) {
   try {
     const params = new URLSearchParams({
       select:"storage_path",
@@ -1996,7 +2032,9 @@ async function loadApprovedBusinessPhotos(businessId,container) {
     });
     const rows = await api("business_photos?" + params);
     if (!Array.isArray(rows) || !rows.length) return;
+    const cover = card.querySelector(".business-cover");
     const gallery = node("div","business-photo-gallery");
+    let firstPhoto = true;
     for (const row of rows) {
       const response = await fetch(SUPABASE_URL + "/storage/v1/object/sign/business-photos/" + photoPathUrl(row.storage_path),{
         method:"POST",
@@ -2011,18 +2049,48 @@ async function loadApprovedBusinessPhotos(businessId,container) {
       const data = await response.json();
       const signed = data.signedURL || data.signedUrl;
       if (!signed) continue;
-      const img = node("img","business-photo");
-      img.src = (signed.startsWith("https://") || signed.startsWith("http://"))
+      const src = (signed.startsWith("https://") || signed.startsWith("http://"))
         ? signed
         : SUPABASE_URL + "/storage/v1" + (signed.startsWith("/") ? signed : "/" + signed);
-      img.alt = lang === "es" ? "Foto aprobada del negocio" : "Approved business photo";
-      img.loading = "lazy";
-      gallery.append(img);
+      if (firstPhoto && cover) {
+        const img = node("img","business-cover-image");
+        img.src = src;
+        img.alt = lang === "es" ? "Portada del negocio" : "Business cover photo";
+        img.loading = "lazy";
+        cover.replaceChildren(img);
+        cover.classList.add("has-photo");
+        firstPhoto = false;
+      } else {
+        const img = node("img","business-photo");
+        img.src = src;
+        img.alt = lang === "es" ? "Foto del negocio" : "Business photo";
+        img.loading = "lazy";
+        gallery.append(img);
+      }
     }
-    if (gallery.childElementCount) container.append(gallery);
+    if (gallery.childElementCount) card.insertBefore(gallery,card.querySelector(".stats"));
   } catch (err) {
     console.error("Error al cargar fotos aprobadas:",err);
   }
+}
+
+function makeBusinessCover(business) {
+  const cover = node("div","business-cover");
+  const category = String(business.category || "").toLowerCase();
+  let theme = "general", symbol = "✦", label = business.category || (lang === "es" ? "Negocio local" : "Local business");
+  if (/smoke|vape|tabaco|cigar|fum|cannabis/.test(category)) { theme = "smoke"; symbol = "♨"; }
+  else if (/food|restaurant|comida|restaurante|cafe|cafeter/.test(category)) { theme = "food"; symbol = "🍽"; }
+  else if (/construction|constru|contractor|building/.test(category)) { theme = "construction"; symbol = "🏗"; }
+  else if (/auto|mechanic|taller|car|vehicle/.test(category)) { theme = "auto"; symbol = "🔧"; }
+  else if (/clothing|ropa|fashion|apparel/.test(category)) { theme = "fashion"; symbol = "✦"; }
+  else if (/market|supermarket|grocery|tienda/.test(category)) { theme = "market"; symbol = "🛒"; }
+  cover.classList.add("cover-" + theme);
+  const art = node("div","business-cover-art",symbol);
+  const caption = node("div","business-cover-caption");
+  caption.append(node("strong","",business.name || (lang === "es" ? "Negocio" : "Business")));
+  caption.append(node("span","",label));
+  cover.append(art,caption);
+  return cover;
 }
 
 function makeBusinessPhotoForm(business) {
@@ -2502,6 +2570,8 @@ function makeComplaintSection(business) {
 /* Perfil de negocio */
 function renderBusiness(b) {
   const card = node("article","business-card");
+  const cover = makeBusinessCover(b);
+  card.append(cover);
   const top = node("div","business-top");
   const url = safeUrl(b.logo_url || b.image_url || b.photo_url);
 
