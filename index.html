@@ -609,7 +609,7 @@ footer {
   max-width:190px !important;min-height:142px !important;height:142px !important;
   max-height:142px !important;padding:10px !important;gap:5px !important;
   border:1px solid rgba(220,178,91,.95) !important;border-radius:16px !important;
-  background-image:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.34) 45%,rgba(0,0,0,.88) 100%),url("https://raw.githubusercontent.com/marcelopuebla924-tech/reputix.app/main/assets/quick-cleaning-cover.jpg") !important;
+  background-image:linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.34) 45%,rgba(0,0,0,.88) 100%),url("/assets/quick-cleaning-cover.jpg") !important;
   background-size:cover !important;background-position:center 38% !important;background-repeat:no-repeat !important;
 }
 #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
@@ -1774,6 +1774,7 @@ header:after{
 <section class="hero">
   <div class="discovery-strip" id="topDiscoveryRail" aria-label="Negocios destacados">
 <article class="business-tile quick-cleaning-tile">
+  <img class="tile-photo" src="/assets/quick-cleaning-cover.jpg" alt="">
   <div class="tile-heading"><div class="tile-business-name">Quick Cleaning Services</div><div class="tile-business-category">Professional Cleaning</div><div class="tile-business-location">⌖ South Gate, CA 90280</div></div>
   <div class="tile-contacts"><a class="tile-contact" href="tel:+12137062826">☎ (213) 706-2826</a><a class="tile-contact instagram" href="https://www.instagram.com/carolinacunaconche/" target="_blank" rel="noopener noreferrer">◎ @carolinacunaconche</a></div>
 </article>
@@ -1809,6 +1810,7 @@ header:after{
   </div>
   <div class="discovery-strip" id="bottomDiscoveryRail" aria-label="Más negocios">
 <article class="business-tile quick-cleaning-tile">
+  <img class="tile-photo" src="/assets/quick-cleaning-cover.jpg" alt="">
   <div class="tile-heading"><div class="tile-business-name">Quick Cleaning Services</div><div class="tile-business-category">Professional Cleaning</div><div class="tile-business-location">⌖ South Gate, CA 90280</div></div>
   <div class="tile-contacts"><a class="tile-contact" href="tel:+12137062826">☎ (213) 706-2826</a><a class="tile-contact instagram" href="https://www.instagram.com/carolinacunaconche/" target="_blank" rel="noopener noreferrer">◎ @carolinacunaconche</a></div>
 </article>
@@ -2333,18 +2335,21 @@ function makeDiscoveryTile(business) {
     tile.append(contacts);
   }
   if (isQuickCleaning) {
-    tile.style.backgroundImage = "radial-gradient(circle at 78% 18%,rgba(0,184,255,.26),transparent 38%),linear-gradient(145deg,#092b49 0%,#06101f 72%)";
-    tile.style.backgroundSize = "cover";
-    tile.style.backgroundPosition = "center";
-  } else if (isTamosChelo) {
     const coverImage=node("img","tile-photo");
-    coverImage.src=REPUTIX_TAMOS_CHELO_PHOTO;
-    coverImage.alt="Letrero original de Tamos Chelo";
+    coverImage.src="/assets/quick-cleaning-cover.jpg";
+    coverImage.alt="";
     coverImage.loading="eager";
+    coverImage.onerror=()=>{coverImage.remove();};
     tile.prepend(coverImage);
-    tile.style.backgroundImage="linear-gradient(180deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.78) 100%)";
+    tile.style.backgroundImage="linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.82))";
+    tile.style.backgroundSize="cover";
+    tile.style.backgroundPosition="center 38%";
+    tile.classList.add("has-business-photo");
+  } else if (isTamosChelo) {
+    tile.style.backgroundImage='linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.78)),url("' + REPUTIX_TAMOS_CHELO_PHOTO + '")';
     tile.style.backgroundSize="cover";
     tile.style.backgroundPosition="center 42%";
+    tile.style.backgroundRepeat="no-repeat";
     tile.classList.add("has-business-photo");
   } else {
     loadDiscoveryTilePhoto(business,tile);
@@ -4057,6 +4062,13 @@ async function loadApprovedBusinesses() {
 #topDiscoveryRail>.business-tile .tile-heading,#bottomDiscoveryRail>.business-tile .tile-heading,#topDiscoveryRail>.business-tile .tile-contacts,#bottomDiscoveryRail>.business-tile .tile-contacts{position:relative!important;z-index:2!important}
 #topDiscoveryRail>.tamos-chelo-tile,#bottomDiscoveryRail>.tamos-chelo-tile{border:1px solid #ffd166!important;box-shadow:0 0 13px rgba(255,190,40,.35)!important}
 #topDiscoveryRail>.quick-cleaning-tile,#bottomDiscoveryRail>.quick-cleaning-tile{border:1px solid #17bfff!important;box-shadow:0 0 13px rgba(0,170,255,.3)!important;background:radial-gradient(circle at 80% 18%,rgba(0,184,255,.25),transparent 38%),linear-gradient(145deg,#092b49,#06101f)!important}
+</style>
+<style id="reputix-card-images-final">
+#topDiscoveryRail>.business-tile,#bottomDiscoveryRail>.business-tile{position:relative!important;isolation:isolate!important}
+#topDiscoveryRail>.business-tile .tile-photo,#bottomDiscoveryRail>.business-tile .tile-photo{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 40%!important;z-index:0!important;display:block!important}
+#topDiscoveryRail>.business-tile .tile-heading,#bottomDiscoveryRail>.business-tile .tile-heading,#topDiscoveryRail>.business-tile .tile-contacts,#bottomDiscoveryRail>.business-tile .tile-contacts{position:relative!important;z-index:2!important}
+#topDiscoveryRail>.business-tile:after,#bottomDiscoveryRail>.business-tile:after{z-index:1!important}
+#topDiscoveryRail>.quick-cleaning-tile,#bottomDiscoveryRail>.quick-cleaning-tile{border-color:#ffd36b!important}
 </style>
 </body>
 </html>
