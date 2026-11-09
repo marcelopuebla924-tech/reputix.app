@@ -1899,21 +1899,55 @@ function safeUrl(value) {
 let discoveryOffset = 0;
 let discoveryTimer = null;
 
+async function loadDiscoveryTilePhoto(business,tile) {
+  try {
+    const picture = safeUrl(business.logo_url || business.image_url || business.photo_url);
+    if (picture) {
+      const img = node("img","tile-photo");
+      img.src = picture; img.alt = ""; img.loading = "lazy";
+      img.onerror = () => img.remove();
+      tile.prepend(img);
+      return;
+    }
+    if (!business.id) return;
+    const params = new URLSearchParams({
+      select:"storage_path",
+      business_id:"eq." + business.id,
+      status:"eq.approved",
+      order:"created_at.asc",
+      limit:"1"
+    });
+    const rows = await api("business_photos?" + params);
+    if (!Array.isArray(rows) || !rows.length || !rows[0].storage_path) return;
+    const response = await fetch(SUPABASE_URL + "/storage/v1/object/sign/business-photos/" + photoPathUrl(rows[0].storage_path),{
+      method:"POST",
+      headers:{apikey:SUPABASE_KEY,Authorization:"Bearer " + SUPABASE_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({expiresIn:3600})
+    });
+    if (!response.ok) return;
+    const data = await response.json();
+    const signed = data.signedURL || data.signedUrl;
+    if (!signed) return;
+    const src = (signed.startsWith("https://") || signed.startsWith("http://"))
+      ? signed
+      : SUPABASE_URL + "/storage/v1" + (signed.startsWith("/") ? signed : "/" + signed);
+    const img = node("img","tile-photo");
+    img.src = src; img.alt = ""; img.loading = "lazy";
+    img.onerror = () => img.remove();
+    tile.prepend(img);
+    tile.classList.add("has-business-photo");
+  } catch (err) {
+    console.error("No se pudo cargar la portada de la tarjeta:",err);
+  }
+}
+
 function makeDiscoveryTile(business) {
   const tile = node("article","business-tile");
   const title = node("strong","",business.name || "Negocio");
   const category = node("span","tile-category",business.category || "Categoría");
   const place = [business.city,business.zip].filter(Boolean).join(" · ") || business.address || "En Reputix";
-  const picture = safeUrl(business.logo_url || business.image_url || business.photo_url);
-  if (picture) {
-    const img = node("img","tile-photo");
-    img.src = picture;
-    img.alt = "";
-    img.loading = "lazy";
-    img.onerror = () => img.remove();
-    tile.append(img);
-  }
   tile.append(title,category,node("span","",place));
+  loadDiscoveryTilePhoto(business,tile);
   tile.setAttribute("role","button");
   tile.tabIndex = 0;
   const open = () => {
