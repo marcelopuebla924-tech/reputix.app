@@ -1401,11 +1401,14 @@ footer {
   color:rgba(126,214,255,.22);text-shadow:0 0 32px rgba(0,166,255,.28);
   transform:rotate(-10deg);pointer-events:none;
 }
-.business-cover-caption { position:relative;z-index:2;display:grid;gap:4px;max-width:88%;text-shadow:0 2px 8px #000; }
+.business-cover-caption { position:relative;z-index:2;display:grid;gap:7px;width:100%;max-width:100%;text-shadow:0 2px 8px #000; }
 .business-cover-caption strong { font-size:clamp(20px,5vw,27px);line-height:1.12;overflow-wrap:anywhere; }
 .business-cover-caption span { color:#d0eaff;font-size:13px;font-weight:700; }
+.business-cover-contacts { display:flex;flex-wrap:wrap;gap:8px;margin-top:7px; }
+.business-cover-contact { display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:9px 11px;border:1px solid rgba(105,220,255,.78);border-radius:12px;background:rgba(0,18,38,.82);color:#fff;text-decoration:none;font-size:13px;font-weight:900;box-shadow:0 0 16px rgba(0,174,255,.25);overflow-wrap:anywhere; }
+.business-cover-contact.instagram {border-color:#ff75c8;background:rgba(42,9,48,.82);box-shadow:0 0 16px rgba(255,70,190,.2);}
 .business-cover.has-photo { padding:18px; }
-.business-cover-image { position:absolute;inset:0;width:100%;height:100%;object-fit:cover; }
+.business-cover-image { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0; }
 .business-cover.has-photo::after {
   content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,rgba(1,8,20,.02) 20%,rgba(1,8,20,.84) 100%);
@@ -2131,7 +2134,8 @@ async function loadApprovedBusinessPhotos(businessId,card) {
         img.src = src;
         img.alt = lang === "es" ? "Portada del negocio" : "Business cover photo";
         img.loading = "lazy";
-        cover.replaceChildren(img);
+        const caption = cover.querySelector(".business-cover-caption");
+        cover.insertBefore(img,caption || cover.firstChild);
         cover.classList.add("has-photo");
         firstPhoto = false;
       } else {
@@ -2163,6 +2167,23 @@ function makeBusinessCover(business) {
   const caption = node("div","business-cover-caption");
   caption.append(node("strong","",business.name || (lang === "es" ? "Negocio" : "Business")));
   caption.append(node("span","",label));
+  const contacts = node("div","business-cover-contacts");
+  if (business.phone) {
+    const phone = node("a","business-cover-contact");
+    phone.href = "tel:" + String(business.phone).replace(/[^+0-9]/g,"");
+    phone.append("☎  " + business.phone);
+    contacts.append(phone);
+  }
+  const instagramUrl = safeUrl(business.instagram_url);
+  if (instagramUrl) {
+    const instagram = node("a","business-cover-contact instagram");
+    instagram.href = instagramUrl;
+    instagram.target = "_blank";
+    instagram.rel = "noopener noreferrer";
+    instagram.append("◎  @carolinacunaconche");
+    contacts.append(instagram);
+  }
+  if (contacts.childElementCount) caption.append(contacts);
   cover.append(art,caption);
   return cover;
 }
@@ -2679,25 +2700,7 @@ function renderBusiness(b) {
   const info = node("div","info");
   info.append(makeLine("⌖",b.address || t("address")));
 
-  if (b.phone) {
-    const phoneRow = node("a","info-line contact-highlight");
-    phoneRow.href = "tel:" + String(b.phone).replace(/[^+0-9]/g,"");
-    phoneRow.append("☎  " + b.phone);
-    info.append(phoneRow);
-  } else {
-    info.append(makeLine("☎",t("phone")));
-  }
-
-  const instagram = safeUrl(b.instagram_url);
-  if (instagram) {
-    const instagramRow = node("a","info-line contact-highlight instagram");
-    instagramRow.href = instagram;
-    instagramRow.target = "_blank";
-    instagramRow.rel = "noopener noreferrer";
-    instagramRow.append("◎  Instagram  @carolinacunaconche");
-    info.append(instagramRow);
-  }
-
+  if (!b.phone) info.append(makeLine("☎",t("phone")));
   info.append(makeLine("◷",b.hours || b.opening_hours || t("hours")));
 
   const website = safeUrl(b.website);
