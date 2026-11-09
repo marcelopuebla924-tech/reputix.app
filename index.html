@@ -1572,8 +1572,8 @@ header:after{
   box-shadow:0 0 18px rgba(0,169,255,.3),inset 0 0 22px rgba(0,104,255,.1)!important;
 }
 #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
-  flex:0 0 min(58vw,470px)!important;width:min(58vw,470px)!important;min-width:min(58vw,470px)!important;max-width:min(58vw,470px)!important;
-  height:500px!important;min-height:500px!important;max-height:500px!important;
+  flex:0 0 290px!important;width:290px!important;min-width:290px!important;max-width:290px!important;
+  height:205px!important;min-height:205px!important;max-height:205px!important;
   padding:18px!important;border:2px solid #ffd36b!important;border-radius:24px!important;
   box-shadow:0 0 14px #ffc34d,0 0 32px rgba(255,176,30,.38),inset 0 0 18px rgba(255,205,100,.18)!important;
   background:#020713!important;
@@ -1628,9 +1628,9 @@ header:after{
     height:245px!important;min-height:245px!important;max-height:245px!important;padding:12px!important;
   }
   #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
-    flex:0 0 58vw!important;width:58vw!important;min-width:58vw!important;max-width:58vw!important;
-    height:430px!important;min-height:430px!important;max-height:430px!important;padding:12px!important;
-  }
+     flex:0 0 76vw!important;width:76vw!important;min-width:76vw!important;max-width:76vw!important;
+     height:220px!important;min-height:220px!important;max-height:220px!important;padding:12px!important;
+   }
   .business-tile .tile-business-name{font-size:17px!important;}
   #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
   #bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name{font-size:18px!important;}
@@ -1644,76 +1644,7 @@ header:after{
   .reputix-ai-fab small{font-size:10px!important;}
 }
 @media(min-width:601px){
-  #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{height:470px!important;min-height:470px!important;}
-}
-
-
-/* FIX DEFINITIVO DE TARJETAS: tamaños compactos y uniformes, sin recortar contenido */
-#topDiscoveryRail .business-tile,
-#bottomDiscoveryRail .business-tile {
-  flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
-  height:190px!important;min-height:190px!important;max-height:190px!important;
-  box-sizing:border-box!important;overflow:hidden!important;
-  display:flex!important;flex-direction:column!important;justify-content:flex-end!important;
-}
-#topDiscoveryRail .business-tile.quick-cleaning-tile,
-#bottomDiscoveryRail .business-tile.quick-cleaning-tile {
-  flex:0 0 290px!important;width:290px!important;min-width:290px!important;max-width:290px!important;
-  height:205px!important;min-height:205px!important;max-height:205px!important;padding:14px!important;
-}
-#topDiscoveryRail .business-tile .tile-photo,
-#bottomDiscoveryRail .business-tile .tile-photo {
-  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
-  object-fit:cover!important;z-index:0!important;opacity:1!important;pointer-events:none!important;
-}
-#topDiscoveryRail .business-tile:after,
-#bottomDiscoveryRail .business-tile:after {
-  content:"";position:absolute!important;inset:0!important;z-index:1!important;
-  background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.78))!important;pointer-events:none!important;
-}
-#topDiscoveryRail .business-tile .tile-heading,
-#bottomDiscoveryRail .business-tile .tile-heading,
-#topDiscoveryRail .business-tile .tile-contacts,
-#bottomDiscoveryRail .business-tile .tile-contacts {
-  position:relative!important;z-index:3!important;width:100%!important;min-width:0!important;
-}
-#topDiscoveryRail .business-tile .tile-business-name,
-#bottomDiscoveryRail .business-tile .tile-business-name {
-  display:block!important;visibility:visible!important;opacity:1!important;
-  font-size:15px!important;line-height:1.15!important;color:#fff!important;overflow-wrap:anywhere!important;
-}
-#topDiscoveryRail .business-tile .tile-business-category,
-#topDiscoveryRail .business-tile .tile-business-location,
-#bottomDiscoveryRail .business-tile .tile-business-category,
-#bottomDiscoveryRail .business-tile .tile-business-location {
-  display:block!important;visibility:visible!important;opacity:1!important;
-  font-size:11px!important;line-height:1.2!important;color:#e5f5ff!important;
-}
-#topDiscoveryRail .business-tile .tile-contact,
-#bottomDiscoveryRail .business-tile .tile-contact {
-  position:relative!important;z-index:4!important;font-size:11px!important;padding:6px 8px!important;max-width:100%!important;
-}
-#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
-#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name {color:#ffe3a1!important;font-size:19px!important;}
-@media(max-width:600px) {
-  #topDiscoveryRail .business-tile,
-  #bottomDiscoveryRail .business-tile {
-    flex:0 0 44vw!important;width:44vw!important;min-width:44vw!important;max-width:44vw!important;
-    height:176px!important;min-height:176px!important;max-height:176px!important;padding:10px!important;
-  }
-  #topDiscoveryRail .business-tile.quick-cleaning-tile,
-  #bottomDiscoveryRail .business-tile.quick-cleaning-tile {
-    flex:0 0 76vw!important;width:76vw!important;min-width:76vw!important;max-width:76vw!important;
-    height:205px!important;min-height:205px!important;max-height:205px!important;padding:12px!important;
-  }
-  #topDiscoveryRail .business-tile .tile-business-name,
-  #bottomDiscoveryRail .business-tile .tile-business-name {font-size:13px!important;}
-  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
-  #bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name {font-size:18px!important;}
-  #topDiscoveryRail .business-tile .tile-business-category,
-  #topDiscoveryRail .business-tile .tile-business-location,
-  #bottomDiscoveryRail .business-tile .tile-business-category,
-  #bottomDiscoveryRail .business-tile .tile-business-location {font-size:10px!important;}
+  #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{height:205px!important;min-height:205px!important;max-height:205px!important;}
 }
 
 </style>
@@ -3895,53 +3826,6 @@ async function loadApprovedBusinesses() {
 
 
 
-<!-- REPUTIX MOBILE CARD HOTFIX: override all earlier oversized card rules -->
-<style id="reputix-mobile-card-hotfix">
-#topDiscoveryRail,#bottomDiscoveryRail{align-items:stretch!important}
-#topDiscoveryRail .business-tile,#bottomDiscoveryRail .business-tile{
- flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
- height:190px!important;min-height:190px!important;max-height:190px!important;
- box-sizing:border-box!important;overflow:hidden!important;position:relative!important;
-}
-#topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
- flex:0 0 290px!important;width:290px!important;min-width:290px!important;max-width:290px!important;
- height:205px!important;min-height:205px!important;max-height:205px!important;
-}
-#topDiscoveryRail .business-tile .tile-photo,#bottomDiscoveryRail .business-tile .tile-photo{
- display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
- object-fit:cover!important;object-position:center 38%!important;z-index:0!important;opacity:1!important;
-}
-#topDiscoveryRail .business-tile:after,#bottomDiscoveryRail .business-tile:after{
- content:""!important;position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important;
- background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.76))!important;
-}
-#topDiscoveryRail .business-tile .tile-heading,#bottomDiscoveryRail .business-tile .tile-heading,
-#topDiscoveryRail .business-tile .tile-contacts,#bottomDiscoveryRail .business-tile .tile-contacts{
- position:relative!important;z-index:3!important;width:100%!important;min-width:0!important;
-}
-#topDiscoveryRail .business-tile .tile-business-name,#bottomDiscoveryRail .business-tile .tile-business-name{
- font-size:15px!important;line-height:1.15!important;overflow-wrap:anywhere!important;
-}
-#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
-#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name{font-size:18px!important;color:#ffe3a1!important}
-#topDiscoveryRail .business-tile .tile-business-category,#topDiscoveryRail .business-tile .tile-business-location,
-#bottomDiscoveryRail .business-tile .tile-business-category,#bottomDiscoveryRail .business-tile .tile-business-location{font-size:11px!important}
-#topDiscoveryRail .business-tile .tile-contact,#bottomDiscoveryRail .business-tile .tile-contact{
- font-size:11px!important;padding:6px 8px!important;position:relative!important;z-index:4!important
-}
-.reputix-ai-fab{bottom:18px!important;right:12px!important;max-width:220px!important}
-@media(max-width:600px){
- #topDiscoveryRail .business-tile,#bottomDiscoveryRail .business-tile{
-  flex-basis:44vw!important;width:44vw!important;min-width:44vw!important;max-width:44vw!important;
-  height:190px!important;min-height:190px!important;max-height:190px!important;
- }
- #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
-  flex-basis:76vw!important;width:76vw!important;min-width:76vw!important;max-width:76vw!important;
-  height:220px!important;min-height:220px!important;max-height:220px!important;
- }
- .reputix-ai-fab{bottom:12px!important;right:10px!important;max-width:205px!important}
-}
-</style>
 
 </body>
 </html>
