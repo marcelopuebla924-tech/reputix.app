@@ -1903,13 +1903,30 @@ let discoveryOffset = 0;
 let discoveryTimer = null;
 
 async function loadDiscoveryTilePhoto(business,tile) {
+  const applyPhoto = src => {
+    if (!src) return;
+    // Fondo directo: evita que la capa de color de la tarjeta oculte la fotografía.
+    tile.style.backgroundImage =
+      'linear-gradient(180deg,rgba(0,8,20,.08) 0%,rgba(0,8,20,.72) 100%),url("' +
+      String(src).replace(/"/g,"%22") + '")';
+    tile.style.backgroundSize = "cover";
+    tile.style.backgroundPosition = "center";
+    tile.style.backgroundRepeat = "no-repeat";
+    tile.classList.add("has-business-photo");
+    const oldImage = tile.querySelector(".tile-photo");
+    if (oldImage) oldImage.remove();
+    const img = node("img","tile-photo");
+    img.src = src;
+    img.alt = "";
+    img.loading = "lazy";
+    img.onerror = () => img.remove();
+    tile.prepend(img);
+  };
+
   try {
     const picture = safeUrl(business.logo_url || business.image_url || business.photo_url);
     if (picture) {
-      const img = node("img","tile-photo");
-      img.src = picture; img.alt = ""; img.loading = "lazy";
-      img.onerror = () => img.remove();
-      tile.prepend(img);
+      applyPhoto(picture);
       return;
     }
     if (!business.id) return;
@@ -1917,7 +1934,7 @@ async function loadDiscoveryTilePhoto(business,tile) {
       select:"storage_path",
       business_id:"eq." + business.id,
       status:"eq.approved",
-      order:"created_at.asc",
+      order:"created_at.desc",
       limit:"1"
     });
     const rows = await api("business_photos?" + params);
@@ -1927,18 +1944,17 @@ async function loadDiscoveryTilePhoto(business,tile) {
       headers:{apikey:SUPABASE_KEY,Authorization:"Bearer " + SUPABASE_KEY,"Content-Type":"application/json"},
       body:JSON.stringify({expiresIn:3600})
     });
-    if (!response.ok) return;
+    if (!response.ok) {
+      console.error("No se pudo firmar la foto del negocio:",response.status,await response.text());
+      return;
+    }
     const data = await response.json();
     const signed = data.signedURL || data.signedUrl;
     if (!signed) return;
     const src = (signed.startsWith("https://") || signed.startsWith("http://"))
       ? signed
       : SUPABASE_URL + "/storage/v1" + (signed.startsWith("/") ? signed : "/" + signed);
-    const img = node("img","tile-photo");
-    img.src = src; img.alt = ""; img.loading = "lazy";
-    img.onerror = () => img.remove();
-    tile.prepend(img);
-    tile.classList.add("has-business-photo");
+    applyPhoto(src);
   } catch (err) {
     console.error("No se pudo cargar la portada de la tarjeta:",err);
   }
