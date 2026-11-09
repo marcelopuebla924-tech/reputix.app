@@ -2205,7 +2205,6 @@ loadApprovedBusinesses();
 loadWeeklyRankings();
 loadReviewTicker();
 
-async 
 /* Propietarios: Auth de Supabase y panel privado */
 async function ownerAuthRequest(path,payload) {
   const response = await fetch(SUPABASE_URL + "/auth/v1/" + path,{
