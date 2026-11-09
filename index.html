@@ -1774,12 +1774,12 @@ header:after{
 <section class="hero">
   <div class="discovery-strip" id="topDiscoveryRail" aria-label="Negocios destacados">
 <article class="business-tile quick-cleaning-tile">
-  
+  <img class="tile-photo" src="/assets/quick-cleaning-card.jpg" alt="Quick Cleaning Services">
   <div class="tile-heading"><div class="tile-business-name">Quick Cleaning Services</div><div class="tile-business-category">Professional Cleaning</div><div class="tile-business-location">⌖ South Gate, CA 90280</div></div>
   <div class="tile-contacts"><a class="tile-contact" href="tel:+12137062826">☎ (213) 706-2826</a><a class="tile-contact instagram" href="https://www.instagram.com/carolinacunaconche/" target="_blank" rel="noopener noreferrer">◎ @carolinacunaconche</a></div>
 </article>
 <article class="business-tile tamos-chelo-tile">
-  
+  <img class="tile-photo" src="/assets/tamos-chelo-card.jpg" alt="Tamos Chelo">
   <div class="tile-heading"><div class="tile-business-name">Tamos Chelo Smoke Shop</div><div class="tile-business-category">Smoke Shop</div><div class="tile-business-location">⌖ Los Angeles, CA 90003</div></div>
 </article>
 <article class="business-tile">
@@ -1810,12 +1810,12 @@ header:after{
   </div>
   <div class="discovery-strip" id="bottomDiscoveryRail" aria-label="Más negocios">
 <article class="business-tile quick-cleaning-tile">
-  
+  <img class="tile-photo" src="/assets/quick-cleaning-card.jpg" alt="Quick Cleaning Services">
   <div class="tile-heading"><div class="tile-business-name">Quick Cleaning Services</div><div class="tile-business-category">Professional Cleaning</div><div class="tile-business-location">⌖ South Gate, CA 90280</div></div>
   <div class="tile-contacts"><a class="tile-contact" href="tel:+12137062826">☎ (213) 706-2826</a><a class="tile-contact instagram" href="https://www.instagram.com/carolinacunaconche/" target="_blank" rel="noopener noreferrer">◎ @carolinacunaconche</a></div>
 </article>
 <article class="business-tile tamos-chelo-tile">
-  
+  <img class="tile-photo" src="/assets/tamos-chelo-card.jpg" alt="Tamos Chelo">
   <div class="tile-heading"><div class="tile-business-name">Tamos Chelo Smoke Shop</div><div class="tile-business-category">Smoke Shop</div><div class="tile-business-location">⌖ Los Angeles, CA 90003</div></div>
 </article>
 <article class="business-tile">
@@ -2307,6 +2307,13 @@ function makeDiscoveryTile(business) {
      /cleaning|limpieza/i.test(String(business.category || "")));
   const isTamosChelo = /tamos\s*chelo/i.test(String(business.name || ""));
   const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : (isTamosChelo ? " tamos-chelo-tile" : "")));
+  if (isQuickCleaning || isTamosChelo) {
+    const cover = node("img","tile-photo");
+    cover.src = isQuickCleaning ? "/assets/quick-cleaning-card.jpg" : "/assets/tamos-chelo-card.jpg";
+    cover.alt = isQuickCleaning ? "Quick Cleaning Services" : "Tamos Chelo";
+    cover.loading = "eager";
+    tile.append(cover);
+  }
   const heading = node("div","tile-heading");
   heading.style.cssText = "display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;position:relative!important;z-index:10!important;width:100%!important;visibility:visible!important;opacity:1!important;";
   const title = node("div","tile-business-name",isQuickCleaning ? "Quick Cleaning Services" : (business.name || "Negocio"));
@@ -3969,7 +3976,18 @@ async function loadApprovedBusinesses() {
 
 <style id="reputix-compact-carousel-fix-20261109">
 /* Reputix: una sola franja compacta, deslizable y sin tarjetas gigantes */
-#topDiscoveryRail,#leftDiscoveryRail,#rightDiscoveryRail{display:none!important}
+#bottomDiscoveryRail,#leftDiscoveryRail,#rightDiscoveryRail{display:none!important}
+#topDiscoveryRail{display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;gap:9px!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:0!important;margin:8px auto 12px!important;padding:5px 10px 10px!important;overflow-x:auto!important;overflow-y:hidden!important;scroll-snap-type:x mandatory!important;-webkit-overflow-scrolling:touch!important}
+#topDiscoveryRail>.business-tile{position:relative!important;isolation:isolate!important;box-sizing:border-box!important;display:flex!important;flex:0 0 148px!important;width:148px!important;min-width:148px!important;max-width:148px!important;height:116px!important;min-height:116px!important;max-height:116px!important;padding:8px!important;gap:4px!important;overflow:hidden!important;border-radius:14px!important;scroll-snap-align:start!important;justify-content:flex-end!important}
+#topDiscoveryRail>.business-tile .tile-photo{position:absolute!important;inset:0!important;z-index:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center center!important;display:block!important}
+#topDiscoveryRail>.business-tile:after{content:""!important;position:absolute!important;inset:0!important;z-index:1!important;background:linear-gradient(180deg,rgba(0,0,0,.02) 0%,rgba(0,0,0,.82) 100%)!important;pointer-events:none!important}
+#topDiscoveryRail>.business-tile .tile-heading,#topDiscoveryRail>.business-tile .tile-contacts{position:relative!important;z-index:2!important;width:100%!important}
+#topDiscoveryRail>.business-tile .tile-business-name{font-size:12px!important;line-height:1.1!important;overflow-wrap:anywhere!important}
+#topDiscoveryRail>.business-tile .tile-business-category,#topDiscoveryRail>.business-tile .tile-business-location{font-size:9px!important;line-height:1.12!important;overflow-wrap:anywhere!important}
+#topDiscoveryRail>.business-tile .tile-contacts{display:flex!important;flex-wrap:wrap!important;gap:3px!important}
+#topDiscoveryRail>.business-tile .tile-contact{font-size:8px!important;padding:3px 5px!important}
+#topDiscoveryRail>.quick-cleaning-tile{border:1px solid #ffd36b!important;box-shadow:0 0 12px rgba(255,195,77,.3)!important}
+#topDiscoveryRail>.tamos-chelo-tile{border:1px solid #ffd166!important;box-shadow:0 0 12px rgba(255,190,35,.28)!important}
 #bottomDiscoveryRail{
   display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;
   width:100%!important;max-width:100%!important;min-height:0!important;height:auto!important;
