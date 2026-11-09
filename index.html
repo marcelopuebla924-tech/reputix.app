@@ -887,8 +887,8 @@ footer {
         <label class="owner-field"><span id="ownerPasswordLabel">Contraseña</span><input id="ownerPassword" type="password" autocomplete="current-password" minlength="8" required></label>
       </div>
       <div class="owner-actions">
-        <button class="primary" type="button" id="ownerSignIn">Iniciar sesión</button>
-        <button class="secondary" type="button" id="ownerSignUp">Crear cuenta</button>
+        <button class="primary" type="button" id="ownerSignUp">Crear cuenta</button>
+        <button class="secondary" type="button" id="ownerSignIn">Ya tengo cuenta · Iniciar sesión</button>
         <button class="secondary" type="button" id="ownerSignOut" hidden>Cerrar sesión</button>
       </div>
     </form>
@@ -1095,8 +1095,8 @@ function setLanguage(value) {
     ? "Opiniones reales. Soluciones reales."
     : "Real reviews. Real solutions.";
   $("accountAccessBtn").textContent = lang === "es"
-    ? "Registrarse / Iniciar sesión"
-    : "Sign up / Sign in";
+    ? "Crear cuenta / Iniciar sesión"
+    : "Create account / Sign in";
   $("independentHeaderBtn").textContent = lang === "es"
     ? "Ofrece tu servicio"
     : "Offer your service";
@@ -1117,7 +1117,7 @@ function setLanguage(value) {
   $("ownerIntro").textContent = lang === "es" ? "Regístrate o inicia sesión para solicitar la verificación de tu negocio y consultar sus estadísticas privadas." : "Create an account or sign in to request business verification and view private analytics.";
   $("ownerEmailLabel").textContent = lang === "es" ? "Correo electrónico" : "Email address";
   $("ownerPasswordLabel").textContent = lang === "es" ? "Contraseña" : "Password";
-  $("ownerSignIn").textContent = lang === "es" ? "Iniciar sesión" : "Sign in";
+  $("ownerSignIn").textContent = lang === "es" ? "Ya tengo cuenta · Iniciar sesión" : "I already have an account · Sign in";
   $("ownerSignUp").textContent = lang === "es" ? "Crear cuenta" : "Create account";
   $("ownerSignOut").textContent = lang === "es" ? "Cerrar sesión" : "Sign out";
   $("claimTitle").textContent = lang === "es" ? "Solicitar acceso al negocio" : "Request business access";
