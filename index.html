@@ -2186,9 +2186,9 @@ async function loadDiscoveryTilePhoto(business,tile) {
 }
 
 function makeDiscoveryTile(business) {
-  const quickCleaningPhone = String(business.phone || "").replace(/\\D/g,"");
+  const quickCleaningPhone = String(business.phone || "").replace(/\D/g,"");
   const isQuickCleaning = business.id === "a2861806-7e33-4eff-907f-f6206535fb7c" ||
-    /quick\\s*cleaning/i.test(String(business.name || "")) ||
+    /quick\s*cleaning/i.test(String(business.name || "")) ||
     quickCleaningPhone.endsWith("2137062826") ||
     (/south gate/i.test(String(business.address || business.city || "")) &&
      /cleaning|limpieza/i.test(String(business.category || "")));
@@ -3672,8 +3672,8 @@ async function loadApprovedBusinesses() {
 
   const showBusinesses = (rows, fallbackMode) => {
     const ordered = [...rows].sort((a,b) => {
-      const qa = /quick\\s*cleaning/i.test(String(a.name || "")) ? 0 : 1;
-      const qb = /quick\\s*cleaning/i.test(String(b.name || "")) ? 0 : 1;
+      const qa = /quick\s*cleaning/i.test(String(a.name || "")) ? 0 : 1;
+      const qb = /quick\s*cleaning/i.test(String(b.name || "")) ? 0 : 1;
       return qa - qb;
     });
     lastBusinesses = ordered;
