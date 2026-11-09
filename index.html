@@ -1531,6 +1531,19 @@ footer {
 #topDiscoveryRail .business-tile.quick-cleaning-tile::before,
 #bottomDiscoveryRail .business-tile.quick-cleaning-tile::before{content:none!important;display:none!important;}
 
+
+/* Quick Cleaning: show the actual promotional image cleanly */
+#topDiscoveryRail .business-tile.quick-cleaning-tile::before,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile::before { content:none!important;display:none!important; }
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-photo,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-photo {
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  object-fit:cover!important;object-position:center 38%!important;z-index:0!important;opacity:1!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile::after,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile::after {
+  background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.18) 42%,rgba(0,0,0,.76) 100%)!important;
+}
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 </head>
@@ -3559,7 +3572,7 @@ notice.textContent = t("network");
 }
 
 /* Lanzador público de Reputix AI: reutiliza el servicio autenticado existente */
-(function setupPublicReputixAI(){
+document.addEventListener("DOMContentLoaded", function setupPublicReputixAI(){
   const fab=document.getElementById("reputixAiFab");
   const modal=document.getElementById("reputixAiModal");
   const close=document.getElementById("publicAiClose");
@@ -3594,30 +3607,9 @@ notice.textContent = t("network");
     }catch(err){status.textContent="Error: "+(err?.message||String(err));}
     finally{ask.disabled=false;ask.textContent=lang==="es"?"Preguntar a la IA":"Ask AI";}
   });
-})();
+});
 
 </script>
-
-<button class="reputix-ai-fab" id="reputixAiFab" type="button" aria-label="Abrir Reputix AI">
-  <span class="reputix-ai-robot" aria-hidden="true">🤖</span>
-  <span><strong>✦ Reputix AI</strong><small>¡Aprieta aquí y consulta lo que necesites!</small></span>
-</button>
-<div class="reputix-ai-modal" id="reputixAiModal" hidden>
-  <section class="reputix-ai-dialog" role="dialog" aria-modal="true" aria-labelledby="publicAiTitle">
-    <div class="reputix-ai-dialog-head">
-      <span class="reputix-ai-robot" aria-hidden="true">🤖</span>
-      <div><h2 id="publicAiTitle">Reputix AI</h2><p>Tu asistente inteligente está listo para ayudarte.</p></div>
-    </div>
-    <label for="publicAiPrompt">¿Qué necesitas consultar?</label>
-    <textarea id="publicAiPrompt" maxlength="2000" placeholder="Escribe tu pregunta aquí..."></textarea>
-    <p id="publicAiStatus" aria-live="polite">Consulta sobre negocios, opiniones o cómo funciona Reputix.</p>
-    <div id="publicAiAnswer" hidden></div>
-    <div class="reputix-ai-dialog-actions">
-      <button class="primary" id="publicAiAsk" type="button">Preguntar a la IA</button>
-      <button class="secondary" id="publicAiClose" type="button">Cerrar</button>
-    </div>
-  </section>
-</div>
 
      <div><h3 id="reputixAiTitle">Asistente Reputix AI</h3><p id="reputixAiIntro">Pregunta sobre cómo usar Reputix, entender opiniones y analizar información disponible.</p></div>
           </div>
@@ -3664,5 +3656,27 @@ notice.textContent = t("network");
   REPUTIX © 2026 · Opiniones reales. Soluciones reales.<br>
   Las estadísticas se basan en datos disponibles.
 </footer>
+<button class="reputix-ai-fab" id="reputixAiFab" type="button" aria-label="Abrir Reputix AI">
+  <span class="reputix-ai-robot" aria-hidden="true">🤖</span>
+  <span><strong>✦ Reputix AI</strong><small>¡Aprieta aquí y consulta lo que necesites!</small></span>
+</button>
+<div class="reputix-ai-modal" id="reputixAiModal" hidden>
+  <section class="reputix-ai-dialog" role="dialog" aria-modal="true" aria-labelledby="publicAiTitle">
+    <div class="reputix-ai-dialog-head">
+      <span class="reputix-ai-robot" aria-hidden="true">🤖</span>
+      <div><h2 id="publicAiTitle">Reputix AI</h2><p>Tu asistente inteligente está listo para ayudarte.</p></div>
+    </div>
+    <label for="publicAiPrompt">¿Qué necesitas consultar?</label>
+    <textarea id="publicAiPrompt" maxlength="2000" placeholder="Escribe tu pregunta aquí..."></textarea>
+    <p id="publicAiStatus" aria-live="polite">Consulta sobre negocios, opiniones o cómo funciona Reputix.</p>
+    <div id="publicAiAnswer" hidden></div>
+    <div class="reputix-ai-dialog-actions">
+      <button class="primary" id="publicAiAsk" type="button">Preguntar a la IA</button>
+      <button class="secondary" id="publicAiClose" type="button">Cerrar</button>
+    </div>
+  </section>
+</div>
+
+
 </body>
 </html>
