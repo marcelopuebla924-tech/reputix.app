@@ -596,52 +596,59 @@ footer {
   #topDiscoveryRail .business-tile span,
   #bottomDiscoveryRail .business-tile span { font-size:9px !important; }
 }
-/* Quick Cleaning homepage card: full business identity, no clipped content */
-#topDiscoveryRail .business-tile.quick-cleaning-tile {
+/* Quick Cleaning: same complete presentation in both discovery rails */
+#topDiscoveryRail .business-tile.quick-cleaning-tile,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile {
   flex:0 0 min(82vw,340px) !important;
   width:min(82vw,340px) !important;
   min-width:min(82vw,340px) !important;
-  min-height:220px !important;
+  min-height:210px !important;
   height:auto !important;
   max-height:none !important;
-  padding:16px !important;
+  padding:15px !important;
   display:flex !important;
   flex-direction:column !important;
   justify-content:flex-end !important;
   align-items:flex-start !important;
-  gap:9px !important;
+  gap:8px !important;
   border:1px solid rgba(220,178,91,.95) !important;
   border-radius:19px !important;
-  background:radial-gradient(ellipse at 80% 12%,rgba(194,145,48,.34),transparent 42%),linear-gradient(135deg,#17120b,#050608 62%,#17120b) !important;
+  background:radial-gradient(ellipse at 80% 12%,rgba(194,145,48,.30),transparent 42%),linear-gradient(135deg,#17120b,#050608 62%,#17120b) !important;
   overflow:hidden !important;
 }
-#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-heading {
-  display:flex !important; flex-direction:column !important; gap:5px !important;
-  position:relative !important; z-index:4 !important; width:100% !important;
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-heading,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-heading {
+  display:flex !important; flex-direction:column !important; align-items:flex-start !important;
+  gap:5px !important; position:relative !important; z-index:4 !important; width:100% !important;
 }
-#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name {
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name {
   display:block !important; color:#ffe3a1 !important; font-size:20px !important;
-  font-weight:900 !important; line-height:1.15 !important;
+  font-weight:900 !important; line-height:1.15 !important; margin:0 !important;
 }
 #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category,
-#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location {
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location {
   display:block !important; color:#fff !important; font-size:12px !important;
-  font-weight:750 !important; line-height:1.3 !important;
+  font-weight:750 !important; line-height:1.3 !important; margin:0 !important;
 }
-#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-contacts {
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-contacts,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-contacts {
   display:flex !important; flex-wrap:wrap !important; gap:7px !important;
   position:relative !important; z-index:4 !important; margin-top:3px !important;
 }
-#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-contact {
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-contact,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-contact {
   display:inline-flex !important; font-size:11px !important; padding:7px 9px !important;
 }
 @media(max-width:540px) {
-  #topDiscoveryRail .business-tile.quick-cleaning-tile {
+  #topDiscoveryRail .business-tile.quick-cleaning-tile,
+  #bottomDiscoveryRail .business-tile.quick-cleaning-tile {
     flex:0 0 82vw !important; width:82vw !important; min-width:82vw !important;
-    min-height:220px !important; height:auto !important; max-height:none !important;
+    min-height:210px !important; height:auto !important; max-height:none !important;
   }
 }
-
 
 /* Community and bottom section redesign */
 .community {
@@ -2052,10 +2059,10 @@ function makeDiscoveryTile(business) {
   const isQuickCleaning = business.id === "a2861806-7e33-4eff-907f-f6206535fb7c";
   const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : ""));
   const heading = node("div","tile-heading");
-  const title = node("div","tile-business-name",isQuickCleaning ? "Quick Cleaning Services" : (business.name || "Negocio"));
-  const category = node("div","tile-business-category",isQuickCleaning ? "Professional Cleaning Services" : (business.category || "Categoría"));
-  const place = isQuickCleaning ? "South Gate, CA 90280" : ([business.city,business.zip].filter(Boolean).join(" · ") || business.address || "En Reputix");
-  const location = node("div","tile-business-location","⌖ " + place);
+  const title = node("strong","tile-business-name",business.name || "Negocio");
+  const category = node("span","tile-business-category",business.category || "Categoría");
+  const place = [business.city,business.zip].filter(Boolean).join(" · ") || business.address || "En Reputix";
+  const location = node("span","tile-business-location","⌖ " + place);
   heading.append(title,category,location);
   tile.append(heading);
   if (isQuickCleaning) {
