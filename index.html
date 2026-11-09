@@ -1937,6 +1937,47 @@ header:after{
             <span class="private-icon">✦</span>
        
 
+     <div><h3 id="reputixAiTitle">Asistente Reputix AI</h3><p id="reputixAiIntro">Pregunta sobre cómo usar Reputix, entender opiniones y analizar información disponible.</p></div>
+          </div>
+          <form id="reputixAiForm" class="ai-assistant-form">
+            <label class="owner-field"><span id="reputixAiPromptLabel">¿En qué te puedo ayudar?</span><textarea id="reputixAiPrompt" rows="3" maxlength="2000" required placeholder="Escribe tu pregunta..."></textarea></label>
+            <button class="primary" type="submit" id="reputixAiSend">Preguntar a Reputix AI</button>
+          </form>
+          <p class="owner-message" id="reputixAiStatus" aria-live="polite"></p>
+          <div class="ai-assistant-answer" id="reputixAiAnswer" hidden></div>
+        </article>
+      </div>
+    </section>
+    <div id="ownerClaimArea" hidden>
+      <div class="divider"></div>
+      <h3 id="claimTitle">Solicitar acceso al negocio</h3>
+      <p class="owner-copy" id="claimIntro">Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada.</p>
+      <form id="ownerClaimForm">
+        <div class="owner-grid">
+          <label class="owner-field full"><span id="claimBusinessLabel">Negocio</span><select id="claimBusiness" required><option value="">Selecciona un negocio</option></select></label>
+          <label class="owner-field full"><span id="claimEvidenceLabel">Prueba de relación con el negocio</span><textarea id="claimEvidence" rows="3" maxlength="700" required placeholder="Ej. Soy propietario y puedo presentar licencia comercial..."></textarea></label>
+        </div>
+        <div class="owner-actions"><button class="primary" type="submit" id="claimSubmit">Enviar solicitud</button></div>
+      </form>
+      <p class="owner-message" id="ownerClaimMessage" aria-live="polite"></p>
+      <div id="ownerDashboard" hidden>
+        <div class="divider"></div>
+        <h3 id="dashboardTitle">Tus estadísticas</h3>
+        <div id="ownerDashboardList"></div>
+        <p class="owner-insight" id="ownerDashboardNote">Los datos se calculan únicamente con opiniones publicadas. Los patrones por horario requieren un mínimo de 3 opiniones en cada franja.</p>
+      </div>
+      <section id="adminClaimsPanel" hidden>
+        <div class="divider"></div>
+        <h3 id="adminClaimsTitle">🛡️ Revisión administrativa</h3>
+        <p class="admin-warning" id="adminClaimsWarning">Solo verifica una solicitud cuando hayas comprobado la identidad y una prueba válida de relación con el negocio. No aceptes únicamente una declaración escrita.</p>
+        <div id="adminClaimsList"></div>
+      </section>
+    </div>
+  </section>
+</section>
+</section>
+</main>
+
 <script>
 "use strict";
 
@@ -2360,6 +2401,7 @@ function makeDiscoveryTile(business) {
     form.requestSubmit();
     window.scrollTo({top:0,behavior:"smooth"});
   };
+  tile.dataset.searchBound = "true";
   tile.addEventListener("click",open);
   tile.addEventListener("keydown",e => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault();open(); }
@@ -2372,7 +2414,7 @@ function makeDiscoveryTile(business) {
 $("bottomDiscoveryRail")?.addEventListener("click",e=>{
   if(e.target.closest("a")) return;
   const tile=e.target.closest(".business-tile");
-  if(!tile || tile.getAttribute("role")==="button") return;
+  if(!tile || tile.dataset.searchBound==="true") return;
   const title=tile.querySelector(".tile-business-name")?.textContent?.trim();
   if(!title) return;
   input.value=title;
@@ -3762,7 +3804,7 @@ $("ownerSignUp").addEventListener("click",()=>{ownerAuthAction="signup";});
 $("ownerSignIn").addEventListener("click",()=>{ownerAuthAction="signin";});
 $("ownerAuthForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const action=ownerAuthAction || "signup";
+  const action=e.submitter?.value || ownerAuthAction || "signup";
   ownerAuthAction="signup";
   const message=$("ownerAuthMessage");
   const submitButtons=[$("ownerSignUp"),$("ownerSignIn")];
@@ -3895,46 +3937,6 @@ async function loadApprovedBusinesses() {
 
 </script>
 
-     <div><h3 id="reputixAiTitle">Asistente Reputix AI</h3><p id="reputixAiIntro">Pregunta sobre cómo usar Reputix, entender opiniones y analizar información disponible.</p></div>
-          </div>
-          <form id="reputixAiForm" class="ai-assistant-form">
-            <label class="owner-field"><span id="reputixAiPromptLabel">¿En qué te puedo ayudar?</span><textarea id="reputixAiPrompt" rows="3" maxlength="2000" required placeholder="Escribe tu pregunta..."></textarea></label>
-            <button class="primary" type="submit" id="reputixAiSend">Preguntar a Reputix AI</button>
-          </form>
-          <p class="owner-message" id="reputixAiStatus" aria-live="polite"></p>
-          <div class="ai-assistant-answer" id="reputixAiAnswer" hidden></div>
-        </article>
-      </div>
-    </section>
-    <div id="ownerClaimArea" hidden>
-      <div class="divider"></div>
-      <h3 id="claimTitle">Solicitar acceso al negocio</h3>
-      <p class="owner-copy" id="claimIntro">Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada.</p>
-      <form id="ownerClaimForm">
-        <div class="owner-grid">
-          <label class="owner-field full"><span id="claimBusinessLabel">Negocio</span><select id="claimBusiness" required><option value="">Selecciona un negocio</option></select></label>
-          <label class="owner-field full"><span id="claimEvidenceLabel">Prueba de relación con el negocio</span><textarea id="claimEvidence" rows="3" maxlength="700" required placeholder="Ej. Soy propietario y puedo presentar licencia comercial..."></textarea></label>
-        </div>
-        <div class="owner-actions"><button class="primary" type="submit" id="claimSubmit">Enviar solicitud</button></div>
-      </form>
-      <p class="owner-message" id="ownerClaimMessage" aria-live="polite"></p>
-      <div id="ownerDashboard" hidden>
-        <div class="divider"></div>
-        <h3 id="dashboardTitle">Tus estadísticas</h3>
-        <div id="ownerDashboardList"></div>
-        <p class="owner-insight" id="ownerDashboardNote">Los datos se calculan únicamente con opiniones publicadas. Los patrones por horario requieren un mínimo de 3 opiniones en cada franja.</p>
-      </div>
-      <section id="adminClaimsPanel" hidden>
-        <div class="divider"></div>
-        <h3 id="adminClaimsTitle">🛡️ Revisión administrativa</h3>
-        <p class="admin-warning" id="adminClaimsWarning">Solo verifica una solicitud cuando hayas comprobado la identidad y una prueba válida de relación con el negocio. No aceptes únicamente una declaración escrita.</p>
-        <div id="adminClaimsList"></div>
-      </section>
-    </div>
-  </section>
-</section>
-</section>
-</main>
 
 <footer>
   REPUTIX © 2026 · Opiniones reales. Soluciones reales.<br>
