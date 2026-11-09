@@ -1485,6 +1485,52 @@ footer {
 .business-top { position:relative; }
 @media(max-width:540px) { .business-cover { min-height:165px; } }
 
+
+/* Reputix AI: acceso flotante público */
+.reputix-ai-fab {
+  position:fixed;right:16px;bottom:22px;z-index:9998;
+  display:flex;align-items:center;gap:10px;max-width:min(310px,calc(100vw - 28px));
+  padding:10px 14px 10px 10px;border:1px solid #36caff;border-radius:22px;
+  color:#fff;background:linear-gradient(135deg,rgba(3,24,52,.97),rgba(0,91,170,.96));
+  box-shadow:0 0 12px rgba(0,185,255,.8),0 0 30px rgba(0,120,255,.42);
+  cursor:pointer;text-align:left;animation:reputixAiPulse 2.8s ease-in-out infinite;
+}
+.reputix-ai-robot {
+  width:54px;height:54px;flex:0 0 54px;display:grid;place-items:center;
+  border-radius:17px;border:1px solid #72e5ff;background:radial-gradient(circle at 40% 30%,#8ef4ff,#087bda 58%,#031b45);
+  font-size:34px;box-shadow:inset 0 0 13px rgba(255,255,255,.4),0 0 16px rgba(0,190,255,.7);
+}
+.reputix-ai-fab strong {display:block;font-size:13px;line-height:1.25;color:#fff;}
+.reputix-ai-fab small {display:block;margin-top:4px;font-size:11px;line-height:1.3;color:#a9eaff;}
+@keyframes reputixAiPulse {0%,100%{box-shadow:0 0 12px rgba(0,185,255,.7),0 0 24px rgba(0,120,255,.3)}50%{box-shadow:0 0 19px rgba(0,220,255,1),0 0 38px rgba(0,120,255,.58)}}
+.reputix-ai-modal {
+  position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:18px;
+  background:rgba(0,5,15,.78);backdrop-filter:blur(7px);
+}
+.reputix-ai-modal[hidden]{display:none!important;}
+.reputix-ai-dialog {
+  width:min(100%,460px);padding:20px;border:1px solid #20baff;border-radius:22px;
+  background:linear-gradient(145deg,#0b2543,#030b19);color:#f4faff;
+  box-shadow:0 0 28px rgba(0,160,255,.38);
+}
+.reputix-ai-dialog-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.reputix-ai-dialog-head .reputix-ai-robot{width:62px;height:62px;flex-basis:62px;font-size:39px;}
+.reputix-ai-dialog h2{margin:0;font-size:21px;color:#8ce7ff;}
+.reputix-ai-dialog p{color:#b8cce2;font-size:13px;line-height:1.5;}
+.reputix-ai-dialog textarea{width:100%;min-height:110px;margin:8px 0 12px;resize:vertical;}
+.reputix-ai-dialog-actions{display:flex;gap:9px;flex-wrap:wrap;}
+.reputix-ai-dialog-actions button{flex:1;min-width:120px;}
+#publicAiAnswer{white-space:pre-wrap;line-height:1.55;color:#e8f7ff;border:1px solid #17527a;border-radius:12px;padding:12px;margin-top:12px;}
+@media(max-width:540px){
+ .reputix-ai-fab{right:10px;bottom:18px;padding:8px 11px 8px 8px;gap:8px;max-width:250px;border-radius:18px;}
+ .reputix-ai-robot{width:46px;height:46px;flex-basis:46px;font-size:29px;border-radius:14px;}
+ .reputix-ai-fab strong{font-size:12px}.reputix-ai-fab small{font-size:10px}
+ .reputix-ai-dialog{padding:16px}
+}
+/* Quick Cleaning: cache-busted cover image and readable compact copy */
+#topDiscoveryRail .business-tile.quick-cleaning-tile::before,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile::before{content:none!important;display:none!important;}
+
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 </head>
@@ -1640,7 +1686,29 @@ footer {
         <article class="private-tile private-wide ai-assistant-panel">
           <div class="ai-assistant-head">
             <span class="private-icon">✦</span>
-            <div><h3 id="reputixAiTitle">Asistente Reputix AI</h3><p id="reputixAiIntro">Pregunta sobre cómo usar Reputix, entender opiniones y analizar información disponible.</p></div>
+       
+<button class="reputix-ai-fab" id="reputixAiFab" type="button" aria-label="Abrir Reputix AI">
+  <span class="reputix-ai-robot" aria-hidden="true">🤖</span>
+  <span><strong>✦ Reputix AI</strong><small>¡Aprieta aquí y consulta lo que necesites!</small></span>
+</button>
+<div class="reputix-ai-modal" id="reputixAiModal" hidden>
+  <section class="reputix-ai-dialog" role="dialog" aria-modal="true" aria-labelledby="publicAiTitle">
+    <div class="reputix-ai-dialog-head">
+      <span class="reputix-ai-robot" aria-hidden="true">🤖</span>
+      <div><h2 id="publicAiTitle">Reputix AI</h2><p>Tu asistente inteligente está listo para ayudarte.</p></div>
+    </div>
+    <label for="publicAiPrompt">¿Qué necesitas consultar?</label>
+    <textarea id="publicAiPrompt" maxlength="2000" placeholder="Escribe tu pregunta aquí..."></textarea>
+    <p id="publicAiStatus" aria-live="polite">Consulta sobre negocios, opiniones o cómo funciona Reputix.</p>
+    <div id="publicAiAnswer" hidden></div>
+    <div class="reputix-ai-dialog-actions">
+      <button class="primary" id="publicAiAsk" type="button">Preguntar a la IA</button>
+      <button class="secondary" id="publicAiClose" type="button">Cerrar</button>
+    </div>
+  </section>
+</div>
+
+     <div><h3 id="reputixAiTitle">Asistente Reputix AI</h3><p id="reputixAiIntro">Pregunta sobre cómo usar Reputix, entender opiniones y analizar información disponible.</p></div>
           </div>
           <form id="reputixAiForm" class="ai-assistant-form">
             <label class="owner-field"><span id="reputixAiPromptLabel">¿En qué te puedo ayudar?</span><textarea id="reputixAiPrompt" rows="3" maxlength="2000" required placeholder="Escribe tu pregunta..."></textarea></label>
@@ -2077,11 +2145,16 @@ function makeDiscoveryTile(business) {
     tile.append(contacts);
   }
   if (isQuickCleaning) {
-    const cover = "https://raw.githubusercontent.com/marcelopuebla924-tech/reputix.app/main/assets/quick-cleaning-cover.jpg";
-    tile.style.backgroundImage = 'linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(0,0,0,.38) 42%,rgba(0,0,0,.88) 100%),url("' + cover + '")';
+    const cover = window.location.origin + "/assets/quick-cleaning-cover.jpg?v=20261109";
+    const coverImage = node("img","tile-photo");
+    coverImage.src = cover;
+    coverImage.alt = "Quick Cleaning Services";
+    coverImage.loading = "eager";
+    coverImage.onerror = () => { console.error("No se pudo cargar quick-cleaning-cover.jpg",cover); coverImage.remove(); };
+    tile.prepend(coverImage);
+    tile.style.backgroundImage = "linear-gradient(180deg,rgba(0,0,0,.12) 0%,rgba(0,0,0,.85) 100%)";
     tile.style.backgroundSize = "cover";
-    tile.style.backgroundPosition = "center 38%";
-    tile.style.backgroundRepeat = "no-repeat";
+    tile.style.backgroundPosition = "center";
     tile.classList.add("has-business-photo");
   } else {
     loadDiscoveryTilePhoto(business,tile);
@@ -3545,6 +3618,45 @@ console.error("Error al cargar negocios:", err);
 notice.textContent = t("network");
 }
 }
+
+/* Lanzador público de Reputix AI: reutiliza el servicio autenticado existente */
+(function setupPublicReputixAI(){
+  const fab=document.getElementById("reputixAiFab");
+  const modal=document.getElementById("reputixAiModal");
+  const close=document.getElementById("publicAiClose");
+  const ask=document.getElementById("publicAiAsk");
+  const prompt=document.getElementById("publicAiPrompt");
+  const status=document.getElementById("publicAiStatus");
+  const answer=document.getElementById("publicAiAnswer");
+  if(!fab||!modal||!close||!ask||!prompt||!status||!answer)return;
+  fab.addEventListener("click",()=>{modal.hidden=false;prompt.focus();});
+  close.addEventListener("click",()=>{modal.hidden=true;});
+  modal.addEventListener("click",e=>{if(e.target===modal)modal.hidden=true;});
+  ask.addEventListener("click",async()=>{
+    const message=prompt.value.trim();
+    if(!message){status.textContent=lang==="es"?"Escribe tu consulta para continuar.":"Type your question to continue.";return;}
+    if(!ownerSession?.access_token){
+      status.textContent=lang==="es"?"Para usar Reputix AI, inicia sesión o crea una cuenta. Te llevaremos al acceso seguro.":"To use Reputix AI, sign in or create an account. We'll take you to secure access.";
+      ask.textContent=lang==="es"?"Ir a iniciar sesión":"Go to sign in";
+      ask.onclick=()=>{modal.hidden=true;document.getElementById("ownerArea")?.scrollIntoView({behavior:"smooth",block:"start"});document.getElementById("ownerEmail")?.focus({preventScroll:true});};
+      return;
+    }
+    ask.disabled=true;status.textContent=lang==="es"?"Reputix AI está preparando tu respuesta…":"Reputix AI is preparing your answer…";answer.hidden=true;
+    try{
+      const response=await fetch(SUPABASE_URL+"/functions/v1/reputix-ai",{
+        method:"POST",
+        headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+ownerSession.access_token,"Content-Type":"application/json"},
+        body:JSON.stringify({message,language:lang,mode:"assistant"})
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(data.error||(lang==="es"?"No se pudo conectar con Reputix AI.":"Could not connect to Reputix AI."));
+      answer.textContent=data.answer||(lang==="es"?"No recibimos una respuesta.":"No answer was returned.");
+      answer.hidden=false;status.textContent=lang==="es"?"Respuesta generada por Reputix AI.":"Answer generated by Reputix AI.";
+    }catch(err){status.textContent="Error: "+(err?.message||String(err));}
+    finally{ask.disabled=false;ask.textContent=lang==="es"?"Preguntar a la IA":"Ask AI";}
+  });
+})();
+
 </script>
 </body>
 </html>
