@@ -1544,6 +1544,109 @@ footer {
 #bottomDiscoveryRail .business-tile.quick-cleaning-tile::after {
   background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,.18) 42%,rgba(0,0,0,.76) 100%)!important;
 }
+
+/* REPUTIX NEON REFRESH — final responsive overrides */
+header{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  min-height:112px!important;padding:16px 24px!important;
+  background:
+    linear-gradient(180deg,rgba(2,11,28,.78),rgba(2,10,24,.96)),
+    radial-gradient(ellipse at 50% 100%,rgba(0,177,255,.36),transparent 62%),
+    linear-gradient(90deg,#03142c,#061d3b 48%,#03142c)!important;
+  border-bottom:1px solid rgba(0,183,255,.65)!important;
+  box-shadow:0 10px 34px rgba(0,144,255,.2)!important;
+}
+header:after{
+  content:"";position:absolute;inset:auto 0 0;height:36px;z-index:-1;opacity:.55;
+  background:linear-gradient(90deg,transparent,#0878c9 8%,#06172c 18%,#0b3b65 27%,#06172c 40%,#0b4c7a 52%,#06172c 65%,#0a3154 78%,transparent);
+  clip-path:polygon(0 100%,0 75%,4% 75%,4% 44%,7% 44%,7% 85%,12% 85%,12% 20%,16% 20%,16% 68%,22% 68%,22% 8%,26% 8%,26% 78%,32% 78%,32% 36%,37% 36%,37% 80%,45% 80%,45% 12%,50% 12%,50% 72%,57% 72%,57% 28%,62% 28%,62% 86%,70% 86%,70% 14%,74% 14%,74% 70%,81% 70%,81% 35%,87% 35%,87% 82%,93% 82%,93% 24%,97% 24%,97% 75%,100% 75%,100% 100%);
+}
+.logo{font-size:clamp(28px,5vw,46px)!important;letter-spacing:-2px!important;text-shadow:0 0 18px #009dff,0 0 32px rgba(0,153,255,.5)!important;}
+.tag{font-size:14px!important;font-weight:700!important;color:#d8edff!important;}
+.hero{background:radial-gradient(ellipse at 50% 5%,rgba(0,113,222,.17),transparent 48%),transparent!important;}
+.discovery-strip{overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin;scrollbar-color:#087fc9 transparent;}
+#topDiscoveryRail .business-tile,#bottomDiscoveryRail .business-tile{
+  flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
+  height:190px!important;min-height:190px!important;max-height:190px!important;
+  border-radius:20px!important;border:1px solid #10baff!important;
+  box-shadow:0 0 18px rgba(0,169,255,.3),inset 0 0 22px rgba(0,104,255,.1)!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
+  flex:0 0 min(58vw,470px)!important;width:min(58vw,470px)!important;min-width:min(58vw,470px)!important;max-width:min(58vw,470px)!important;
+  height:500px!important;min-height:500px!important;max-height:500px!important;
+  padding:18px!important;border:2px solid #ffd36b!important;border-radius:24px!important;
+  box-shadow:0 0 14px #ffc34d,0 0 32px rgba(255,176,30,.38),inset 0 0 18px rgba(255,205,100,.18)!important;
+  background:#020713!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-photo,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-photo{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  object-fit:cover!important;object-position:center!important;z-index:0!important;opacity:1!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile:after,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile:after{
+  background:linear-gradient(180deg,rgba(0,0,0,.02) 0%,rgba(0,0,0,.08) 50%,rgba(0,0,0,.78) 100%)!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-heading,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-heading,
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-contacts,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-contacts{z-index:4!important;position:relative!important;}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name{font-size:23px!important;color:#fff!important;text-shadow:0 2px 10px #000!important;}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category,
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location{font-size:14px!important;color:#fff!important;text-shadow:0 2px 8px #000!important;}
+.reputix-ai-fab{
+  position:fixed!important;right:14px!important;bottom:94px!important;z-index:2147483000!important;
+  display:flex!important;align-items:center!important;gap:10px!important;
+  width:auto!important;max-width:min(310px,calc(100vw - 26px))!important;
+  padding:10px 14px 10px 10px!important;border:2px solid #35d7ff!important;border-radius:24px!important;
+  background:linear-gradient(135deg,rgba(3,23,53,.98),rgba(0,94,190,.98))!important;
+  color:#fff!important;box-shadow:0 0 18px #00bfff,0 0 38px rgba(0,110,255,.6)!important;
+  transform:none!important;visibility:visible!important;opacity:1!important;
+}
+.reputix-ai-robot{width:62px!important;height:62px!important;flex:0 0 62px!important;font-size:40px!important;border-radius:18px!important;}
+.reputix-ai-fab strong{font-size:15px!important;color:#fff!important;}
+.reputix-ai-fab small{font-size:12px!important;color:#bceeff!important;line-height:1.3!important;}
+@media(max-width:600px){
+  header{min-height:92px!important;padding:10px 12px!important;align-items:center!important;gap:8px!important;}
+  header>div:first-child{min-width:0!important;flex:1 1 auto!important;}
+  .logo{font-size:27px!important;white-space:nowrap!important;letter-spacing:-1.3px!important;}
+  .logo:before{width:30px!important;height:30px!important;margin-right:5px!important;font-size:18px!important;}
+  .tag{font-size:10px!important;line-height:1.15!important;white-space:normal!important;}
+  .header-actions{flex:0 1 auto!important;max-width:54%!important;gap:4px!important;flex-wrap:wrap!important;justify-content:flex-end!important;}
+  .independent-header-access{font-size:9px!important;padding:6px 7px!important;}
+  .account-access{font-size:9px!important;padding:7px 8px!important;}
+  #language{font-size:10px!important;padding:6px 5px!important;max-width:90px!important;}
+  .hero{padding:12px 12px 22px!important;}
+  .hero-layout{display:block!important;}
+  .edge-rail{display:none!important;}
+  .discovery-strip{margin:10px -12px!important;padding:6px 12px 12px!important;gap:12px!important;}
+  #topDiscoveryRail .business-tile,#bottomDiscoveryRail .business-tile{
+    flex:0 0 42vw!important;width:42vw!important;min-width:42vw!important;max-width:42vw!important;
+    height:245px!important;min-height:245px!important;max-height:245px!important;padding:12px!important;
+  }
+  #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
+    flex:0 0 58vw!important;width:58vw!important;min-width:58vw!important;max-width:58vw!important;
+    height:430px!important;min-height:430px!important;max-height:430px!important;padding:12px!important;
+  }
+  .business-tile .tile-business-name{font-size:17px!important;}
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
+  #bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name{font-size:18px!important;}
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category,
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location,
+  #bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category,
+  #bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location{font-size:11px!important;}
+  .reputix-ai-fab{right:10px!important;bottom:86px!important;max-width:245px!important;padding:8px 10px 8px 8px!important;gap:8px!important;border-radius:20px!important;}
+  .reputix-ai-robot{width:52px!important;height:52px!important;flex-basis:52px!important;font-size:34px!important;}
+  .reputix-ai-fab strong{font-size:12px!important;}
+  .reputix-ai-fab small{font-size:10px!important;}
+}
+@media(min-width:601px){
+  #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{height:470px!important;min-height:470px!important;}
+}
+
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 </head>
@@ -3554,42 +3657,46 @@ $("ownerClaimForm").addEventListener("submit",async e=>{
 if(ownerSession?.access_token) ownerSetSession(ownerSession);
 
 async function loadApprovedBusinesses() {
-resultsBox.replaceChildren();
-lastBusinesses = [];
+  resultsBox.replaceChildren();
+  lastBusinesses = [];
+  notice.textContent = lang === "es" ? "Cargando negocios aprobados..." : "Loading approved businesses...";
 
-notice.textContent = lang === "es"
-? "Cargando negocios aprobados..."
-: "Loading approved businesses...";
+  // Respaldo visual basado en los cuatro negocios que ya están aprobados en Supabase.
+  // Solo se usa si el endpoint público falla o no devuelve filas.
+  const approvedFallback = [
+    {id:"a2861806-7e33-4eff-907f-f6206535fb7c",name:"Quick Cleaning Services",category:"Professional Cleaning",city:"South Gate",zip:"90280",address:"9233 South Gate",phone:"2137062826",status:"approved"},
+    {id:"b2a18a5d-2fca-44f2-aa62-038b972d1a2b",name:"Tamos Chelo Smoke Shop",category:"Smoke Shop",city:"LOS ANGELES",zip:"90003",address:"9419 S San Pedro St",status:"approved"},
+    {id:"82d23337-58b0-437e-8a80-ddb568d584b9",name:"Los primos",category:"Tienda o supermercado",city:"LOS ANGELES",zip:"90015",address:"S SAN PEDRO ST",status:"approved"},
+    {id:"69e31935-830c-4efe-9b42-e1565e481de1",name:"McDonald",category:"Restaurante o cafetería",city:"Los Angeles",address:"Main y Manchester av 101",status:"approved"}
+  ];
 
-try {
-const params = new URLSearchParams({
-select: "*",
-status: "eq.approved",
-limit: "20"
-});
+  const showBusinesses = (rows, fallbackMode) => {
+    const ordered = [...rows].sort((a,b) => {
+      const qa = /quick\\s*cleaning/i.test(String(a.name || "")) ? 0 : 1;
+      const qb = /quick\\s*cleaning/i.test(String(b.name || "")) ? 0 : 1;
+      return qa - qb;
+    });
+    lastBusinesses = ordered;
+    resultsBox.replaceChildren();
+    resultsBox.hidden = true;
+    startDiscoveryRotation();
+    notice.textContent = lang === "es"
+      ? (fallbackMode ? "Mostrando negocios aprobados guardados mientras se recupera la conexión." : "Descubre negocios aprobados en Reputix.")
+      : (fallbackMode ? "Showing saved approved businesses while the connection recovers." : "Discover approved businesses on Reputix.");
+  };
 
-const data = await api("businesses?" + params);  
-
-if (!Array.isArray(data) || data.length === 0) {  
-  notice.textContent = lang === "es"  
-    ? "Todavía no hay negocios aprobados para mostrar."  
-    : "There are no approved businesses to display yet.";  
-  return;  
-}  
-
-lastBusinesses = data;
-resultsBox.replaceChildren();
-resultsBox.hidden = true;
-startDiscoveryRotation();
-
-notice.textContent = lang === "es"
-  ? "Descubre negocios aprobados en Reputix."
-  : "Discover approved businesses on Reputix.";
-
-} catch (err) {
-console.error("Error al cargar negocios:", err);
-notice.textContent = t("network");
-}
+  try {
+    const params = new URLSearchParams({select:"*",status:"eq.approved",limit:"20"});
+    const data = await api("businesses?" + params);
+    if (Array.isArray(data) && data.length) {
+      showBusinesses(data, false);
+    } else {
+      showBusinesses(approvedFallback, true);
+    }
+  } catch (err) {
+    console.error("Error al cargar negocios aprobados; usando respaldo visual:",err);
+    showBusinesses(approvedFallback, true);
+  }
 }
 
 /* Lanzador público de Reputix AI: reutiliza el servicio autenticado existente */
