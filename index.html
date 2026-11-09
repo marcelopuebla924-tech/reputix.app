@@ -1647,6 +1647,75 @@ header:after{
   #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{height:470px!important;min-height:470px!important;}
 }
 
+
+/* FIX DEFINITIVO DE TARJETAS: tamaños compactos y uniformes, sin recortar contenido */
+#topDiscoveryRail .business-tile,
+#bottomDiscoveryRail .business-tile {
+  flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
+  height:190px!important;min-height:190px!important;max-height:190px!important;
+  box-sizing:border-box!important;overflow:hidden!important;
+  display:flex!important;flex-direction:column!important;justify-content:flex-end!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile {
+  flex:0 0 290px!important;width:290px!important;min-width:290px!important;max-width:290px!important;
+  height:205px!important;min-height:205px!important;max-height:205px!important;padding:14px!important;
+}
+#topDiscoveryRail .business-tile .tile-photo,
+#bottomDiscoveryRail .business-tile .tile-photo {
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  object-fit:cover!important;z-index:0!important;opacity:1!important;pointer-events:none!important;
+}
+#topDiscoveryRail .business-tile:after,
+#bottomDiscoveryRail .business-tile:after {
+  content:"";position:absolute!important;inset:0!important;z-index:1!important;
+  background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.78))!important;pointer-events:none!important;
+}
+#topDiscoveryRail .business-tile .tile-heading,
+#bottomDiscoveryRail .business-tile .tile-heading,
+#topDiscoveryRail .business-tile .tile-contacts,
+#bottomDiscoveryRail .business-tile .tile-contacts {
+  position:relative!important;z-index:3!important;width:100%!important;min-width:0!important;
+}
+#topDiscoveryRail .business-tile .tile-business-name,
+#bottomDiscoveryRail .business-tile .tile-business-name {
+  display:block!important;visibility:visible!important;opacity:1!important;
+  font-size:15px!important;line-height:1.15!important;color:#fff!important;overflow-wrap:anywhere!important;
+}
+#topDiscoveryRail .business-tile .tile-business-category,
+#topDiscoveryRail .business-tile .tile-business-location,
+#bottomDiscoveryRail .business-tile .tile-business-category,
+#bottomDiscoveryRail .business-tile .tile-business-location {
+  display:block!important;visibility:visible!important;opacity:1!important;
+  font-size:11px!important;line-height:1.2!important;color:#e5f5ff!important;
+}
+#topDiscoveryRail .business-tile .tile-contact,
+#bottomDiscoveryRail .business-tile .tile-contact {
+  position:relative!important;z-index:4!important;font-size:11px!important;padding:6px 8px!important;max-width:100%!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name {color:#ffe3a1!important;font-size:19px!important;}
+@media(max-width:600px) {
+  #topDiscoveryRail .business-tile,
+  #bottomDiscoveryRail .business-tile {
+    flex:0 0 44vw!important;width:44vw!important;min-width:44vw!important;max-width:44vw!important;
+    height:176px!important;min-height:176px!important;max-height:176px!important;padding:10px!important;
+  }
+  #topDiscoveryRail .business-tile.quick-cleaning-tile,
+  #bottomDiscoveryRail .business-tile.quick-cleaning-tile {
+    flex:0 0 76vw!important;width:76vw!important;min-width:76vw!important;max-width:76vw!important;
+    height:205px!important;min-height:205px!important;max-height:205px!important;padding:12px!important;
+  }
+  #topDiscoveryRail .business-tile .tile-business-name,
+  #bottomDiscoveryRail .business-tile .tile-business-name {font-size:13px!important;}
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
+  #bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name {font-size:18px!important;}
+  #topDiscoveryRail .business-tile .tile-business-category,
+  #topDiscoveryRail .business-tile .tile-business-location,
+  #bottomDiscoveryRail .business-tile .tile-business-category,
+  #bottomDiscoveryRail .business-tile .tile-business-location {font-size:10px!important;}
+}
+
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 <style>
@@ -2228,7 +2297,7 @@ function makeDiscoveryTile(business) {
   const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : ""));
   const heading = node("div","tile-heading");
   heading.style.cssText = "display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;position:relative!important;z-index:10!important;width:100%!important;visibility:visible!important;opacity:1!important;";
-  const title = node("div","tile-business-name",isQuickCleaning ? "Quick Cleaning" : (business.name || "Negocio"));
+  const title = node("div","tile-business-name",isQuickCleaning ? "Quick Cleaning Services" : (business.name || "Negocio"));
   title.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:" + (isQuickCleaning ? "#ffe3a1" : "#ffffff") + "!important;font-size:" + (isQuickCleaning ? "15px" : "20px") + "!important;font-weight:900!important;line-height:1.15!important;margin:0!important;";
   const category = node("div","tile-business-category",isQuickCleaning ? "Professional Cleaning" : (business.category || "Categoría"));
   category.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:" + (isQuickCleaning ? "#f5e8cc" : "#79d6ff") + "!important;font-size:" + (isQuickCleaning ? "9px" : "13px") + "!important;font-weight:750!important;line-height:1.2!important;margin:0!important;";
@@ -3823,81 +3892,7 @@ async function loadApprovedBusinesses() {
 
 
 
-<script>
-/* REPUTIX_PUBLIC_CARDS_RECOVERY: independent, safe renderer for approved business cards */
-(function(){
-  const url="https://udvsrmfgjfinwbgvhchs.supabase.co";
-  const key="sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
-  const fallback=[
-    {id:"a2861806-7e33-4eff-907f-f6206535fb7c",name:"Quick Cleaning Services",category:"Profesional / servicio: Limpieza",city:"South Gate",zip:"90280",address:"9233 South Gate",phone:"2137062826",instagram_url:"https://www.instagram.com/carolinacunaconche/",status:"approved"},
-    {id:"b2a18a5d-2fca-44f2-aa62-038b972d1a2b",name:"Tamos Chelo Smoke Shop",category:"Smoke Shop",city:"LOS ANGELES",zip:"90003",address:"9419 S San Pedro St",status:"approved"},
-    {id:"82d23337-58b0-437e-8a80-ddb568d584b9",name:"Los primos",category:"Tienda o supermercado",city:"LOS ANGELES",zip:"90015",address:"S SAN PEDRO ST",status:"approved"},
-    {id:"69e31935-830c-4efe-9b42-e1565e481de1",name:"McDonald",category:"Restaurante o cafetería",city:"Los Angeles",address:"Main y Manchester av 101",status:"approved"}
-  ];
-  function simpleCard(b){
-    const card=document.createElement("article");card.className="business-card";
-    const cover=document.createElement("div");cover.className="business-cover";
-    const caption=document.createElement("div");caption.className="business-cover-caption";
-    const title=document.createElement("strong");title.textContent=b.name||"Negocio";
-    const category=document.createElement("span");category.textContent=b.category||"Negocio local";
-    caption.append(title,category);cover.append(caption);card.append(cover);
-    if(/quick cleaning/i.test(b.name||"")){
-      const img=document.createElement("img");img.className="business-cover-image";
-      img.src="https://raw.githubusercontent.com/marcelopuebla924-tech/reputix.app/main/assets/quick-cleaning-cover.jpg?v=20261109";
-      img.alt="Quick Cleaning";img.onerror=()=>img.remove();cover.prepend(img);
-      cover.classList.add("has-photo");
-    }
-    const top=document.createElement("div");top.className="business-top";
-    const logo=document.createElement("div");logo.className="business-logo";logo.textContent="✦";
-    const heading=document.createElement("div");heading.className="business-heading";
-    const h=document.createElement("h2");h.textContent=b.name||"Negocio";
-    const cat=document.createElement("div");cat.className="category";cat.textContent=b.category||"Categoría";
-    heading.append(h,cat);top.append(logo,heading);card.append(top);
-    const info=document.createElement("div");info.className="info";
-    const address=document.createElement("div");address.className="info-line";address.textContent="⌖ "+[b.address,b.city,b.zip].filter(Boolean).join(", ");info.append(address);
-    if(b.phone){const a=document.createElement("a");a.className="contact-highlight";a.href="tel:"+String(b.phone).replace(/[^+0-9]/g,"");a.textContent="☎ "+b.phone;info.append(a);}
-    if(b.instagram_url){const a=document.createElement("a");a.className="contact-highlight instagram";a.href=b.instagram_url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="◎ @carolinacunaconche";info.append(a);}
-    card.append(info);
-    const actions=document.createElement("div");actions.className="actions";
-    const profile=document.createElement("button");profile.className="primary";profile.type="button";profile.textContent="Ver perfil";
-    profile.addEventListener("click",()=>{const input=document.getElementById("business"),form=document.getElementById("searchForm");if(input&&form){input.value=b.name||"";form.requestSubmit();}});
-    const reviews=document.createElement("button");reviews.className="secondary";reviews.type="button";reviews.textContent="Opiniones";
-    reviews.addEventListener("click",()=>profile.click());
-    actions.append(profile,reviews);card.append(actions);
-    return card;
-  }
-  async function restore(){
-    const box=document.getElementById("results");
-    if(!box)return;
-    let rows=fallback;
-    try{
-      const response=await fetch(url+"/rest/v1/businesses?select=*&status=eq.approved&order=created_at.desc&limit=30",{
-        headers:{apikey:key,Accept:"application/json"}
-      });
-      if(response.ok){const data=await response.json();if(Array.isArray(data)&&data.length)rows=data;}
-      else console.warn("Reputix card recovery: Supabase",response.status);
-    }catch(error){console.warn("Reputix card recovery: using approved local fallback",error);}
-    rows=rows.filter(b=>b&&b.status==="approved");
-    if(!rows.length)rows=fallback;
-    rows.sort((a,b)=>/quick cleaning/i.test(a.name||"")?-1:/quick cleaning/i.test(b.name||"")?1:0);
-    box.hidden=false;box.style.display="flex";box.replaceChildren();
-    rows.forEach(b=>{
-      let card=null;
-      try{if(typeof renderBusiness==="function")card=renderBusiness(b);}catch(error){console.error("Business card render failed:",b.name,error);}
-      box.append(card||simpleCard(b));
-    });
-    const note=document.getElementById("notice");
-    if(note)note.textContent="Negocios aprobados en Reputix · "+rows.length+" tarjetas disponibles.";
-    try{
-      if(typeof lastBusinesses!=="undefined")lastBusinesses=rows;
-      if(typeof renderDiscoveryRails==="function")renderDiscoveryRails();
-    }catch(error){console.warn("Discovery rails fallback:",error);}
-  }
-  function start(){setTimeout(restore,450);}
-  if(document.readyState==="complete")start();
-  else window.addEventListener("load",start,{once:true});
-})();
-</script>
+
 
 </body>
 </html>
