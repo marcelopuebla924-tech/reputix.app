@@ -3677,8 +3677,10 @@ async function loadApprovedBusinesses() {
       return qa - qb;
     });
     lastBusinesses = ordered;
-    resultsBox.replaceChildren();
-    resultsBox.hidden = true;
+    // Volver a mostrar las tarjetas completas de presentación de cada negocio aprobado.
+    // La versión anterior vaciaba el contenedor y lo dejaba oculto, por eso desaparecieron.
+    resultsBox.hidden = false;
+    resultsBox.replaceChildren(...ordered.map(renderBusiness));
     startDiscoveryRotation();
     notice.textContent = lang === "es"
       ? (fallbackMode ? "Mostrando negocios aprobados guardados mientras se recupera la conexión." : "Descubre negocios aprobados en Reputix.")
