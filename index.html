@@ -514,6 +514,10 @@ footer {
   .business-tile.quick-cleaning-tile strong { position:relative;z-index:2;font-size:22px;color:#ffe3a1;text-shadow:0 2px 12px #000; }
   .business-tile.quick-cleaning-tile span { position:relative;z-index:2;font-size:14px;color:#f1dfbd; }
   .business-tile.quick-cleaning-tile .tile-contact { font-size:12px!important;color:#fff; }
+  .business-tile.quick-cleaning-tile .tile-heading { position:relative;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%;margin:0 0 2px; }
+  .business-tile.quick-cleaning-tile .tile-heading strong { display:block!important;visibility:visible!important;opacity:1!important;color:#ffe3a1!important;font-size:22px!important;line-height:1.15!important; }
+  .business-tile.quick-cleaning-tile .tile-heading span { display:block!important;visibility:visible!important;opacity:1!important;color:#f1dfbd!important;font-size:13px!important;margin:0!important;line-height:1.25!important; }
+  .business-tile.quick-cleaning-tile .tile-contacts { position:relative;z-index:3;display:flex;flex-wrap:wrap;gap:7px; }
   .tile-contacts { position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px; }
   .tile-contact { display:inline-flex;align-items:center;padding:6px 8px;border-radius:9px;border:1px solid #43d4ff;background:rgba(0,13,32,.88);color:#fff;font-size:11px!important;font-weight:800;text-decoration:none; }
   .tile-contact.instagram { border-color:#ff75c8;background:rgba(42,9,48,.9); }
@@ -1996,10 +2000,12 @@ async function loadDiscoveryTilePhoto(business,tile) {
 function makeDiscoveryTile(business) {
   const isQuickCleaning = business.id === "a2861806-7e33-4eff-907f-f6206535fb7c";
   const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : ""));
+  const heading = node("div","tile-heading");
   const title = node("strong","",business.name || "Negocio");
   const category = node("span","tile-category",business.category || "Categoría");
   const place = [business.city,business.zip].filter(Boolean).join(" · ") || business.address || "En Reputix";
-  tile.append(title,category,node("span","",place));
+  heading.append(title,category,node("span","tile-place",place));
+  tile.append(heading);
   if (isQuickCleaning) {
     const contacts = node("div","tile-contacts");
     if (business.phone) {
