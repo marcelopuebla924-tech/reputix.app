@@ -1824,7 +1824,7 @@ header:after{
 <article class="business-tile">
   <div class="tile-heading"><div class="tile-business-name">McDonald</div><div class="tile-business-category">Restaurante o cafetería</div><div class="tile-business-location">⌖ Los Angeles</div></div>
 </article></div>
-  <p class="carousel-status" id="carouselStatus">Negocios aprobados por Reputix · Se actualiza cada 40 segundos</p>
+  <p class="carousel-status" id="carouselStatus">Negocios destacados · Carrusel automático</p>
 </section>
 
 <section class="community">
@@ -2459,18 +2459,33 @@ function renderDiscoveryRails() {
   }
   $("carouselStatus").textContent = lang === "es"
     ? "Negocios aprobados por Reputix · Se actualiza cada 40 segundos"
-    : "Businesses approved by Reputix · Refreshes every 40 seconds";
+    : "Featured businesses · Automatic carousel";
 }
 
 function startDiscoveryRotation() {
   if (discoveryTimer) clearInterval(discoveryTimer);
   renderDiscoveryRails();
+
+  const rail = $("bottomDiscoveryRail");
+  if (!rail) return;
+
+  // Desplazamiento real del carrusel: una tarjeta por vez.
+  // El usuario puede seguir deslizando manualmente con el dedo.
   discoveryTimer = setInterval(() => {
-    if (lastBusinesses.length > 1) {
-      discoveryOffset = (discoveryOffset + 1) % lastBusinesses.length;
-      renderDiscoveryRails();
+    const cards = rail.querySelectorAll(":scope > .business-tile");
+    if (cards.length < 2 || rail.scrollWidth <= rail.clientWidth + 4) return;
+
+    const firstCard = cards[0];
+    const gap = parseFloat(getComputedStyle(rail).columnGap || getComputedStyle(rail).gap) || 9;
+    const step = firstCard.getBoundingClientRect().width + gap;
+    const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8;
+
+    if (atEnd) {
+      rail.scrollTo({left:0,behavior:"smooth"});
+    } else {
+      rail.scrollBy({left:step,behavior:"smooth"});
     }
-  },40000);
+  },4200);
 }
 
 function createPhotoUUID() {
