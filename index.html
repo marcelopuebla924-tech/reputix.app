@@ -1287,6 +1287,29 @@ function startDiscoveryRotation() {
   },40000);
 }
 
+function createPhotoUUID() {
+  // Safari/iOS antiguos pueden tener crypto.getRandomValues, pero no randomUUID.
+  if (window.crypto && typeof window.crypto.randomUUID === "function") {
+    return window.crypto.randomUUID();
+  }
+
+  if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+    return hex.slice(0,8) + "-" + hex.slice(8,12) + "-" +
+      hex.slice(12,16) + "-" + hex.slice(16,20) + "-" + hex.slice(20);
+  }
+
+  // Último recurso para navegadores sin Web Crypto.
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
 function photoPathUrl(path) {
   return path.split("/").map(encodeURIComponent).join("/");
 }
@@ -1298,7 +1321,7 @@ async function uploadBusinessPhoto(file,businessId) {
   if (file.size > 5 * 1024 * 1024) throw new Error(lang === "es" ? "La foto debe pesar 5 MB o menos." : "Photo must be 5 MB or less.");
 
   const ext = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
-  const path = "proposals/" + businessId + "/" + crypto.randomUUID() + "." + ext;
+  const path = "proposals/" + businessId + "/" + createPhotoUUID() + "." + ext;
   const response = await fetch(SUPABASE_URL + "/storage/v1/object/business-photos/" + photoPathUrl(path), {
     method:"POST",
     headers:{
