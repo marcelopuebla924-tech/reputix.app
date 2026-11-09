@@ -39,7 +39,13 @@ header {
   background:rgba(3,9,22,.86);
   box-shadow:0 8px 35px rgba(0,0,0,.25);
 }
-.header-actions { display:flex;align-items:center;gap:10px; }
+.header-actions { display:flex;align-items:center;gap:8px; }
+.independent-header-access {
+  padding:9px 12px;border:1px solid #19a9ee;border-radius:22px;
+  color:#8edcff;background:rgba(0,126,210,.12);font-size:12px;
+  font-weight:700;white-space:nowrap;
+}
+.independent-header-access:hover { background:rgba(0,126,210,.25); }
 .account-access {
   padding:10px 15px;
   border:1px solid #168fe0;
@@ -57,8 +63,9 @@ header {
   .logo { font-size:23px; }
   .logo::before { width:29px;height:29px;font-size:18px;margin-right:6px; }
   .tag { font-size:10px; }
-  .header-actions { gap:6px; }
-  .account-access { padding:9px 10px;font-size:11px; }
+  .header-actions { gap:5px; }
+  .independent-header-access { padding:8px 7px;font-size:10px; }
+  .account-access { padding:8px 7px;font-size:10px; }
   #language { font-size:12px;padding:9px 6px; }
 }
 .logo { font-size:30px;font-weight:900;letter-spacing:-1.5px;text-shadow:0 0 20px rgba(0,153,255,.25); }
@@ -776,6 +783,7 @@ footer {
     <div class="tag" id="tagline">Opiniones reales. Soluciones reales.</div>
   </div>
   <div class="header-actions">
+    <button class="independent-header-access" type="button" id="independentHeaderBtn">Ofrece tu servicio</button>
     <button class="account-access" type="button" id="accountAccessBtn">Registrarse / Iniciar sesión</button>
     <select id="language" aria-label="Language" style="width:auto">
       <option value="es">Español</option>
@@ -1089,6 +1097,9 @@ function setLanguage(value) {
   $("accountAccessBtn").textContent = lang === "es"
     ? "Registrarse / Iniciar sesión"
     : "Sign up / Sign in";
+  $("independentHeaderBtn").textContent = lang === "es"
+    ? "Ofrece tu servicio"
+    : "Offer your service";
   $("googleDiscoveryTitle").textContent = lang === "es"
     ? "Próximamente: descubrimiento con Google"
     : "Coming soon: Google business discovery";
@@ -1134,6 +1145,11 @@ function setLanguage(value) {
   }
   if (!$("communityFormWrap").hidden) renderCommunityForm(proposalType);
 }
+
+$("independentHeaderBtn").addEventListener("click",() => {
+  renderCommunityForm("professional");
+  $("communityFormWrap").scrollIntoView({behavior:"smooth",block:"start"});
+});
 
 $("accountAccessBtn").addEventListener("click",() => {
   $("ownerArea").scrollIntoView({behavior:"smooth",block:"start"});
