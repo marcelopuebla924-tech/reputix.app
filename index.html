@@ -1772,7 +1772,21 @@ header:after{
 
 <main>
 <section class="hero">
-  <div class="discovery-strip" id="topDiscoveryRail" aria-label="Negocios destacados"></div>
+  <div class="discovery-strip" id="topDiscoveryRail" aria-label="Negocios destacados">
+<article class="business-tile quick-cleaning-tile">
+  <img class="tile-photo" src="https://raw.githubusercontent.com/marcelopuebla924-tech/reputix.app/main/assets/quick-cleaning-cover.jpg?v=20261109-static" alt="Quick Cleaning Services">
+  <div class="tile-heading"><div class="tile-business-name">Quick Cleaning Services</div><div class="tile-business-category">Professional Cleaning</div><div class="tile-business-location">⌖ South Gate, CA 90280</div></div>
+  <div class="tile-contacts"><a class="tile-contact" href="tel:+12137062826">☎ (213) 706-2826</a><a class="tile-contact instagram" href="https://www.instagram.com/carolinacunaconche/" target="_blank" rel="noopener noreferrer">◎ @carolinacunaconche</a></div>
+</article>
+<article class="business-tile">
+  <div class="tile-heading"><div class="tile-business-name">Tamos Chelo Smoke Shop</div><div class="tile-business-category">Smoke Shop</div><div class="tile-business-location">⌖ Los Angeles, CA 90003</div></div>
+</article>
+<article class="business-tile">
+  <div class="tile-heading"><div class="tile-business-name">Los primos</div><div class="tile-business-category">Tienda o supermercado</div><div class="tile-business-location">⌖ Los Angeles, CA 90015</div></div>
+</article>
+<article class="business-tile">
+  <div class="tile-heading"><div class="tile-business-name">McDonald</div><div class="tile-business-category">Restaurante o cafetería</div><div class="tile-business-location">⌖ Los Angeles</div></div>
+</article></div>
   <div class="hero-layout">
     <aside class="edge-rail" id="leftDiscoveryRail" aria-label="Negocios cercanos"></aside>
     <div class="hero-center">
@@ -1793,7 +1807,21 @@ header:after{
     </div>
     <aside class="edge-rail" id="rightDiscoveryRail" aria-label="Más negocios"></aside>
   </div>
-  <div class="discovery-strip" id="bottomDiscoveryRail" aria-label="Más negocios"></div>
+  <div class="discovery-strip" id="bottomDiscoveryRail" aria-label="Más negocios">
+<article class="business-tile quick-cleaning-tile">
+  <img class="tile-photo" src="https://raw.githubusercontent.com/marcelopuebla924-tech/reputix.app/main/assets/quick-cleaning-cover.jpg?v=20261109-static" alt="Quick Cleaning Services">
+  <div class="tile-heading"><div class="tile-business-name">Quick Cleaning Services</div><div class="tile-business-category">Professional Cleaning</div><div class="tile-business-location">⌖ South Gate, CA 90280</div></div>
+  <div class="tile-contacts"><a class="tile-contact" href="tel:+12137062826">☎ (213) 706-2826</a><a class="tile-contact instagram" href="https://www.instagram.com/carolinacunaconche/" target="_blank" rel="noopener noreferrer">◎ @carolinacunaconche</a></div>
+</article>
+<article class="business-tile">
+  <div class="tile-heading"><div class="tile-business-name">Tamos Chelo Smoke Shop</div><div class="tile-business-category">Smoke Shop</div><div class="tile-business-location">⌖ Los Angeles, CA 90003</div></div>
+</article>
+<article class="business-tile">
+  <div class="tile-heading"><div class="tile-business-name">Los primos</div><div class="tile-business-category">Tienda o supermercado</div><div class="tile-business-location">⌖ Los Angeles, CA 90015</div></div>
+</article>
+<article class="business-tile">
+  <div class="tile-heading"><div class="tile-business-name">McDonald</div><div class="tile-business-category">Restaurante o cafetería</div><div class="tile-business-location">⌖ Los Angeles</div></div>
+</article></div>
   <p class="carousel-status" id="carouselStatus">Negocios aprobados por Reputix · Se actualiza cada 40 segundos</p>
 </section>
 
@@ -3876,5 +3904,57 @@ async function loadApprovedBusinesses() {
 
 
 
+<style id="reputix-emergency-card-restore">
+/* EMERGENCY RESTORE: keep approved showcase cards visible even before Supabase responds */
+#topDiscoveryRail,#bottomDiscoveryRail{
+ display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;
+ gap:12px!important;overflow-x:auto!important;overflow-y:hidden!important;
+ min-height:154px!important;padding:8px 12px 14px!important;
+}
+#topDiscoveryRail>.business-tile,#bottomDiscoveryRail>.business-tile{
+ display:flex!important;flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
+ height:142px!important;min-height:142px!important;max-height:142px!important;
+ position:relative!important;box-sizing:border-box!important;overflow:hidden!important;
+ border-radius:16px!important;padding:10px!important;justify-content:flex-end!important;
+ background:linear-gradient(145deg,#10243d,#06101f)!important;border:1px solid #10baff!important;
+ box-shadow:0 0 14px rgba(0,169,255,.25)!important;
+}
+#topDiscoveryRail>.quick-cleaning-tile,#bottomDiscoveryRail>.quick-cleaning-tile{
+ border:2px solid #ffd36b!important;box-shadow:0 0 14px rgba(255,195,77,.55)!important;
+ background:#020713!important;
+}
+#topDiscoveryRail>.business-tile .tile-photo,#bottomDiscoveryRail>.business-tile .tile-photo{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ object-fit:cover!important;z-index:0!important;display:block!important;
+}
+#topDiscoveryRail>.business-tile:after,#bottomDiscoveryRail>.business-tile:after{
+ content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+ background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.82))!important;
+}
+#topDiscoveryRail>.business-tile .tile-heading,#bottomDiscoveryRail>.business-tile .tile-heading,
+#topDiscoveryRail>.business-tile .tile-contacts,#bottomDiscoveryRail>.business-tile .tile-contacts{
+ position:relative!important;z-index:3!important;display:flex!important;flex-direction:column!important;
+ align-items:flex-start!important;gap:4px!important;width:100%!important;min-width:0!important;
+}
+#topDiscoveryRail>.business-tile .tile-business-name,#bottomDiscoveryRail>.business-tile .tile-business-name{
+ color:#fff!important;font-size:14px!important;font-weight:900!important;line-height:1.15!important;
+}
+#topDiscoveryRail>.business-tile .tile-business-category,#topDiscoveryRail>.business-tile .tile-business-location,
+#bottomDiscoveryRail>.business-tile .tile-business-category,#bottomDiscoveryRail>.business-tile .tile-business-location{
+ color:#bceaff!important;font-size:10px!important;line-height:1.15!important;
+}
+#topDiscoveryRail>.quick-cleaning-tile .tile-business-name,#bottomDiscoveryRail>.quick-cleaning-tile .tile-business-name{color:#ffe3a1!important;}
+#topDiscoveryRail>.business-tile .tile-contacts,#bottomDiscoveryRail>.business-tile .tile-contacts{flex-direction:row!important;flex-wrap:wrap!important;gap:4px!important;}
+#topDiscoveryRail>.business-tile .tile-contact,#bottomDiscoveryRail>.business-tile .tile-contact{
+ display:inline-flex!important;font-size:9px!important;padding:4px 6px!important;white-space:nowrap!important;
+}
+@media(max-width:600px){
+ #topDiscoveryRail>.business-tile,#bottomDiscoveryRail>.business-tile,
+ #topDiscoveryRail>.quick-cleaning-tile,#bottomDiscoveryRail>.quick-cleaning-tile{
+  flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
+  height:142px!important;min-height:142px!important;max-height:142px!important;
+ }
+}
+</style>
 </body>
 </html>
