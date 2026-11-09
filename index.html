@@ -1288,11 +1288,7 @@ function startDiscoveryRotation() {
 }
 
 function createPhotoUUID() {
-  // Safari/iOS antiguos pueden tener crypto.getRandomValues, pero no randomUUID.
-  if (window.crypto && typeof window.crypto.randomUUID === "function") {
-    return window.crypto.randomUUID();
-  }
-
+  // Compatible con Safari antiguo: usa Web Crypto sin depender de randomUUID.
   if (window.crypto && typeof window.crypto.getRandomValues === "function") {
     const bytes = new Uint8Array(16);
     window.crypto.getRandomValues(bytes);
@@ -1303,7 +1299,6 @@ function createPhotoUUID() {
       hex.slice(12,16) + "-" + hex.slice(16,20) + "-" + hex.slice(20);
   }
 
-  // Último recurso para navegadores sin Web Crypto.
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
     const r = Math.random() * 16 | 0;
     return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
