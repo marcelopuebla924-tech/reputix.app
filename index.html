@@ -1261,6 +1261,105 @@ footer {
   }
 }
 
+
+/* FINAL mobile dashboard layout override */
+@media (max-width: 900px) {
+  #ownerArea.owner-area {
+    display:block !important;
+    width:100vw !important;
+    max-width:100vw !important;
+    margin:18px 0 28px calc(50% - 50vw) !important;
+    padding:0 !important;
+    overflow:visible !important;
+  }
+  #ownerArea > .owner-panel {
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:18px 18px 24px !important;
+    border-left:0 !important;
+    border-right:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+  }
+  #privateSpace {
+    display:block !important;
+    width:100% !important;
+    max-width:none !important;
+    margin:18px 0 0 !important;
+    padding:22px 0 !important;
+    border:0 !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    background:transparent !important;
+  }
+  #privateSpace .private-space-head {
+    width:100% !important;
+    padding:0 2px 18px !important;
+  }
+  #privateSpace .private-grid {
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    width:100% !important;
+    max-width:none !important;
+    gap:26px !important;
+  }
+  #privateSpace .private-grid > .private-tile,
+  #privateSpace .private-grid > .private-tile.private-wide {
+    display:flex !important;
+    flex:0 0 auto !important;
+    flex-direction:column !important;
+    align-self:stretch !important;
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    height:auto !important;
+    margin:0 !important;
+    padding:18px 0 26px !important;
+    border:0 !important;
+    border-bottom:1px solid rgba(40,170,255,.18) !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    background:transparent !important;
+    box-sizing:border-box !important;
+  }
+  #privateSpace .private-tile h3 {font-size:21px !important;line-height:1.35 !important;}
+  #privateSpace .private-tile p {font-size:15px !important;line-height:1.65 !important;}
+  #privateSpace #privateMessagesContent,
+  #privateSpace #privateComplaintsContent,
+  #privateSpace #privateProfileContent,
+  #privateSpace #privateBusinessContent {
+    display:block !important;
+    width:100% !important;
+    max-width:none !important;
+    min-width:0 !important;
+    box-sizing:border-box !important;
+  }
+  #privateSpace #privateMessagesContent .message-compose,
+  #privateSpace #privateMessagesContent .message-inbox,
+  #privateSpace #privateMessagesContent .message-thread {
+    width:100% !important;
+    max-width:none !important;
+    padding:16px 0 !important;
+    border:0 !important;
+    border-top:1px solid rgba(40,170,255,.16) !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    background:transparent !important;
+    box-sizing:border-box !important;
+  }
+  #privateSpace #privateMessagesContent input,
+  #privateSpace #privateMessagesContent select,
+  #privateSpace #privateMessagesContent textarea {
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+}
+
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 </head>
