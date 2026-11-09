@@ -3965,5 +3965,67 @@ async function loadApprovedBusinesses() {
  }
 }
 </style>
+
+<style id="reputix-compact-carousel-fix-20261109">
+/* Reputix: una sola franja compacta, deslizable y sin tarjetas gigantes */
+#topDiscoveryRail,#leftDiscoveryRail,#rightDiscoveryRail{display:none!important}
+#bottomDiscoveryRail{
+  display:flex!important;flex-flow:row nowrap!important;align-items:stretch!important;
+  width:100%!important;max-width:100%!important;min-height:0!important;height:auto!important;
+  gap:10px!important;margin:12px auto 8px!important;padding:6px 10px 12px!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  overscroll-behavior-x:contain!important;scroll-snap-type:x mandatory!important;
+  -webkit-overflow-scrolling:touch!important;scrollbar-width:thin!important;
+}
+#bottomDiscoveryRail>.business-tile,
+#bottomDiscoveryRail>.business-tile.quick-cleaning-tile{
+  box-sizing:border-box!important;display:flex!important;flex:0 0 168px!important;
+  width:168px!important;min-width:168px!important;max-width:168px!important;
+  height:132px!important;min-height:132px!important;max-height:132px!important;
+  padding:9px!important;gap:5px!important;justify-content:flex-end!important;
+  align-items:flex-start!important;overflow:hidden!important;border-radius:14px!important;
+  scroll-snap-align:start!important;
+}
+#bottomDiscoveryRail>.business-tile .tile-heading{
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+  gap:3px!important;width:100%!important;min-width:0!important;
+}
+#bottomDiscoveryRail>.business-tile .tile-business-name{
+  display:block!important;font-size:12px!important;line-height:1.12!important;
+  font-weight:900!important;overflow-wrap:anywhere!important;
+}
+#bottomDiscoveryRail>.business-tile .tile-business-category,
+#bottomDiscoveryRail>.business-tile .tile-business-location{
+  display:block!important;font-size:9px!important;line-height:1.15!important;
+  overflow-wrap:anywhere!important;
+}
+#bottomDiscoveryRail>.business-tile .tile-contacts{
+  display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;
+  gap:4px!important;width:100%!important;margin-top:2px!important;
+}
+#bottomDiscoveryRail>.business-tile .tile-contact{
+  display:inline-flex!important;max-width:100%!important;padding:4px 5px!important;
+  font-size:8px!important;line-height:1.1!important;white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+#bottomDiscoveryRail>.business-tile.quick-cleaning-tile{
+  border:1px solid rgba(255,211,107,.95)!important;
+  box-shadow:0 0 12px rgba(255,195,77,.28)!important;
+}
+.hero{height:auto!important;min-height:0!important;padding-bottom:12px!important}
+.hero-layout{min-height:0!important;height:auto!important}
+#results.results:empty{display:none!important;min-height:0!important;height:0!important;margin:0!important;padding:0!important}
+#results.results:not(:empty){min-height:0!important}
+#carouselStatus{margin:3px auto 0!important;font-size:10px!important}
+@media(max-width:600px){
+  #bottomDiscoveryRail{margin:8px -10px 4px!important;width:calc(100% + 20px)!important;padding:5px 10px 10px!important}
+  #bottomDiscoveryRail>.business-tile,
+  #bottomDiscoveryRail>.business-tile.quick-cleaning-tile{
+    flex-basis:168px!important;width:168px!important;min-width:168px!important;
+    max-width:168px!important;height:132px!important;min-height:132px!important;max-height:132px!important;
+  }
+}
+</style>
+
 </body>
 </html>
