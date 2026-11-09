@@ -1040,6 +1040,135 @@ footer {
   #privateComplaintsContent { padding:0 !important; }
 }
 
+
+/* Reputix private area: open layout, no nested frames or compressed columns */
+#privateSpace {
+  width:100% !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  padding:clamp(16px,3vw,30px) !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  background:linear-gradient(145deg,#030d1d,#061a31) !important;
+}
+#privateSpace .private-grid {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) !important;
+  width:100% !important;
+  gap:26px !important;
+  align-items:start !important;
+}
+#privateSpace .private-grid > .private-tile,
+#privateSpace .private-grid > .private-tile.private-wide {
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  height:auto !important;
+  box-sizing:border-box !important;
+  padding:8px 0 22px !important;
+  border:0 !important;
+  border-bottom:1px solid rgba(40,170,255,.18) !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+  gap:12px !important;
+}
+#privateSpace .private-tile h3 {
+  font-size:clamp(18px,2vw,22px) !important;
+  line-height:1.35 !important;
+  margin:3px 0 6px !important;
+}
+#privateSpace .private-tile p {
+  font-size:15px !important;
+  line-height:1.6 !important;
+  margin:4px 0 12px !important;
+}
+#privateSpace .private-tile button {
+  min-height:46px !important;
+  width:auto !important;
+  max-width:100% !important;
+  padding:11px 18px !important;
+  margin-top:8px !important;
+  white-space:normal !important;
+}
+#privateSpace #privateMessagesContent,
+#privateSpace #privateComplaintsContent,
+#privateSpace #privateProfileContent,
+#privateSpace #privateBusinessContent {
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+#privateSpace #privateMessagesContent .message-compose,
+#privateSpace #privateMessagesContent .message-inbox,
+#privateSpace #privateMessagesContent .message-thread {
+  width:100% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  gap:14px !important;
+  margin:18px 0 0 !important;
+  padding:16px 0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
+#privateSpace #privateMessagesContent .message-compose .owner-field,
+#privateSpace #privateMessagesContent .message-thread .owner-field {
+  width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+  display:grid !important;
+  gap:7px !important;
+}
+#privateSpace #privateMessagesContent input,
+#privateSpace #privateMessagesContent select,
+#privateSpace #privateMessagesContent textarea {
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  min-height:48px !important;
+  box-sizing:border-box !important;
+  padding:13px 15px !important;
+  border-radius:12px !important;
+}
+#privateSpace #privateMessagesContent textarea { min-height:110px !important; }
+#privateSpace #privateMessagesContent .message-compose button,
+#privateSpace #privateMessagesContent .message-thread button {
+  justify-self:start !important;
+  width:auto !important;
+  min-width:150px !important;
+}
+#privateSpace #privateMessagesContent .message-entry,
+#privateSpace #privateMessagesContent .private-entry,
+#privateSpace #privateMessagesContent .message-conversation {
+  width:100% !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+  border-left:0 !important;
+  border-right:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+@media (max-width:760px) {
+  #privateSpace { padding:18px 16px !important; }
+  #privateSpace .private-grid { gap:22px !important; }
+  #privateSpace .private-grid > .private-tile,
+  #privateSpace .private-grid > .private-tile.private-wide {
+    padding:8px 0 20px !important;
+  }
+  #privateSpace .private-tile button { min-height:44px !important; }
+  #privateSpace #privateMessagesContent input,
+  #privateSpace #privateMessagesContent select { min-height:46px !important; }
+  #privateSpace #privateMessagesContent textarea { min-height:96px !important; }
+}
+
 </style>
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 </head>
