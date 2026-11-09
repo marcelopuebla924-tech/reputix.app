@@ -792,6 +792,19 @@ footer {
 @media(min-width:700px){.private-grid{gap:20px}.private-tile{padding:22px;min-height:210px}}
 @media(max-width:600px){.private-space{padding:18px}.private-grid{gap:15px}.private-tile{padding:16px;min-height:180px}.private-action{font-size:13px}}
 
+
+.message-compose,.message-inbox,.message-thread{display:grid;gap:12px;padding:14px;margin-top:12px;border:1px solid rgba(0,162,255,.42);border-radius:15px;background:rgba(2,16,32,.65)}
+.message-compose strong,.message-inbox strong,.message-thread strong{color:#6bd7ff}
+.message-compose .owner-field,.message-thread .owner-field{display:grid;gap:6px}
+.message-compose input,.message-compose select,.message-compose textarea,.message-thread textarea{width:100%;box-sizing:border-box;background:#061326;color:#eef7ff;border:1px solid #15527d;border-radius:12px;padding:12px;font:inherit}
+.message-conversation{width:100%;text-align:left;margin-top:8px;padding:12px;border:1px solid #087fff;border-radius:12px;background:#0a2038;color:#eef7ff}
+.message-conversation.active{box-shadow:0 0 12px #08a9ff}
+.message-bubble{padding:10px 12px;margin:8px 0;border-radius:13px;background:#102d4b;border:1px solid rgba(70,176,255,.25);overflow-wrap:anywhere}
+.message-bubble.mine{background:#073b5d;border-color:#079cff;margin-left:12%}
+.message-meta{font-size:11px;color:#9dbbd5;margin-top:5px}
+.private-tile{gap:12px}
+@media(max-width:600px){.message-compose,.message-inbox,.message-thread{padding:12px}.private-grid{gap:17px}.private-tile{padding:17px}}
+
 </style>
 </head>
 
@@ -920,7 +933,25 @@ footer {
       <div class="private-grid">
         <article class="private-tile"><span class="private-icon">◉</span><h3 id="privateProfileTitle">Mi perfil</h3><p id="privateProfileDesc">Datos y configuración</p><div id="privateProfileContent"></div><button class="secondary private-action" type="button" id="privateProfileAction">Editar perfil</button></article>
         <article class="private-tile"><span class="private-icon">▣</span><h3 id="privateBusinessTitle">Mis negocios</h3><p id="privateBusinessDesc">Administración y estadísticas</p><div id="privateBusinessContent"></div><button class="secondary private-action" type="button" id="privateBusinessAction">Solicitar acceso a un negocio</button></article>
-        <article class="private-tile"><span class="private-icon">◌</span><h3 id="privateMessagesTitle">Mensajes</h3><p id="privateMessagesDesc">Comunicación con clientes</p><div id="privateMessagesContent"><small id="privateMessagesNote">La mensajería privada se habilitará en una próxima etapa.</small></div><button class="secondary private-action" type="button" id="privateMessagesAction">Abrir mensajes</button></article>
+        <article class="private-tile"><span class="private-icon">◌</span><h3 id="privateMessagesTitle">Mensajes</h3><p id="privateMessagesDesc">Comunicación con clientes</p><div id="privateMessagesContent">
+          <div class="message-compose">
+            <strong>Contactar un negocio</strong>
+            <label class="owner-field"><span>Negocio</span><select id="messageBusiness"><option value="">Selecciona un negocio aprobado</option></select></label>
+            <label class="owner-field"><span>Asunto</span><input id="messageSubject" maxlength="160" placeholder="Consulta sobre un producto o servicio"></label>
+            <label class="owner-field"><span>Mensaje</span><textarea id="messageFirstBody" rows="3" maxlength="5000" placeholder="Escribe tu mensaje..." ></textarea></label>
+            <button class="primary" type="button" id="messageStartButton">Enviar mensaje</button>
+            <p class="owner-message" id="messageStatus" aria-live="polite"></p>
+          </div>
+          <div class="message-inbox"><strong>Bandeja de entrada</strong><div id="messageConversationList"></div></div>
+          <div class="message-thread" id="messageThread" hidden>
+            <strong id="messageThreadTitle">Conversación</strong>
+            <div id="messageThreadItems"></div>
+            <form id="messageReplyForm">
+              <label class="owner-field"><span>Tu respuesta</span><textarea id="messageReplyBody" rows="3" maxlength="5000" required></textarea></label>
+              <button class="primary" type="submit" id="messageReplyButton">Responder</button>
+            </form>
+          </div>
+        </div><button class="secondary private-action" type="button" id="privateMessagesAction">Abrir mensajes</button></article>
         <article class="private-tile"><span class="private-icon">▤</span><h3 id="privateComplaintsTitle">Reclamos</h3><p id="privateComplaintsDesc">Seguimiento y respuestas</p><div id="privateComplaintsContent"></div><button class="secondary private-action" type="button" id="privateComplaintsAction">Ver mis reclamos</button></article>
         <article class="private-tile private-wide"><span class="private-icon">☆</span><h3 id="privateReviewsTitle">Opiniones de mis clientes</h3><p id="privateReviewsDesc">Comentarios y calificaciones</p><div id="privateReviewsContent"></div><button class="secondary private-action" type="button" id="privateReviewsAction">Actualizar opiniones</button></article>
         <article class="private-tile private-wide"><h3 id="privatePostsTitle">Mis publicaciones</h3><form id="privatePostForm"><label class="owner-field"><span id="privatePostLabel">Comparte algo con la comunidad</span><textarea id="privatePostBody" rows="3" maxlength="5000" required></textarea></label><button class="primary" type="submit" id="privatePostSubmit">Publicar</button><p class="owner-message" id="privatePostMessage" aria-live="polite"></p></form><div id="privatePostsList"></div></article>
@@ -2245,6 +2276,7 @@ function ownerSetSession(session) {
   if(session) {
     loadOwnerClaims();
     loadPrivateSpace();
+    loadMessageCenter();
     $("privateSpace").scrollIntoView({behavior:"smooth",block:"start"});
     if(isAdmin) loadAdminClaims();
   } else {
@@ -2350,6 +2382,91 @@ async function reviewOwnerClaim(id,status,approve,reject) {
 }
 
 
+
+let activeMessageConversation=null;
+async function loadMessageCenter() {
+  if(!ownerSession?.access_token || !ownerSession?.user?.id) return;
+  const select=$("messageBusiness");
+  const keep=select.value;
+  select.replaceChildren(new Option("Selecciona un negocio aprobado",""));
+  lastBusinesses.filter(b=>b.status==="approved").forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+  if(keep) select.value=keep;
+  const list=$("messageConversationList");list.replaceChildren();
+  try {
+    const conversations=await api("business_conversations?select=id,business_id,customer_id,subject,status,updated_at&order=updated_at.desc&limit=50");
+    if(!conversations?.length) list.append(node("small","",ownerText("Todavía no tienes conversaciones.","You have no conversations yet.")));
+    for(const conv of conversations||[]) {
+      const business=lastBusinesses.find(b=>String(b.id)===String(conv.business_id));
+      const label=(business?.name||ownerText("Negocio","Business"))+" · "+conv.subject;
+      const button=node("button","message-conversation"+(activeMessageConversation===conv.id?" active":""),label);
+      button.type="button";
+      button.addEventListener("click",()=>openMessageConversation(conv));
+      list.append(button);
+    }
+  } catch(err) {
+    list.append(node("small","",ownerText("No se pudo cargar la bandeja: ","Could not load inbox: ")+err.message));
+  }
+}
+async function openMessageConversation(conv) {
+  activeMessageConversation=conv.id;
+  $("messageThread").hidden=false;
+  $("messageThreadTitle").textContent=conv.subject;
+  const items=$("messageThreadItems");items.replaceChildren(node("small","",ownerText("Cargando conversación…","Loading conversation…")));
+  try {
+    const messages=await api("business_messages?select=id,sender_id,body,created_at,read_at&conversation_id=eq."+encodeURIComponent(conv.id)+"&order=created_at.asc&limit=100");
+    items.replaceChildren();
+    (messages||[]).forEach(m=>{
+      const mine=m.sender_id===ownerSession.user.id;
+      const bubble=node("div","message-bubble"+(mine?" mine":""));
+      bubble.append(node("div","",m.body),node("div","message-meta",(mine?ownerText("Tú · ","You · "):ownerText("Cliente/negocio · ","Customer/business · "))+new Date(m.created_at).toLocaleString()));
+      items.append(bubble);
+    });
+    if(!items.childElementCount) items.append(node("small","",ownerText("Aún no hay mensajes.","No messages yet.")));
+    const unread=(messages||[]).filter(m=>m.sender_id!==ownerSession.user.id&&!m.read_at).map(m=>m.id);
+    if(unread.length) await api("business_messages?id=in.("+unread.map(encodeURIComponent).join(",")+")",{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({read_at:new Date().toISOString()})}).catch(()=>{});
+    $("messageThread").dataset.conversationId=conv.id;
+    await loadMessageCenter();
+  } catch(err) {
+    items.replaceChildren(node("small","",ownerText("No se pudo abrir la conversación: ","Could not open conversation: ")+err.message));
+  }
+}
+$("messageStartButton").addEventListener("click",async()=>{
+  const businessId=$("messageBusiness").value;
+  const subject=$("messageSubject").value.trim();
+  const body=$("messageFirstBody").value.trim();
+  const status=$("messageStatus");
+  if(!businessId||!subject||!body){status.textContent=ownerText("Selecciona un negocio y completa asunto y mensaje.","Choose a business and enter a subject and message.");return;}
+  $("messageStartButton").disabled=true;status.textContent=ownerText("Enviando…","Sending…");
+  try {
+    const created=await api("business_conversations",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({business_id:businessId,customer_id:ownerSession.user.id,subject,status:"open"})});
+    let conv=created?.[0];
+    if(!conv) {
+      const existing=await api("business_conversations?select=id,business_id,customer_id,subject,status&business_id=eq."+encodeURIComponent(businessId)+"&customer_id=eq."+encodeURIComponent(ownerSession.user.id)+"&subject=eq."+encodeURIComponent(subject)+"&limit=1");
+      conv=existing?.[0];
+    }
+    if(!conv) throw new Error(ownerText("No se pudo crear la conversación.","Could not create the conversation."));
+    await api("business_messages",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({conversation_id:conv.id,sender_id:ownerSession.user.id,body})});
+    $("messageSubject").value="";$("messageFirstBody").value="";
+    status.textContent=ownerText("Mensaje enviado al negocio.","Message sent to the business.");
+    await loadMessageCenter();await openMessageConversation(conv);
+  } catch(err) {status.textContent=ownerText("No se pudo enviar: ","Could not send: ")+err.message;}
+  finally {$("messageStartButton").disabled=false;}
+});
+$("messageReplyForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const conversationId=$("messageThread").dataset.conversationId;
+  const body=$("messageReplyBody").value.trim();
+  if(!conversationId||!body)return;
+  $("messageReplyButton").disabled=true;
+  try {
+    await api("business_messages",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({conversation_id:conversationId,sender_id:ownerSession.user.id,body})});
+    $("messageReplyBody").value="";
+    const conv={id:conversationId,subject:$("messageThreadTitle").textContent};
+    await openMessageConversation(conv);
+  } catch(err) {window.alert(ownerText("No se pudo enviar la respuesta: ","Could not send reply: ")+err.message);}
+  finally {$("messageReplyButton").disabled=false;}
+});
+
 async function loadPrivateSpace() {
   if(!ownerSession?.access_token || !ownerSession?.user?.id) return;
   const userId=ownerSession.user.id;
@@ -2410,7 +2527,7 @@ $("privateProfileAction").addEventListener("click",async()=>{
   } catch(err) {window.alert(ownerText("No se pudo guardar el perfil: ","Could not save profile: ")+err.message);}
 });
 $("privateBusinessAction").addEventListener("click",()=>{$("ownerClaimForm").scrollIntoView({behavior:"smooth",block:"center"});$("claimBusiness").focus({preventScroll:true});});
-$("privateMessagesAction").addEventListener("click",()=>window.alert(ownerText("La bandeja de mensajes privados todavía no está conectada. La habilitaremos con su propia protección de privacidad.","The private inbox is not connected yet. We will enable it with its own privacy protection.")));
+$("privateMessagesAction").addEventListener("click",()=>{$("privateMessagesContent").scrollIntoView({behavior:"smooth",block:"center"});loadMessageCenter();});
 $("privateComplaintsAction").addEventListener("click",()=>$("privateComplaintsContent").scrollIntoView({behavior:"smooth",block:"center"}));
 $("privateReviewsAction").addEventListener("click",()=>loadPrivateSpace());
 
