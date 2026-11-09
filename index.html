@@ -3894,5 +3894,54 @@ async function loadApprovedBusinesses() {
 
 
 
+
+<!-- REPUTIX MOBILE CARD HOTFIX: override all earlier oversized card rules -->
+<style id="reputix-mobile-card-hotfix">
+#topDiscoveryRail,#bottomDiscoveryRail{align-items:stretch!important}
+#topDiscoveryRail .business-tile,#bottomDiscoveryRail .business-tile{
+ flex:0 0 230px!important;width:230px!important;min-width:230px!important;max-width:230px!important;
+ height:190px!important;min-height:190px!important;max-height:190px!important;
+ box-sizing:border-box!important;overflow:hidden!important;position:relative!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
+ flex:0 0 290px!important;width:290px!important;min-width:290px!important;max-width:290px!important;
+ height:205px!important;min-height:205px!important;max-height:205px!important;
+}
+#topDiscoveryRail .business-tile .tile-photo,#bottomDiscoveryRail .business-tile .tile-photo{
+ display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ object-fit:cover!important;object-position:center 38%!important;z-index:0!important;opacity:1!important;
+}
+#topDiscoveryRail .business-tile:after,#bottomDiscoveryRail .business-tile:after{
+ content:""!important;position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important;
+ background:linear-gradient(180deg,rgba(0,0,0,.04),rgba(0,0,0,.76))!important;
+}
+#topDiscoveryRail .business-tile .tile-heading,#bottomDiscoveryRail .business-tile .tile-heading,
+#topDiscoveryRail .business-tile .tile-contacts,#bottomDiscoveryRail .business-tile .tile-contacts{
+ position:relative!important;z-index:3!important;width:100%!important;min-width:0!important;
+}
+#topDiscoveryRail .business-tile .tile-business-name,#bottomDiscoveryRail .business-tile .tile-business-name{
+ font-size:15px!important;line-height:1.15!important;overflow-wrap:anywhere!important;
+}
+#topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name,
+#bottomDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name{font-size:18px!important;color:#ffe3a1!important}
+#topDiscoveryRail .business-tile .tile-business-category,#topDiscoveryRail .business-tile .tile-business-location,
+#bottomDiscoveryRail .business-tile .tile-business-category,#bottomDiscoveryRail .business-tile .tile-business-location{font-size:11px!important}
+#topDiscoveryRail .business-tile .tile-contact,#bottomDiscoveryRail .business-tile .tile-contact{
+ font-size:11px!important;padding:6px 8px!important;position:relative!important;z-index:4!important
+}
+.reputix-ai-fab{bottom:18px!important;right:12px!important;max-width:220px!important}
+@media(max-width:600px){
+ #topDiscoveryRail .business-tile,#bottomDiscoveryRail .business-tile{
+  flex-basis:44vw!important;width:44vw!important;min-width:44vw!important;max-width:44vw!important;
+  height:190px!important;min-height:190px!important;max-height:190px!important;
+ }
+ #topDiscoveryRail .business-tile.quick-cleaning-tile,#bottomDiscoveryRail .business-tile.quick-cleaning-tile{
+  flex-basis:76vw!important;width:76vw!important;min-width:76vw!important;max-width:76vw!important;
+  height:220px!important;min-height:220px!important;max-height:220px!important;
+ }
+ .reputix-ai-fab{bottom:12px!important;right:10px!important;max-width:205px!important}
+}
+</style>
+
 </body>
 </html>
