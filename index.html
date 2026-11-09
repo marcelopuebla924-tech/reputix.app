@@ -1892,7 +1892,7 @@ header:after{
     <form id="ownerAuthForm">
       <div class="owner-grid">
         <label class="owner-field"><span id="ownerEmailLabel">Correo electrónico</span><input id="ownerEmail" type="email" autocomplete="email" required></label>
-        <label class="owner-field"><span id="ownerPasswordLabel">Contraseña</span><input id="ownerPassword" type="password" autocomplete="current-password" minlength="8" required></label>
+        <label class="owner-field"><span id="ownerPasswordLabel">Contraseña</span><input id="ownerPassword" type="password" autocomplete="current-password" required></label>
       </div>
       <div class="owner-actions">
         <button class="primary" type="submit" id="ownerSignUp" name="authAction" value="signup">Crear cuenta</button>
@@ -2366,6 +2366,31 @@ function makeDiscoveryTile(business) {
   });
   return tile;
 }
+
+
+// Tarjetas HTML iniciales: mismo comportamiento de búsqueda que las tarjetas cargadas desde Supabase.
+$("bottomDiscoveryRail")?.addEventListener("click",e=>{
+  if(e.target.closest("a")) return;
+  const tile=e.target.closest(".business-tile");
+  if(!tile || tile.getAttribute("role")==="button") return;
+  const title=tile.querySelector(".tile-business-name")?.textContent?.trim();
+  if(!title) return;
+  input.value=title;
+  if(typeof form.requestSubmit==="function") form.requestSubmit(searchButton);
+  else form.dispatchEvent(new Event("submit",{bubbles:true,cancelable:true}));
+  window.scrollTo({top:0,behavior:"smooth"});
+});
+$("bottomDiscoveryRail")?.querySelectorAll(".business-tile").forEach(tile=>{
+  tile.setAttribute("role","button");
+  tile.setAttribute("tabindex","0");
+  tile.style.cursor="pointer";
+  tile.addEventListener("keydown",e=>{
+    if(e.key==="Enter"||e.key===" "){
+      e.preventDefault();
+      tile.click();
+    }
+  });
+});
 
 function renderDiscoveryRails() {
   const businesses = lastBusinesses.filter(b => b && String(b.status || "").toLowerCase() === "approved");
@@ -3732,9 +3757,13 @@ async function loadOwnerDashboard() {
     wrap.hidden=true;
   }
 }
+let ownerAuthAction = "signup";
+$("ownerSignUp").addEventListener("click",()=>{ownerAuthAction="signup";});
+$("ownerSignIn").addEventListener("click",()=>{ownerAuthAction="signin";});
 $("ownerAuthForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const action=e.submitter?.value || (e.submitter?.id==="ownerSignIn"?"signin":"signup");
+  const action=ownerAuthAction || "signup";
+  ownerAuthAction="signup";
   const message=$("ownerAuthMessage");
   const submitButtons=[$("ownerSignUp"),$("ownerSignIn")];
   if(! $("ownerEmail").value.trim() || !$("ownerPassword").value) {
@@ -4123,6 +4152,87 @@ async function loadApprovedBusinesses() {
 #bottomDiscoveryRail>.quick-cleaning-tile .tile-business-name,#bottomDiscoveryRail>.tamos-chelo-tile .tile-business-name{color:#f4fbff!important}
 #bottomDiscoveryRail>.quick-cleaning-tile .tile-business-category,#bottomDiscoveryRail>.quick-cleaning-tile .tile-business-location,#bottomDiscoveryRail>.tamos-chelo-tile .tile-business-category,#bottomDiscoveryRail>.tamos-chelo-tile .tile-business-location{color:#bcecff!important}
 @media(max-width:600px){#bottomDiscoveryRail{margin:7px -10px 9px!important;width:calc(100% + 20px)!important;padding:5px 10px 11px!important}#bottomDiscoveryRail>.business-tile{flex-basis:148px!important;width:148px!important;min-width:148px!important;max-width:148px!important;height:124px!important;min-height:124px!important;max-height:124px!important}}
+</style>
+
+<style id="reputix-compact-repair-20261109">
+/* Mantener ocultos los paneles que la aplicación marca como hidden. */
+#privateSpace[hidden],#ownerSignIn[hidden],#ownerSignUp[hidden],#ownerSignOut[hidden],
+#ownerClaimArea[hidden],#adminClaimsPanel[hidden]{display:none!important}
+
+/* Panel de propietarios compacto, legible y centrado. */
+#ownerArea.owner-area{
+ display:block!important;width:calc(100% - 28px)!important;max-width:980px!important;
+ margin:16px auto 24px!important;padding:0!important;overflow:visible!important;
+}
+#ownerArea>.owner-panel{
+ box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+ margin:0!important;padding:16px!important;border:1px solid #087fc5!important;
+ border-radius:18px!important;background:linear-gradient(145deg,#0b1b30,#050e1c)!important;
+ box-shadow:0 0 14px rgba(0,153,255,.16)!important;
+}
+#ownerTitle{font-size:clamp(19px,4vw,25px)!important;line-height:1.2!important;margin:0 0 6px!important}
+#ownerIntro{font-size:13px!important;line-height:1.45!important;margin:0 0 12px!important}
+#ownerAuthForm .owner-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+#ownerAuthForm .owner-field{display:grid!important;gap:4px!important;font-size:12px!important}
+#ownerAuthForm .owner-field input{
+ box-sizing:border-box!important;width:100%!important;min-width:0!important;height:44px!important;
+ min-height:44px!important;padding:9px 11px!important;border:1px solid #17517c!important;
+ border-radius:10px!important;background:#061225!important;color:#f3f8ff!important;font-size:14px!important;
+}
+#ownerAuthForm .owner-actions{display:flex!important;gap:8px!important;flex-wrap:nowrap!important;margin-top:10px!important}
+#ownerAuthForm .owner-actions button{
+ flex:1 1 0!important;min-width:0!important;min-height:46px!important;height:auto!important;
+ padding:9px 10px!important;border-radius:12px!important;font-size:13px!important;line-height:1.2!important;
+}
+#ownerAuthMessage{font-size:12px!important;min-height:0!important;margin:7px 0 0!important}
+#privateSpace{
+ box-sizing:border-box!important;width:100%!important;max-width:100%!important;
+ margin:14px 0 0!important;padding:15px!important;border:1px solid #087fc5!important;
+ border-radius:17px!important;background:linear-gradient(145deg,#071b31,#040d1b)!important;
+ box-shadow:0 0 14px rgba(0,153,255,.18)!important;
+}
+#privateSpace .private-space-head{display:flex!important;flex-direction:row!important;align-items:center!important;
+ gap:10px!important;margin:0 0 12px!important;padding:0 0 10px!important}
+#privateSpace .private-space-head h2{font-size:22px!important;line-height:1.15!important;margin:5px 0!important}
+#privateSpace .private-space-head p{font-size:12px!important;line-height:1.4!important;margin:4px 0!important}
+#privateSpace .private-active{font-size:10px!important;padding:6px 8px!important}
+#privateSpace .private-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:9px!important;align-items:start!important}
+#privateSpace .private-grid>.private-tile,
+#privateSpace .private-grid>.private-tile.private-wide{
+ box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
+ grid-column:auto!important;width:100%!important;max-width:100%!important;min-width:0!important;
+ min-height:0!important;height:auto!important;margin:0!important;padding:12px!important;
+ border:1px solid #087fc5!important;border-radius:13px!important;
+ background:linear-gradient(145deg,#0b2340,#061426)!important;
+ box-shadow:0 0 9px rgba(0,145,255,.14)!important;
+}
+#privateSpace .private-grid>.private-tile.private-wide{grid-column:1/-1!important}
+#privateSpace .private-tile h3{font-size:15px!important;line-height:1.2!important;margin:4px 0!important}
+#privateSpace .private-tile p{font-size:11px!important;line-height:1.4!important;margin:4px 0 8px!important}
+#privateSpace .private-icon{font-size:20px!important}
+#privateSpace .private-tile button{min-height:38px!important;padding:8px 10px!important;font-size:12px!important}
+#privateSpace input,#privateSpace select,#privateSpace textarea{
+ box-sizing:border-box!important;max-width:100%!important;font-size:13px!important;padding:9px!important;
+}
+#bottomDiscoveryRail>.business-tile{cursor:pointer!important;pointer-events:auto!important;touch-action:pan-y!important}
+#bottomDiscoveryRail>.business-tile .tile-photo,
+#bottomDiscoveryRail>.business-tile:after{pointer-events:none!important}
+#bottomDiscoveryRail>.business-tile .tile-heading,
+#bottomDiscoveryRail>.business-tile .tile-contacts{pointer-events:auto!important}
+#bottomDiscoveryRail>.business-tile{border-color:#08baff!important}
+@media(max-width:600px){
+ #ownerArea.owner-area{width:calc(100% - 24px)!important;margin:13px auto 20px!important}
+ #ownerArea>.owner-panel{padding:13px!important;border-radius:15px!important}
+ #ownerAuthForm .owner-grid{grid-template-columns:minmax(0,1fr)!important;gap:8px!important}
+ #ownerAuthForm .owner-actions{gap:7px!important}
+ #ownerAuthForm .owner-actions button{font-size:12px!important;padding:8px 6px!important}
+ #privateSpace{padding:12px!important;margin-top:12px!important}
+ #privateSpace .private-space-head{flex-direction:column!important;align-items:flex-start!important;gap:6px!important}
+ #privateSpace .private-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ #privateSpace .private-grid>.private-tile{padding:10px!important}
+ #privateSpace .private-grid>.private-tile.private-wide{grid-column:1/-1!important}
+}
 </style>
 </body>
 </html>
