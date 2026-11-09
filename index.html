@@ -2360,7 +2360,16 @@ function makeDiscoveryTile(business) {
 }
 
 function renderDiscoveryRails() {
-  const businesses = lastBusinesses.filter(b => b && b.status === "approved");
+  const businesses = lastBusinesses.filter(b => b && String(b.status || "").toLowerCase() === "approved");
+  // Si Supabase no devuelve negocios aprobados, conserva las tarjetas de respaldo
+  // que ya vienen en el HTML. No vacíes las franjas visuales.
+  if (!businesses.length) {
+    const status = $("carouselStatus");
+    if (status) status.textContent = lang === "es"
+      ? "Negocios destacados de Reputix"
+      : "Featured businesses on Reputix";
+    return;
+  }
   const rails = [
     ["topDiscoveryRail",5,0],
     ["leftDiscoveryRail",3,5],
