@@ -2366,22 +2366,21 @@ function makeDiscoveryTile(business) {
   location.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:" + (isQuickCleaning ? "#f5e8cc" : "#e3eaf5") + "!important;font-size:" + (isQuickCleaning ? "9px" : "12px") + "!important;font-weight:700!important;line-height:1.2!important;margin:0!important;";
   heading.append(title,category,location);
   tile.append(heading);
-  if (isQuickCleaning) {
-    const contacts = node("div","tile-contacts");
+  const contacts = node("div","tile-contacts");
+  if (business.phone || isQuickCleaning) {
     const phone = node("a","tile-contact");
-    phone.href = "tel:+12137062826";
-    phone.append("☎  (213) 706-2826");
+    phone.href = "tel:" + String(business.phone || "+12137062826").replace(/[^+0-9]/g,"");
+    phone.append("☎  " + (business.phone || "(213) 706-2826"));
     phone.addEventListener("click",e => e.stopPropagation());
     contacts.append(phone);
-    const instagram = node("a","tile-contact instagram");
-    instagram.href = "https://www.instagram.com/carolinacunaconche/";
-    instagram.target = "_blank";
-    instagram.rel = "noopener noreferrer";
-    instagram.append("◎  @carolinacunaconche");
-    instagram.addEventListener("click",e => e.stopPropagation());
-    contacts.append(instagram);
-    tile.append(contacts);
   }
+  [["instagram_url","◎ Instagram"],["facebook_url","f Facebook"],["tiktok_url","♪ TikTok"]].forEach(([key,label]) => {
+    const href = socialUrl(business[key]); if (!href) return;
+    const link = node("a","tile-contact");
+    link.href=href; link.target="_blank"; link.rel="noopener noreferrer"; link.textContent=label;
+    link.addEventListener("click",e=>e.stopPropagation()); contacts.append(link);
+  });
+  if (contacts.childElementCount) tile.append(contacts);
   if (isQuickCleaning) {
     tile.style.backgroundImage="radial-gradient(circle at 78% 18%,rgba(0,184,255,.28),transparent 40%),linear-gradient(145deg,#092b49 0%,#06101f 72%)";
     tile.style.backgroundSize="cover";
@@ -2588,6 +2587,20 @@ async function loadApprovedBusinessPhotos(businessId,card) {
   }
 }
 
+function normalizeSocialInput(value,platform) {
+  let v=String(value||"").trim(); if(!v)return null;
+  if(v.startsWith("@")) v=v.slice(1);
+  if(!/^https?:\/\//i.test(v)) {
+    if(platform==="instagram")v="https://www.instagram.com/"+v;
+    if(platform==="facebook")v="https://www.facebook.com/"+v;
+    if(platform==="tiktok")v="https://www.tiktok.com/@"+v.replace(/^@/,"");
+  }
+  return socialUrl(v);
+}
+function socialUrl(value) {
+  const u=safeUrl(value); if(!u)return null;
+  try {const host=new URL(u).hostname.toLowerCase();return ["instagram.com","www.instagram.com","facebook.com","www.facebook.com","m.facebook.com","tiktok.com","www.tiktok.com"].includes(host)?u:null;} catch(_){return null;}
+}
 function makeBusinessCover(business) {
   const cover = node("div","business-cover");
   const category = String(business.category || "").toLowerCase();
@@ -2610,15 +2623,11 @@ function makeBusinessCover(business) {
     phone.append("☎  " + business.phone);
     contacts.append(phone);
   }
-  const instagramUrl = safeUrl(business.instagram_url);
-  if (instagramUrl) {
-    const instagram = node("a","business-cover-contact instagram");
-    instagram.href = instagramUrl;
-    instagram.target = "_blank";
-    instagram.rel = "noopener noreferrer";
-    instagram.append("◎  @carolinacunaconche");
-    contacts.append(instagram);
-  }
+  [["instagram_url","◎ Instagram"],["facebook_url","f Facebook"],["tiktok_url","♪ TikTok"]].forEach(([key,label]) => {
+    const href=socialUrl(business[key]); if(!href)return;
+    const link=node("a","business-cover-contact"); link.href=href; link.target="_blank"; link.rel="noopener noreferrer";
+    link.textContent=label; contacts.append(link);
+  });
   if (contacts.childElementCount) caption.append(contacts);
   cover.append(art,caption);
   return cover;
@@ -3151,6 +3160,10 @@ function renderBusiness(b) {
     info.append(row);
   }
 
+  [["instagram_url","◎ Instagram"],["facebook_url","f Facebook"],["tiktok_url","♪ TikTok"]].forEach(([key,label])=>{
+    const href=socialUrl(b[key]); if(!href)return;
+    const row=node("div","info-line"),a=node("a","",label);a.href=href;a.target="_blank";a.rel="noopener noreferrer";a.style.color="#70d4ff";row.append(a);info.append(row);
+  });
   info.append(node("p","muted",b.description || t("description")));
   card.append(info);
   loadApprovedBusinessPhotos(b.id,card);
@@ -3280,6 +3293,9 @@ function renderCommunityForm(type) {
   addField(t("formCity"),"city","text",t("formCityHint"),false,true);
   addField(t("formZip"),"zip","text","90001");
   addField(t("formPhone"),"phone","text",t("formPhoneHint"));
+  addField(lang==="es"?"Instagram (URL o @usuario)":"Instagram (URL or @username)","instagram_url","text","https://instagram.com/...");
+  addField(lang==="es"?"Facebook (URL)":"Facebook (URL)","facebook_url","text","https://facebook.com/...");
+  addField(lang==="es"?"TikTok (URL o @usuario)":"TikTok (URL or @username)","tiktok_url","text","https://tiktok.com/@...");
   addField(t("formHours"),"hours","text",t("formHoursHint"));
   addField(t("formDescription"),"description","textarea",t("formDescriptionHint"),true);
 
@@ -3334,7 +3350,10 @@ function renderCommunityForm(type) {
           p_zip:String(fd.get("zip") || "").trim() || null,
           p_phone:String(fd.get("phone") || "").trim() || null,
           p_hours:String(fd.get("hours") || "").trim() || null,
-          p_description:String(fd.get("description") || "").trim() || null
+          p_description:String(fd.get("description") || "").trim() || null,
+          p_instagram_url:normalizeSocialInput(fd.get("instagram_url"),"instagram"),
+          p_facebook_url:normalizeSocialInput(fd.get("facebook_url"),"facebook"),
+          p_tiktok_url:normalizeSocialInput(fd.get("tiktok_url"),"tiktok")
         })
       });
       const businessId = typeof created === "string" ? created : created && created.id;
