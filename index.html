@@ -2050,14 +2050,14 @@ function makeDiscoveryTile(business) {
   const isQuickCleaning = business.id === "a2861806-7e33-4eff-907f-f6206535fb7c";
   const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : ""));
   const heading = node("div","tile-heading");
-  heading.style.cssText = "display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:5px!important;position:relative!important;z-index:10!important;width:100%!important;visibility:visible!important;opacity:1!important;";
-  const title = node("div","tile-business-name",business.name || "Negocio");
-  title.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:" + (isQuickCleaning ? "#ffe3a1" : "#ffffff") + "!important;font-size:20px!important;font-weight:900!important;line-height:1.2!important;margin:0!important;";
-  const category = node("div","tile-business-category",business.category || "Categoría");
-  category.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:#79d6ff!important;font-size:13px!important;font-weight:750!important;line-height:1.3!important;margin:0!important;";
+  heading.style.cssText = "display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;position:relative!important;z-index:10!important;width:100%!important;visibility:visible!important;opacity:1!important;";
+  const title = node("div","tile-business-name",isQuickCleaning ? "Quick Cleaning" : (business.name || "Negocio"));
+  title.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:" + (isQuickCleaning ? "#ffe3a1" : "#ffffff") + "!important;font-size:" + (isQuickCleaning ? "15px" : "20px") + "!important;font-weight:900!important;line-height:1.15!important;margin:0!important;";
+  const category = node("div","tile-business-category",isQuickCleaning ? "Professional Cleaning" : (business.category || "Categoría"));
+  category.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:" + (isQuickCleaning ? "#f5e8cc" : "#79d6ff") + "!important;font-size:" + (isQuickCleaning ? "9px" : "13px") + "!important;font-weight:750!important;line-height:1.2!important;margin:0!important;";
   const place = isQuickCleaning ? "South Gate, CA 90280" : ([business.city,business.zip].filter(Boolean).join(" · ") || business.address || "En Reputix");
   const location = node("div","tile-business-location","⌖ " + place);
-  location.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:#e3eaf5!important;font-size:12px!important;font-weight:700!important;line-height:1.3!important;margin:0!important;";
+  location.style.cssText = "display:block!important;position:relative!important;z-index:11!important;visibility:visible!important;opacity:1!important;color:" + (isQuickCleaning ? "#f5e8cc" : "#e3eaf5") + "!important;font-size:" + (isQuickCleaning ? "9px" : "12px") + "!important;font-weight:700!important;line-height:1.2!important;margin:0!important;";
   heading.append(title,category,location);
   tile.append(heading);
   if (isQuickCleaning) {
@@ -2076,7 +2076,16 @@ function makeDiscoveryTile(business) {
     contacts.append(instagram);
     tile.append(contacts);
   }
-  loadDiscoveryTilePhoto(business,tile);
+  if (isQuickCleaning) {
+    const cover = "https://raw.githubusercontent.com/marcelopuebla924-tech/reputix.app/main/assets/quick-cleaning-cover.jpg";
+    tile.style.backgroundImage = 'linear-gradient(180deg,rgba(0,0,0,.10) 0%,rgba(0,0,0,.38) 42%,rgba(0,0,0,.88) 100%),url("' + cover + '")';
+    tile.style.backgroundSize = "cover";
+    tile.style.backgroundPosition = "center 38%";
+    tile.style.backgroundRepeat = "no-repeat";
+    tile.classList.add("has-business-photo");
+  } else {
+    loadDiscoveryTilePhoto(business,tile);
+  }
   tile.setAttribute("role","button");
   tile.tabIndex = 0;
   const open = () => {
