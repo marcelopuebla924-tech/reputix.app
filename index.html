@@ -892,8 +892,8 @@ footer {
         <label class="owner-field"><span id="ownerPasswordLabel">Contraseña</span><input id="ownerPassword" type="password" autocomplete="current-password" minlength="8" required></label>
       </div>
       <div class="owner-actions">
-        <button class="primary" type="button" id="ownerSignUp">Crear cuenta</button>
-        <button class="secondary" type="button" id="ownerSignIn">Ya tengo cuenta · Iniciar sesión</button>
+        <button class="primary" type="submit" id="ownerSignUp" name="authAction" value="signup">Crear cuenta</button>
+        <button class="secondary" type="submit" id="ownerSignIn" name="authAction" value="signin">Ya tengo cuenta · Iniciar sesión</button>
         <button class="secondary" type="button" id="ownerSignOut" hidden>Cerrar sesión</button>
       </div>
     </form>
@@ -2428,8 +2428,29 @@ async function loadOwnerDashboard() {
     wrap.hidden=true;
   }
 }
-$("ownerSignIn").addEventListener("click",ownerSignIn);
-$("ownerSignUp").addEventListener("click",ownerSignUp);
+$("ownerAuthForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const action=e.submitter?.value || (e.submitter?.id==="ownerSignIn"?"signin":"signup");
+  const message=$("ownerAuthMessage");
+  const submitButtons=[$("ownerSignUp"),$("ownerSignIn")];
+  if(! $("ownerEmail").value.trim() || !$("ownerPassword").value) {
+    message.textContent=ownerText("Escribe tu correo y contraseña para continuar.","Enter your email and password to continue.");
+    return;
+  }
+  submitButtons.forEach(b=>b.disabled=true);
+  message.textContent=action==="signin"
+    ? ownerText("Conectando con Supabase…","Connecting to Supabase…")
+    : ownerText("Creando tu cuenta…","Creating your account…");
+  try {
+    await (action==="signin" ? ownerSignIn() : ownerSignUp());
+    if(!message.textContent) message.textContent=ownerText("No recibimos respuesta. Comprueba tu conexión e inténtalo más tarde.","No response received. Check your connection and try again later.");
+  } catch(err) {
+    message.textContent=ownerText("Error de registro: ","Sign-up error: ")+(err?.message || String(err));
+    console.error("Reputix auth form:",err);
+  } finally {
+    submitButtons.forEach(b=>b.disabled=false);
+  }
+});
 $("ownerSignOut").addEventListener("click",()=>{
   ownerSetSession(null);
   $("ownerAuthMessage").textContent=ownerText("Sesión cerrada.","Signed out.");
