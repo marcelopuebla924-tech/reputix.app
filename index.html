@@ -518,6 +518,12 @@ footer {
   .business-tile.quick-cleaning-tile .tile-heading strong { display:block!important;visibility:visible!important;opacity:1!important;color:#ffe3a1!important;font-size:22px!important;line-height:1.15!important; }
   .business-tile.quick-cleaning-tile .tile-heading span { display:block!important;visibility:visible!important;opacity:1!important;color:#f1dfbd!important;font-size:13px!important;margin:0!important;line-height:1.25!important; }
   .business-tile.quick-cleaning-tile .tile-contacts { position:relative;z-index:3;display:flex;flex-wrap:wrap;gap:7px; }
+  #topDiscoveryRail .business-tile.quick-cleaning-tile { flex:0 0 calc(100vw - 36px)!important;min-height:210px!important;justify-content:flex-end!important;align-items:flex-start!important;gap:9px!important;padding:16px!important; }
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-heading { position:relative;z-index:4;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:5px!important;width:100%!important; }
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-name { display:block!important;visibility:visible!important;opacity:1!important;color:#ffe3a1!important;font-size:22px!important;font-weight:900!important;line-height:1.15!important;text-shadow:0 2px 8px #000!important; }
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-category { display:block!important;color:#fff!important;font-size:14px!important;font-weight:750!important; }
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-business-location { display:block!important;color:#f1dfbd!important;font-size:12px!important;font-weight:700!important; }
+  #topDiscoveryRail .business-tile.quick-cleaning-tile .tile-contacts { z-index:4!important;display:flex!important;flex-wrap:wrap!important;gap:7px!important; }
   .tile-contacts { position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px; }
   .tile-contact { display:inline-flex;align-items:center;padding:6px 8px;border-radius:9px;border:1px solid #43d4ff;background:rgba(0,13,32,.88);color:#fff;font-size:11px!important;font-weight:800;text-decoration:none; }
   .tile-contact.instagram { border-color:#ff75c8;background:rgba(42,9,48,.9); }
@@ -2001,31 +2007,27 @@ function makeDiscoveryTile(business) {
   const isQuickCleaning = business.id === "a2861806-7e33-4eff-907f-f6206535fb7c";
   const tile = node("article","business-tile" + (isQuickCleaning ? " quick-cleaning-tile" : ""));
   const heading = node("div","tile-heading");
-  const title = node("strong","",business.name || "Negocio");
-  const category = node("span","tile-category",business.category || "Categoría");
-  const place = [business.city,business.zip].filter(Boolean).join(" · ") || business.address || "En Reputix";
-  heading.append(title,category,node("span","tile-place",place));
+  const title = node("div","tile-business-name",isQuickCleaning ? "Quick Cleaning Services" : (business.name || "Negocio"));
+  const category = node("div","tile-business-category",isQuickCleaning ? "Professional Cleaning Services" : (business.category || "Categoría"));
+  const place = isQuickCleaning ? "South Gate, CA 90280" : ([business.city,business.zip].filter(Boolean).join(" · ") || business.address || "En Reputix");
+  const location = node("div","tile-business-location","⌖ " + place);
+  heading.append(title,category,location);
   tile.append(heading);
   if (isQuickCleaning) {
     const contacts = node("div","tile-contacts");
-    if (business.phone) {
-      const phone = node("a","tile-contact");
-      phone.href = "tel:" + String(business.phone).replace(/[^+0-9]/g,"");
-      phone.append("☎ " + business.phone);
-      phone.addEventListener("click",e => e.stopPropagation());
-      contacts.append(phone);
-    }
-    const instagramUrl = safeUrl(business.instagram_url);
-    if (instagramUrl) {
-      const instagram = node("a","tile-contact instagram");
-      instagram.href = instagramUrl;
-      instagram.target = "_blank";
-      instagram.rel = "noopener noreferrer";
-      instagram.append("◎ @carolinacunaconche");
-      instagram.addEventListener("click",e => e.stopPropagation());
-      contacts.append(instagram);
-    }
-    if (contacts.childElementCount) tile.append(contacts);
+    const phone = node("a","tile-contact");
+    phone.href = "tel:+12137062826";
+    phone.append("☎  (213) 706-2826");
+    phone.addEventListener("click",e => e.stopPropagation());
+    contacts.append(phone);
+    const instagram = node("a","tile-contact instagram");
+    instagram.href = "https://www.instagram.com/carolinacunaconche/";
+    instagram.target = "_blank";
+    instagram.rel = "noopener noreferrer";
+    instagram.append("◎  @carolinacunaconche");
+    instagram.addEventListener("click",e => e.stopPropagation());
+    contacts.append(instagram);
+    tile.append(contacts);
   }
   loadDiscoveryTilePhoto(business,tile);
   tile.setAttribute("role","button");
