@@ -23,18 +23,13 @@ const $ = id => document.getElementById(id);
    módulos secundarios para que un error ajeno no deje botones sin respuesta. */
 document.addEventListener("click", async event => {
   const button = event.target?.closest?.(
-    "#ownerSignIn,#ownerSignUp,#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
+    "#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
   );
   if (!button) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   const message = document.getElementById("ownerAuthMessage");
   try {
-    if (button.id === "ownerSignIn" || button.id === "ownerSignUp") {
-      event.preventDefault();
-      await handleOwnerAuthAction(button.id === "ownerSignIn" ? "signin" : "signup");
-      return;
-    }
     if (button.id === "privateProfileAction") {
       if (!ownerSession?.user?.id) throw new Error("La sesión no está activa. Vuelve a iniciar sesión.");
       const current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
@@ -2414,6 +2409,14 @@ async function loadOwnerDashboard() {
     wrap.hidden=true;
   }
 }
+$("ownerSignIn").addEventListener("click", event => {
+  event.preventDefault();
+  handleOwnerAuthAction("signin");
+});
+$("ownerSignUp").addEventListener("click", event => {
+  event.preventDefault();
+  handleOwnerAuthAction("signup");
+});
 async function handleOwnerAuthAction(action) {
   const message = $("ownerAuthMessage");
   const buttons = [$("ownerSignUp"), $("ownerSignIn")];
