@@ -15,24 +15,40 @@
 </head>
 
 <body>
-<button class="reputix-ai-fab" id="reputixAiFab" type="button" aria-label="Abrir Reputix AI" style="position:fixed!important;right:12px!important;bottom:28px!important;z-index:2147483000!important;display:flex!important;align-items:center!important;gap:9px!important;max-width:260px!important;padding:9px 12px!important;border:2px solid #36caff!important;border-radius:20px!important;background:linear-gradient(135deg,#041b39,#006fbd)!important;color:#fff!important;box-shadow:0 0 16px #00bfff,0 0 34px #0077ff!important;cursor:pointer!important;">
-  <span class="reputix-ai-robot" aria-hidden="true">🤖</span>
-  <span><strong>✦ Reputix AI</strong><small>¡Aprieta aquí y consulta lo que necesites!</small></span>
+<button class="reputix-ai-fab" id="reputixAiFab" type="button" aria-label="Abrir Reputix AI">
+  <span class="reputix-ai-fab-orb" aria-hidden="true"><span>R</span></span>
+  <span class="reputix-ai-fab-copy"><strong>✦ Reputix AI</strong><small>Tu asistente inteligente</small></span>
+  <span class="reputix-ai-fab-arrow" aria-hidden="true">↗</span>
 </button>
 <div class="reputix-ai-modal" id="reputixAiModal" hidden>
   <section class="reputix-ai-dialog" role="dialog" aria-modal="true" aria-labelledby="publicAiTitle">
-    <div class="reputix-ai-dialog-head">
-      <span class="reputix-ai-robot" aria-hidden="true">🤖</span>
-      <div><h2 id="publicAiTitle">Reputix AI</h2><p>Tu asistente inteligente está listo para ayudarte.</p></div>
+    <button class="reputix-ai-close" id="publicAiClose" type="button" aria-label="Cerrar">×</button>
+    <div class="reputix-ai-brand">
+      <div class="reputix-ai-mascot" aria-hidden="true"><span class="ai-antenna"></span><span class="ai-face"><i></i><i></i><b></b></span><span class="ai-body">R</span></div>
+      <div class="reputix-ai-brand-copy"><div class="reputix-ai-wordmark" id="publicAiTitle">REPUTIX <em>AI</em></div><h2>Tu asistente inteligente de negocios</h2><p>Encuentra, compara, opina y resuelve dudas.</p></div>
     </div>
-    <label for="publicAiPrompt">¿Qué necesitas consultar?</label>
+    <nav class="reputix-ai-tools" aria-label="Accesos rápidos">
+      <button type="button" data-ai-prompt="Ayúdame a buscar negocios en mi zona."><span>⌕</span>Buscar<br>negocios</button>
+      <button type="button" data-ai-prompt="Muéstrame cómo encontrar negocios con buenas opiniones."><span>▥</span>Ver<br>opiniones</button>
+      <button type="button" data-ai-prompt="Quiero comparar negocios y sus opiniones."><span>⚖</span>Comparar<br>opciones</button>
+      <button type="button" data-ai-prompt="Dame recomendaciones para elegir un buen negocio."><span>✧</span>Recomendaciones<br>IA</button>
+      <button type="button" data-ai-prompt="Explícame cómo funciona Reputix."><span>?</span>Cómo<br>funciona</button>
+    </nav>
+    <div class="reputix-ai-welcome">
+      <span class="reputix-ai-mini-bot" aria-hidden="true">R</span>
+      <div><strong>¡Hola!</strong><p>Soy Reputix AI, tu asistente inteligente. ¿Qué necesitas consultar hoy?</p></div>
+    </div>
+    <label class="reputix-ai-input-label" for="publicAiPrompt">Escribe tu consulta</label>
     <textarea id="publicAiPrompt" maxlength="2000" placeholder="Escribe tu pregunta aquí..."></textarea>
-    <p id="publicAiStatus" aria-live="polite">Consulta sobre negocios, opiniones o cómo funciona Reputix.</p>
-    <div id="publicAiAnswer" hidden></div>
-    <div class="reputix-ai-dialog-actions">
-      <button class="primary" id="publicAiAsk" type="button">Preguntar a la IA</button>
-      <button class="secondary" id="publicAiClose" type="button">Cerrar</button>
+    <div class="reputix-ai-status-row"><p id="publicAiStatus" aria-live="polite">Estoy aquí para ayudarte a descubrir mejores negocios.</p></div>
+    <div id="publicAiAnswer" class="reputix-ai-answer" hidden></div>
+    <div class="reputix-ai-suggestions">
+      <button type="button" data-ai-prompt="¿Qué negocios tienen mejores calificaciones?">☆ Mejores calificaciones</button>
+      <button type="button" data-ai-prompt="¿Cómo puedo comparar negocios?">Comparar negocios</button>
+      <button type="button" data-ai-prompt="¿Cómo puedo dejar una opinión?">Dejar una opinión</button>
     </div>
+    <button class="reputix-ai-submit" id="publicAiAsk" type="button"><span>➤</span> Preguntar a la IA</button>
+    <p class="reputix-ai-footnote">Reputix · Opiniones reales. Soluciones reales.</p>
   </section>
 </div>
 
