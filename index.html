@@ -273,8 +273,8 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
         <label class="owner-field"><span id="ownerPasswordLabel">Contraseña</span><input id="ownerPassword" type="password" autocomplete="current-password" required></label>
       </div>
       <div class="owner-actions">
-        <button class="primary" type="button" id="ownerSignUp" onclick="window.reputixOwnerAuthAction && window.reputixOwnerAuthAction('signup')">Crear cuenta</button>
-        <button class="secondary" type="button" id="ownerSignIn" onclick="window.reputixOwnerAuthAction && window.reputixOwnerAuthAction('signin')">Ya tengo cuenta · Iniciar sesión</button>
+        <button class="primary" type="button" id="ownerSignUp">Crear cuenta</button>
+        <button class="secondary" type="button" id="ownerSignIn">Ya tengo cuenta · Iniciar sesión</button>
         <button class="secondary" type="button" id="ownerSignOut" hidden>Cerrar sesión</button>
       </div>
     </form>
@@ -378,50 +378,51 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 
 <!-- Owner authentication is handled once by app.js to avoid competing click handlers. -->
 
-  <script src="./app.js?v=owner-auth-isolated-fallback-20261109-7" defer></script>
+  <script src="./app.js?v=owner-auth-capture-single-20261109-8" defer></script>
   <script>
-  /* Fallback de autenticación aislado: permite entrar aunque el módulo principal falle. */
-  document.addEventListener("DOMContentLoaded", function () {
-    window.reputixOwnerAuthAction = async function(mode) {
-      const emailEl=document.getElementById("ownerEmail");
-      const passwordEl=document.getElementById("ownerPassword");
-      const message=document.getElementById("ownerAuthMessage");
+  /* Acceso propietario: un solo listener en captura, sin manejadores duplicados. */
+  (function(){
+    let busy=false;
+    const base="https://udvsrmfgjfinwbgvhchs.supabase.co";
+    const key="sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+    async function auth(mode){
+      if(busy)return;
+      const emailEl=document.getElementById("ownerEmail"),passEl=document.getElementById("ownerPassword"),msg=document.getElementById("ownerAuthMessage");
       const buttons=[document.getElementById("ownerSignIn"),document.getElementById("ownerSignUp")];
-      if(!emailEl||!passwordEl||!message) return;
-      const email=emailEl.value.trim();
-      const password=passwordEl.value;
-      if(!email||!password){message.textContent="Escribe el correo y la contraseña.";return;}
-      if(password.length<6){message.textContent="La contraseña debe tener al menos 6 caracteres.";return;}
-      buttons.forEach(b=>{if(b)b.disabled=true;});
-      message.textContent=mode==="signin"?"Verificando acceso…":"Creando cuenta…";
-      try {
-        const base="https://udvsrmfgjfinwbgvhchs.supabase.co";
-        const key="sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+      if(!emailEl||!passEl||!msg)return;
+      const email=emailEl.value.trim(),password=passEl.value;
+      if(!email||!password){msg.textContent="Escribe el correo y la contraseña.";return;}
+      busy=true;buttons.forEach(b=>{if(b)b.disabled=true;});
+      msg.textContent="Conectando con Reputix…";
+      try{
         const path=mode==="signin"?"/auth/v1/token?grant_type=password":"/auth/v1/signup";
         const response=await fetch(base+path,{method:"POST",headers:{apikey:key,"Content-Type":"application/json"},body:JSON.stringify({email,password})});
         const data=await response.json().catch(()=>({}));
-        if(!response.ok) throw new Error(data.msg||data.message||data.error_description||data.error||("Error HTTP "+response.status));
+        if(!response.ok)throw new Error(data.msg||data.message||data.error_description||data.error||("Error HTTP "+response.status));
         if(mode==="signin"){
-          if(!data.access_token||!data.user?.id) throw new Error("La cuenta no devolvió una sesión válida.");
+          if(!data.access_token||!data.user||!data.user.id)throw new Error("Supabase no devolvió una sesión válida.");
           sessionStorage.setItem("reputix_owner_session",JSON.stringify(data));
-          message.textContent="Acceso confirmado. Abriendo tu panel…";
-          window.location.href=window.location.pathname+"?session=ready#ownerArea";
-          return;
-        }
-        if(data.access_token&&data.user?.id){
+          msg.textContent="Acceso confirmado. Abriendo tu espacio…";
+          window.location.replace(window.location.pathname+"?ownerlogin=ok#ownerArea");
+        }else if(data.access_token&&data.user){
           sessionStorage.setItem("reputix_owner_session",JSON.stringify(data));
-          message.textContent="Cuenta creada. Abriendo tu panel…";
-          window.location.href=window.location.pathname+"?session=ready#ownerArea";
-        } else {
-          message.textContent="Registro enviado. Revisa tu correo para confirmar la cuenta y después inicia sesión.";
-        }
-      } catch(error) {
-        message.textContent="No se pudo iniciar sesión: "+(error.message||String(error));
-      } finally {
-        buttons.forEach(b=>{if(b)b.disabled=false;});
-      }
-    };
-  });
+          window.location.replace(window.location.pathname+"?ownerlogin=created#ownerArea");
+        }else msg.textContent="Registro enviado. Confirma el correo y vuelve a iniciar sesión.";
+      }catch(e){msg.textContent="No se pudo iniciar sesión: "+(e.message||String(e));}
+      finally{busy=false;buttons.forEach(b=>{if(b)b.disabled=false;});}
+    }
+    window.reputixOwnerAuthAction=auth;
+    document.addEventListener("click",function(e){
+      const b=e.target&&e.target.closest?e.target.closest("#ownerSignIn,#ownerSignUp"):null;
+      if(!b)return;
+      e.preventDefault();e.stopImmediatePropagation();
+      auth(b.id==="ownerSignIn"?"signin":"signup");
+    },true);
+    document.addEventListener("submit",function(e){
+      if(!e.target||e.target.id!=="ownerAuthForm")return;
+      e.preventDefault();e.stopImmediatePropagation();auth("signin");
+    },true);
+  })();
   </script>
 
 </body>
