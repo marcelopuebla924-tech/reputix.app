@@ -488,34 +488,47 @@ function startDiscoveryRotation() {
   const rail = $("bottomDiscoveryRail");
   if (!rail) return;
 
-  // Rotación física: la primera tarjeta sale hacia la izquierda y pasa al final.
-  discoveryTimer = setInterval(() => {
+  // Usa la animación nativa del navegador para que el movimiento sea visible
+  // incluso cuando el carrusel no necesita desplazamiento horizontal.
+  discoveryTimer = window.setInterval(() => {
     const currentRail = $("bottomDiscoveryRail");
     if (!currentRail || document.hidden) return;
 
-    const firstCard = currentRail.querySelector(":scope > .business-tile");
-    const cards = currentRail.querySelectorAll(":scope > .business-tile");
-    if (!firstCard || cards.length < 2) return;
+    const cards = Array.from(currentRail.children)
+      .filter(card => card.classList && card.classList.contains("business-tile"));
+    if (cards.length < 2) return;
 
-    const gap = parseFloat(
-      getComputedStyle(currentRail).columnGap ||
-      getComputedStyle(currentRail).gap
-    ) || 9;
-    const distance = firstCard.getBoundingClientRect().width + gap;
+    const firstCard = cards[0];
+    const distance = firstCard.getBoundingClientRect().width +
+      (parseFloat(getComputedStyle(currentRail).gap) || 9);
 
-    firstCard.style.transition = "transform 520ms ease, opacity 520ms ease";
-    firstCard.style.transform = "translateX(-" + distance + "px)";
-    firstCard.style.opacity = "0.35";
-
-    window.setTimeout(() => {
-      if (!firstCard.isConnected || !currentRail.isConnected) return;
-      currentRail.appendChild(firstCard);
-      firstCard.style.transition = "none";
-      firstCard.style.transform = "translateX(0)";
-      firstCard.style.opacity = "1";
-      void firstCard.offsetWidth;
-      firstCard.style.transition = "transform 520ms ease, opacity 520ms ease";
-    }, 540);
+    if (typeof firstCard.animate === "function") {
+      const motion = firstCard.animate(
+        [
+          { transform: "translateX(0)", opacity: 1 },
+          { transform: "translateX(-" + distance + "px)", opacity: 0.25 }
+        ],
+        { duration: 650, easing: "ease-in", fill: "forwards" }
+      );
+      motion.onfinish = () => {
+        if (!firstCard.isConnected || !currentRail.isConnected) return;
+        currentRail.appendChild(firstCard);
+        motion.cancel();
+        firstCard.style.transform = "none";
+        firstCard.style.opacity = "1";
+      };
+    } else {
+      firstCard.style.transition = "transform 650ms ease, opacity 650ms ease";
+      firstCard.style.transform = "translateX(-" + distance + "px)";
+      firstCard.style.opacity = "0.25";
+      window.setTimeout(() => {
+        if (!firstCard.isConnected || !currentRail.isConnected) return;
+        currentRail.appendChild(firstCard);
+        firstCard.style.transition = "none";
+        firstCard.style.transform = "none";
+        firstCard.style.opacity = "1";
+      }, 680);
+    }
   }, 4200);
 }
 
