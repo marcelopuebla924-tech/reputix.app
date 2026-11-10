@@ -214,13 +214,13 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       <h3>Reputix Basic</h3>
       <div class="stripe-plan-price">$13 <span class="stripe-plan-period">USD / mes</span></div>
       <p id="basicPlanDesc">Gestión esencial de reputación y opiniones de clientes.</p>
-      <button class="stripe-plan-button" type="button" data-reputix-checkout="basic" id="basicCheckoutButton">Elegir Basic · $13/mes</button>
+      <button class="stripe-plan-button" type="button" data-reputix-checkout="basic" id="basicCheckoutButton" onclick="window.reputixStartCheckout('basic')">Elegir Basic · $13/mes</button>
     </article>
     <article class="stripe-plan-card featured">
       <h3>Reputix Pro</h3>
       <div class="stripe-plan-price">$25 <span class="stripe-plan-period">USD / mes</span></div>
       <p id="proPlanDesc">Herramientas avanzadas para analizar opiniones y mejorar el rendimiento.</p>
-      <button class="stripe-plan-button" type="button" data-reputix-checkout="pro" id="proCheckoutButton">Elegir Pro · $25/mes</button>
+      <button class="stripe-plan-button" type="button" data-reputix-checkout="pro" id="proCheckoutButton" onclick="window.reputixStartCheckout('pro')">Elegir Pro · $25/mes</button>
     </article>
   </div>
   <p class="stripe-checkout-status" id="checkoutStatus" role="status" aria-live="polite"></p>
@@ -534,7 +534,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
  refresh();
 })();
 </script>
-<script src="./app.js?v=stripe-buttons-fix-20261110-2" defer></script>
+<script src="./app.js?v=stripe-buttons-direct-20261110-3" defer></script>
 
 </body>
 </html>
