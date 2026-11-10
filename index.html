@@ -11,7 +11,45 @@
 
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 
-  <link rel="stylesheet" href="./styles.css?v=20261109-ai5">
+  <link rel="stylesheet" href="./styles.css?v=20261109-ai6">
+  <style id="reputix-ai-inline-v6">
+/* REPUTIX AI — interfaz renovada, compacta y adaptable */
+.reputix-ai-fab{position:fixed!important;right:16px!important;bottom:22px!important;z-index:2147483000!important;display:flex!important;align-items:center!important;gap:11px!important;width:auto!important;max-width:calc(100vw - 28px)!important;padding:9px 14px 9px 9px!important;border:1.5px solid #27caff!important;border-radius:22px!important;background:linear-gradient(120deg,#06172c,#075da0)!important;color:#fff!important;box-shadow:0 0 14px #00bfff,0 0 32px #0077ff!important;cursor:pointer!important;text-align:left!important;animation:reputixAiPulse 3s ease-in-out infinite}
+.reputix-ai-fab-orb{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border-radius:50%;border:2px solid #79eaff;background:radial-gradient(circle at 35% 25%,#c7f8ff,#168bdc 55%,#071c43);box-shadow:0 0 15px #00bfff}
+.reputix-ai-fab-orb span{font-weight:900;font-size:23px;color:#fff;text-shadow:0 0 8px #00caff}
+.reputix-ai-fab-copy strong,.reputix-ai-fab-copy small{display:block}.reputix-ai-fab-copy strong{font-size:14px}.reputix-ai-fab-copy small{font-size:11px;color:#b9eaff;margin-top:3px}.reputix-ai-fab-arrow{font-size:19px;color:#6ee8ff;margin-left:3px}
+.reputix-ai-modal{position:fixed!important;inset:0!important;z-index:2147483001!important;display:grid!important;place-items:center!important;padding:14px!important;background:rgba(0,5,15,.86)!important;backdrop-filter:blur(10px)!important;overflow-y:auto!important}
+.reputix-ai-modal[hidden]{display:none!important}
+.reputix-ai-dialog{position:relative!important;isolation:isolate;width:min(100%,760px)!important;max-height:min(92dvh,900px)!important;overflow-y:auto!important;padding:clamp(17px,3vw,28px)!important;border:1.5px solid #20caff!important;border-radius:25px!important;background:radial-gradient(ellipse at 12% 4%,rgba(0,144,255,.18),transparent 38%),radial-gradient(ellipse at 90% 90%,rgba(0,119,255,.13),transparent 35%),linear-gradient(145deg,#061a32,#020916 75%)!important;color:#f4faff!important;box-shadow:0 0 0 1px rgba(0,181,255,.14),0 0 35px rgba(0,169,255,.35),inset 0 0 45px rgba(0,88,160,.12)!important}
+.reputix-ai-dialog:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;border-radius:inherit;background:repeating-linear-gradient(145deg,transparent 0 38px,rgba(0,180,255,.025) 39px 40px)}
+.reputix-ai-close{position:absolute;right:14px;top:13px;width:38px;height:38px;border-radius:50%;border:1.5px solid #20caff;background:#071a30;color:#fff;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 0 12px rgba(0,190,255,.4)}
+.reputix-ai-brand{display:flex;align-items:center;gap:18px;padding:4px 42px 18px 2px;min-height:145px}
+.reputix-ai-mascot{position:relative;flex:0 0 118px;height:125px;display:flex;align-items:center;justify-content:center;flex-direction:column;filter:drop-shadow(0 0 13px rgba(0,177,255,.55))}
+.ai-antenna{position:absolute;top:3px;width:3px;height:18px;background:#9cefff}.ai-antenna:after{content:"";position:absolute;top:-7px;left:-5px;width:12px;height:12px;border-radius:50%;background:#24d7ff;box-shadow:0 0 10px #00cfff}
+.ai-face{position:relative;width:88px;height:62px;border:3px solid #6eeaff;border-radius:25px 25px 21px 21px;background:linear-gradient(145deg,#c5f6ff,#247cb9 38%,#071a38 78%);box-shadow:inset 0 0 15px #fff,0 0 18px #008dff;display:flex;align-items:center;justify-content:space-evenly}
+.ai-face i{width:13px;height:17px;border-radius:50%;background:#16dfff;box-shadow:0 0 10px #00cfff}.ai-face b{position:absolute;bottom:9px;width:25px;height:5px;border-radius:8px;background:#d7faff}
+.ai-body{width:49px;height:35px;margin-top:-2px;border-radius:8px 8px 15px 15px;border:2px solid #48cfff;background:linear-gradient(135deg,#d7faff,#167ac0 60%,#08234c);color:#fff;text-align:center;font-weight:900;font-size:22px;line-height:31px}
+.reputix-ai-brand-copy{min-width:0}.reputix-ai-wordmark{font-size:clamp(25px,5vw,43px);font-weight:950;font-style:italic;letter-spacing:-1.8px;color:#f5fbff;line-height:1.08;text-shadow:0 0 12px rgba(0,174,255,.35)}.reputix-ai-wordmark em{font-style:italic;color:#05baff}.reputix-ai-brand-copy h2{margin:9px 0 3px;font-size:clamp(14px,2.6vw,19px);color:#f5faff}.reputix-ai-brand-copy p{margin:0;color:#22d9ff;font-size:clamp(12px,2.3vw,16px)}
+.reputix-ai-tools{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:0 0 18px}
+.reputix-ai-tools button{min-width:0;min-height:88px;padding:9px 4px;border:1px solid #155b91;border-radius:15px;background:linear-gradient(150deg,#10243e,#061225);color:#edf8ff;font-size:clamp(10px,1.8vw,13px);line-height:1.25;cursor:pointer;box-shadow:inset 0 0 14px rgba(0,140,255,.06);transition:border-color .18s,box-shadow .18s,transform .18s}
+.reputix-ai-tools button:hover,.reputix-ai-tools button:focus-visible{border-color:#27d5ff;box-shadow:0 0 15px rgba(0,183,255,.4);transform:translateY(-2px)}
+.reputix-ai-tools button span{display:block;font-size:29px;line-height:1.25;color:#61dfff;margin-bottom:5px}
+.reputix-ai-welcome{display:flex;align-items:center;gap:13px;margin:0 0 15px;padding:13px 16px;border:1px solid #1379b9;border-radius:20px;background:linear-gradient(110deg,rgba(0,104,180,.2),rgba(5,28,53,.9));box-shadow:inset 0 0 18px rgba(0,158,255,.08)}
+.reputix-ai-mini-bot{flex:0 0 47px;width:47px;height:47px;border-radius:50%;display:grid;place-items:center;border:2px solid #48d9ff;background:radial-gradient(circle at 35% 25%,#c4faff,#087ac5 60%,#061b3b);font-size:22px;font-weight:900;color:#fff;box-shadow:0 0 12px #008dff}
+.reputix-ai-welcome strong{display:block;color:#16d9ff;font-size:20px}.reputix-ai-welcome p{margin:2px 0 0;color:#f0f7ff;font-size:clamp(13px,2.5vw,17px);line-height:1.4}
+.reputix-ai-input-label{display:block;margin:0 0 6px;color:#a9d9f2;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.7px}
+.reputix-ai-dialog textarea{display:block!important;box-sizing:border-box!important;width:100%!important;min-height:100px!important;max-height:180px!important;margin:0!important;padding:15px!important;border:1.5px solid #22caff!important;border-radius:17px!important;background:#0b1a30!important;color:#fff!important;font-size:16px!important;line-height:1.45!important;resize:vertical!important;box-shadow:0 0 13px rgba(0,171,255,.16)!important}
+.reputix-ai-dialog textarea::placeholder{color:#8fa6bd}
+.reputix-ai-status-row p{margin:8px 2px;color:#a9c5da;font-size:12px;line-height:1.4}
+.reputix-ai-answer{margin:8px 0;padding:13px;border:1px solid #1c9bd5;border-radius:14px;background:#071a2d;color:#eaf8ff;white-space:pre-wrap;line-height:1.5}
+.reputix-ai-suggestions{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 14px}
+.reputix-ai-suggestions button{padding:7px 10px;border:1px solid #155b91;border-radius:20px;background:#081a2e;color:#bcecff;font-size:11px;cursor:pointer}
+.reputix-ai-suggestions button:hover{border-color:#27caff}
+.reputix-ai-submit{display:flex!important;align-items:center!important;justify-content:center!important;gap:10px!important;width:min(100%,340px)!important;min-height:54px!important;margin:0 auto!important;border:1.5px solid #63eaff!important;border-radius:17px!important;background:linear-gradient(110deg,#087ee4,#00a9f5)!important;color:#fff!important;font-size:17px!important;font-weight:800!important;box-shadow:0 0 16px rgba(0,172,255,.55)!important;cursor:pointer!important}
+.reputix-ai-submit:disabled{opacity:.6;cursor:wait}.reputix-ai-submit span{font-size:20px}.reputix-ai-footnote{margin:12px 0 0!important;text-align:center;color:#6e9fbd!important;font-size:10px!important}
+@media(max-width:560px){.reputix-ai-modal{padding:9px!important}.reputix-ai-dialog{max-height:94dvh!important;padding:15px!important;border-radius:20px!important}.reputix-ai-brand{gap:10px;min-height:112px;padding-right:34px}.reputix-ai-mascot{flex-basis:77px;height:100px}.ai-face{width:68px;height:51px}.ai-body{width:40px;height:29px;line-height:25px;font-size:18px}.reputix-ai-tools{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-bottom:12px}.reputix-ai-tools button{min-height:76px;padding:6px 2px;font-size:9px;border-radius:11px}.reputix-ai-tools button span{font-size:22px}.reputix-ai-welcome{padding:10px;gap:9px}.reputix-ai-mini-bot{flex-basis:39px;width:39px;height:39px}.reputix-ai-welcome strong{font-size:17px}.reputix-ai-dialog textarea{min-height:86px!important}.reputix-ai-fab{bottom:16px!important;right:12px!important}}
+@media(max-width:370px){.reputix-ai-mascot{display:none}.reputix-ai-tools button{font-size:8px}.reputix-ai-tools button span{font-size:19px}}
+  </style>
 </head>
 
 <body>
@@ -305,6 +343,6 @@
 
 
 
-  <script src="./app.js?v=20261109-ai5" defer></script>
+  <script src="./app.js?v=20261109-ai6" defer></script>
 </body>
 </html>
