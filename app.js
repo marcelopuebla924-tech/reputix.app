@@ -2431,11 +2431,20 @@ async function handleOwnerAuthAction(action) {
   }
 }
 
+// Acciones explícitas en los botones: no dependen de event.submitter, que puede
+// no estar disponible de forma consistente en algunos navegadores móviles.
+$("ownerSignIn").addEventListener("click", event => {
+  event.preventDefault();
+  handleOwnerAuthAction("signin");
+});
+$("ownerSignUp").addEventListener("click", event => {
+  event.preventDefault();
+  handleOwnerAuthAction("signup");
+});
+// Permite enviar con Enter desde los campos del formulario.
 $("ownerAuthForm").addEventListener("submit", event => {
   event.preventDefault();
-  // Única ruta de autenticación: el botón que envió el formulario determina la acción.
-  const action = event.submitter?.id === "ownerSignIn" ? "signin" : "signup";
-  handleOwnerAuthAction(action);
+  handleOwnerAuthAction("signin");
 });
 $("ownerSignOut").addEventListener("click",()=>{
   ownerSetSession(null);
