@@ -327,7 +327,12 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
         <div><span class="private-kicker">REPUTIX · ÁREA PRIVADA</span><h2 id="privateWelcome">Mi espacio</h2><p id="privateIntro">Tu actividad y tus negocios en un solo lugar.</p></div>
         <span class="private-active" id="privateStatus">● Cuenta activa</span>
       </div>
-      <div class="private-grid">
+      <section id="ownerSubscriptionCard" class="private-tile private-wide" hidden>
+      <h3 id="ownerSubscriptionTitle">Tu plan Reputix</h3>
+      <p id="ownerSubscriptionDetails" class="owner-copy" aria-live="polite">Consultando tu suscripción…</p>
+      <div class="owner-actions"><button type="button" class="secondary" id="ownerSubscriptionPlans">Ver planes y administrar mi plan</button></div>
+    </section>
+    <div class="private-grid">
         <article class="private-tile"><span class="private-icon">◉</span><h3 id="privateProfileTitle">Mi perfil</h3><p id="privateProfileDesc">Datos y configuración</p><div id="privateProfileContent"></div><button class="secondary private-action" type="button" id="privateProfileAction">Editar perfil</button></article>
         <article class="private-tile"><span class="private-icon">▣</span><h3 id="privateBusinessTitle">Mis negocios</h3><p id="privateBusinessDesc">Administración y estadísticas</p><div id="privateBusinessContent"></div><button class="secondary private-action" type="button" id="privateBusinessAction">Solicitar acceso a un negocio</button></article>
         <article class="private-tile"><span class="private-icon">◌</span><h3 id="privateMessagesTitle">Mensajes</h3><p id="privateMessagesDesc">Comunicación con clientes</p><div id="privateMessagesContent">
@@ -353,7 +358,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
         <article class="private-tile private-wide"><span class="private-icon">☆</span><h3 id="privateReviewsTitle">Opiniones de mis clientes</h3><p id="privateReviewsDesc">Comentarios y calificaciones</p><div id="privateReviewsContent"></div><button class="secondary private-action" type="button" id="privateReviewsAction">Actualizar opiniones</button></article>
         <article class="private-tile private-wide"><h3 id="privatePostsTitle">Mis publicaciones</h3><form id="privatePostForm"><label class="owner-field"><span id="privatePostLabel">Comparte algo con la comunidad</span><textarea id="privatePostBody" rows="3" maxlength="5000" required></textarea></label><button class="primary" type="submit" id="privatePostSubmit">Publicar</button><p class="owner-message" id="privatePostMessage" aria-live="polite"></p></form><div id="privatePostsList"></div></article>
         <article class="private-tile private-wide"><h3 id="privateDiscoverTitle">Descubre otros negocios</h3><p id="privateDiscoverDesc">Sugerencias, tendencias y recomendaciones de Reputix.</p><div id="privateDiscoverContent"></div></article>
-        <article class="private-tile private-wide ai-assistant-panel">
+        <article class="private-tile private-wide ai-assistant-panel" hidden>
           <div class="ai-assistant-head">
             <span class="private-icon">✦</span>
        
