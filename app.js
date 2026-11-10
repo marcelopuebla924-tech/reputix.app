@@ -1283,6 +1283,58 @@ function makeReviewForm(business) {
     try {
       const fd = new FormData(f);
       const comment = String(fd.get("comment") || "");
+      const originalLanguage = detectLanguage(comment);
+      let translatedComment = null;
+      let translatedLanguage = null;
+
+      // La traducción asistida es opcional: nunca impide enviar la reseña original.
+      // La función exige sesión válida; usuarios sin sesión conservan su texto original.
+      if (comment.trim() && ownerSession?.access_token && originalLanguage !== "und") {
+        try {
+          const targetLanguage = originalLanguage === "en" ? "es" : "en";
+          let translationResponse = await fetch(SUPABASE_URL + "/functions/v1/reputix-ai", {
+            method: "POST",
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: "Bearer " + ownerSession.access_token,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              message: comment.trim(),
+              language: targetLanguage,
+              mode: "translate"
+            })
+          });
+          if (translationResponse.status === 401 && ownerSession.refresh_token) {
+            const refreshed = await ownerAuthRequest("token?grant_type=refresh_token", {refresh_token: ownerSession.refresh_token});
+            if (refreshed?.access_token && refreshed?.user?.id) {
+              ownerSetSession(refreshed);
+              translationResponse = await fetch(SUPABASE_URL + "/functions/v1/reputix-ai", {
+                method: "POST",
+                headers: {
+                  apikey: SUPABASE_KEY,
+                  Authorization: "Bearer " + refreshed.access_token,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                  message: comment.trim(),
+                  language: targetLanguage,
+                  mode: "translate"
+                })
+              });
+            }
+          }
+          const translationData = await translationResponse.json().catch(() => ({}));
+          if (translationResponse.ok && typeof translationData.translation === "string" && translationData.translation.trim()) {
+            translatedComment = translationData.translation.trim();
+            translatedLanguage = targetLanguage;
+          } else {
+            console.warn("Optional review translation unavailable:", translationData.error || translationResponse.status);
+          }
+        } catch (translationError) {
+          console.warn("Optional review translation failed; preserving original:", translationError);
+        }
+      }
 
       if (!business.id) throw new Error(t("invalidBusiness"));
 
@@ -1301,9 +1353,9 @@ function makeReviewForm(business) {
           speed:Number(fd.get("speed")),
           value_for_money:Number(fd.get("value_for_money")),
           comment:comment.trim() ? comment : null,
-          original_language:detectLanguage(comment),
-          translated_comment:null,
-          translated_language:null,
+          original_language:originalLanguage,
+          translated_comment:translatedComment,
+          translated_language:translatedLanguage,
           status:"pending"
         })
       });
