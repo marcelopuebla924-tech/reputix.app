@@ -488,42 +488,35 @@ function startDiscoveryRotation() {
   const rail = $("bottomDiscoveryRail");
   if (!rail) return;
 
-  // Avanza una tarjeta cada intervalo. Si hay espacio para desplazarse,
-  // mueve la franja; si todas caben en pantalla, rota el orden de las tarjetas.
+  // Rotación física: la primera tarjeta sale hacia la izquierda y pasa al final.
   discoveryTimer = setInterval(() => {
     const currentRail = $("bottomDiscoveryRail");
-    if (!currentRail) return;
+    if (!currentRail || document.hidden) return;
+
+    const firstCard = currentRail.querySelector(":scope > .business-tile");
     const cards = currentRail.querySelectorAll(":scope > .business-tile");
-    if (cards.length < 2) return;
+    if (!firstCard || cards.length < 2) return;
 
-    if (currentRail.scrollWidth > currentRail.clientWidth + 4) {
-      const firstCard = cards[0];
-      const gap = parseFloat(getComputedStyle(currentRail).columnGap || getComputedStyle(currentRail).gap) || 9;
-      const step = firstCard.getBoundingClientRect().width + gap;
-      const atEnd = currentRail.scrollLeft + currentRail.clientWidth >= currentRail.scrollWidth - 8;
-      if (atEnd) currentRail.scrollTo({left:0,behavior:"smooth"});
-      else currentRail.scrollBy({left:step,behavior:"smooth"});
-      return;
-    }
+    const gap = parseFloat(
+      getComputedStyle(currentRail).columnGap ||
+      getComputedStyle(currentRail).gap
+    ) || 9;
+    const distance = firstCard.getBoundingClientRect().width + gap;
 
-    // En pantallas donde caben todas las tarjetas, cambia el orden para
-    // que el carrusel siga avanzando y no parezca congelado.
-    const available = lastBusinesses.filter(b => b && String(b.status || "").toLowerCase() === "approved");
-    if (available.length > 1) {
-      discoveryOffset = (discoveryOffset + 1) % available.length;
-      currentRail.style.transition = "opacity .22s ease, transform .22s ease";
-      currentRail.style.opacity = "0.45";
-      currentRail.style.transform = "translateX(-5px)";
-      window.setTimeout(() => {
-        renderDiscoveryRails();
-        const refreshedRail = $("bottomDiscoveryRail");
-        if (refreshedRail) {
-          refreshedRail.style.opacity = "1";
-          refreshedRail.style.transform = "translateX(0)";
-        }
-      },220);
-    }
-  },4200);
+    firstCard.style.transition = "transform 520ms ease, opacity 520ms ease";
+    firstCard.style.transform = "translateX(-" + distance + "px)";
+    firstCard.style.opacity = "0.35";
+
+    window.setTimeout(() => {
+      if (!firstCard.isConnected || !currentRail.isConnected) return;
+      currentRail.appendChild(firstCard);
+      firstCard.style.transition = "none";
+      firstCard.style.transform = "translateX(0)";
+      firstCard.style.opacity = "1";
+      void firstCard.offsetWidth;
+      firstCard.style.transition = "transform 520ms ease, opacity 520ms ease";
+    }, 540);
+  }, 4200);
 }
 
 function createPhotoUUID() {
