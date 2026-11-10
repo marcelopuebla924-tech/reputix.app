@@ -1974,8 +1974,8 @@ async function ownerSendPasswordRecovery() {
   button.disabled = true;
   message.textContent = ownerText("Enviando instrucciones de recuperación…","Sending password recovery instructions…");
   try {
-    // Usa siempre el dominio canónico autorizado en Supabase.
-    const redirectTo = "https://www.reputixapp.com/";
+    // Regresa a una ruta identificable del área de propietarios.
+    const redirectTo = "https://www.reputixapp.com/?recovery=1#ownerArea";
     await ownerAuthRequest("recover?redirect_to=" + encodeURIComponent(redirectTo), {email});
     message.textContent = ownerText(
       "Si existe una cuenta con ese correo, recibirás un enlace para crear una contraseña nueva. Revisa también correo no deseado.",
@@ -1988,26 +1988,43 @@ async function ownerSendPasswordRecovery() {
   }
 }
 
-function ownerShowPasswordResetFromLink() {
-  // Supabase puede devolver tokens o errores en el fragmento (#) o en la consulta (?).
+async function ownerShowPasswordResetFromLink() {
+  // Supabase admite enlaces propios con token_hash (OTP) y sesiones por fragmento.
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
   const query = new URLSearchParams(window.location.search);
   const type = hash.get("type") || query.get("type");
   const token = hash.get("access_token") || query.get("access_token");
+  const tokenHash = query.get("token_hash") || hash.get("token_hash");
   const authError = hash.get("error_description") || hash.get("error") ||
                     query.get("error_description") || query.get("error");
   if (authError) {
-    $("ownerAuthMessage").textContent = authError.replace(/\\+/g," ");
+    $("ownerAuthMessage").textContent = authError.replace(/\+/g," ");
     return;
   }
-  if (type !== "recovery" || !token) return;
-  ownerRecoveryAccessToken = token;
-  $("ownerAuthForm").hidden = true;
-  $("ownerPasswordResetPanel").hidden = false;
-  $("ownerAuthMessage").textContent = ownerText("Enlace de recuperación reconocido. Crea tu nueva contraseña.","Recovery link recognized. Create your new password.");
-  $("ownerArea").scrollIntoView({behavior:"smooth",block:"start"});
-}
 
+  if (type === "recovery" && tokenHash && !ownerRecoveryAccessToken) {
+    const message = $("ownerAuthMessage");
+    message.textContent = ownerText("Validando el enlace de recuperación…","Validating recovery link…");
+    try {
+      const verified = await ownerAuthRequest("verify", {token_hash:tokenHash,type:"recovery"});
+      if (!verified?.access_token) throw new Error(ownerText("Supabase no confirmó el enlace. Solicita uno nuevo.","Supabase did not confirm the link. Request a new one."));
+      ownerRecoveryAccessToken = verified.access_token;
+      history.replaceState(null,"",window.location.pathname+"?recovery=1#ownerArea");
+    } catch (error) {
+      message.textContent = ownerText("No se pudo validar el enlace: ","Could not validate the link: ")+(error?.message||String(error));
+      return;
+    }
+  } else if (type === "recovery" && token) {
+    ownerRecoveryAccessToken = token;
+  }
+
+  if (ownerRecoveryAccessToken) {
+    $("ownerAuthForm").hidden = true;
+    $("ownerPasswordResetPanel").hidden = false;
+    $("ownerAuthMessage").textContent = ownerText("Enlace de recuperación reconocido. Crea tu nueva contraseña.","Recovery link recognized. Create your new password.");
+    $("ownerArea").scrollIntoView({behavior:"smooth",block:"start"});
+  }
+}
 async function ownerSaveNewPassword() {
   const password = $("ownerNewPassword").value;
   const confirmation = $("ownerConfirmPassword").value;
@@ -2065,6 +2082,7 @@ $("ownerSaveNewPassword")?.addEventListener("click", ownerSaveNewPassword);
 window.addEventListener("load", ownerShowPasswordResetFromLink);
 window.addEventListener("hashchange", ownerShowPasswordResetFromLink);
 window.addEventListener("pageshow", ownerShowPasswordResetFromLink);
+ownerShowPasswordResetFromLink();
 // Ejecutar también al cargar el módulo: algunos navegadores móviles restauran
 // la página sin volver a disparar "load" y el enlace puede llegar con el token
 // antes de que se registren los listeners.
