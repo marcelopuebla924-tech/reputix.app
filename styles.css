@@ -2074,3 +2074,8 @@ header:after{
 .reputix-ai-submit:disabled{opacity:.6;cursor:wait}.reputix-ai-submit span{font-size:20px}.reputix-ai-footnote{margin:12px 0 0!important;text-align:center;color:#6e9fbd!important;font-size:10px!important}
 @media(max-width:560px){.reputix-ai-modal{padding:9px!important}.reputix-ai-dialog{max-height:94dvh!important;padding:15px!important;border-radius:20px!important}.reputix-ai-brand{gap:10px;min-height:112px;padding-right:34px}.reputix-ai-mascot{flex-basis:77px;height:100px}.ai-face{width:68px;height:51px}.ai-body{width:40px;height:29px;line-height:25px;font-size:18px}.reputix-ai-tools{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-bottom:12px}.reputix-ai-tools button{min-height:76px;padding:6px 2px;font-size:9px;border-radius:11px}.reputix-ai-tools button span{font-size:22px}.reputix-ai-welcome{padding:10px;gap:9px}.reputix-ai-mini-bot{flex-basis:39px;width:39px;height:39px}.reputix-ai-welcome strong{font-size:17px}.reputix-ai-dialog textarea{min-height:86px!important}.reputix-ai-fab{bottom:16px!important;right:12px!important}}
 @media(max-width:370px){.reputix-ai-mascot{display:none}.reputix-ai-tools button{font-size:8px}.reputix-ai-tools button span{font-size:19px}}
+
+
+/* FIX CRÍTICO: el atributo hidden del panel privado debe prevalecer sobre reglas display !important */
+#privateSpace[hidden] { display: none !important; }
+#privateSpace:not([hidden]) { display: block !important; }
