@@ -19,6 +19,43 @@ const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
 const $ = id => document.getElementById(id);
 
+/* Respaldo de acceso: captura los toques móviles antes de otros módulos. */
+document.addEventListener("click", event => {
+  const control = event.target?.closest?.("#ownerSignIn,#ownerSignUp,#accountAccessBtn");
+  if (!control) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  if (control.id === "accountAccessBtn") {
+    const area = document.getElementById("ownerArea");
+    const form = document.getElementById("ownerAuthForm");
+    area?.scrollIntoView({behavior:"smooth",block:"start"});
+    window.setTimeout(() => {
+      if (ownerSession) document.getElementById("privateSpace")?.scrollIntoView({behavior:"smooth",block:"start"});
+      else {
+        form?.scrollIntoView({behavior:"smooth",block:"center"});
+        document.getElementById("ownerEmail")?.focus({preventScroll:true});
+      }
+    }, 350);
+    return;
+  }
+
+  const message = document.getElementById("ownerAuthMessage");
+  const email = document.getElementById("ownerEmail")?.value?.trim();
+  const password = document.getElementById("ownerPassword")?.value;
+  if (!email || !password) {
+    if (message) message.textContent = ownerText("Escribe tu correo y contraseña para continuar.","Enter your email and password to continue.");
+    document.getElementById(!email ? "ownerEmail" : "ownerPassword")?.focus({preventScroll:true});
+    return;
+  }
+  if (typeof handleOwnerAuthAction === "function") {
+    handleOwnerAuthAction(control.id === "ownerSignIn" ? "signin" : "signup");
+  } else if (message) {
+    message.textContent = ownerText("El acceso no terminó de cargar. Recarga la página e inténtalo otra vez.","Sign-in did not finish loading. Reload the page and try again.");
+  }
+}, true);
+
+
 /* Delegación de acciones del panel privado: queda registrada antes de inicializar
    módulos secundarios para que un error ajeno no deje botones sin respuesta. */
 document.addEventListener("click", async event => {
