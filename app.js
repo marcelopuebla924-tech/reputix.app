@@ -2008,10 +2008,30 @@ async function ownerSignUp() {
     throw err;
   }
 }
-async function loadOwnerClaims() {
+async function loadClaimBusinessOptions() {
   const select=$("claimBusiness");
-  select.replaceChildren(new Option(ownerText("Selecciona un negocio","Choose a business"),""));
-  lastBusinesses.filter(b=>b.status==="approved").forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+  if(!select) return;
+  const previous=select.value;
+  select.replaceChildren(new Option(ownerText("Cargando negocios aprobados…","Loading approved businesses…"),""));
+  try {
+    // Consultar directamente la lista vigente; no depender de que la búsqueda pública
+    // haya terminado antes de que el usuario abra su panel.
+    const rows=await api("businesses?select=id,name,city,address,status&status=eq.approved&order=name.asc&limit=1000");
+    if(!Array.isArray(rows)) throw new Error("Invalid approved business list");
+    lastBusinesses=rows;
+    select.replaceChildren(new Option(ownerText("Selecciona un negocio","Choose a business"),""));
+    rows.forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+  } catch(err) {
+    console.warn("No se pudo actualizar la lista de negocios para solicitudes:",err);
+    const rows=(Array.isArray(lastBusinesses)?lastBusinesses:[]).filter(b=>b.status==="approved");
+    select.replaceChildren(new Option(ownerText("Selecciona un negocio","Choose a business"),""));
+    rows.forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+    if(!rows.length) select.replaceChildren(new Option(ownerText("No hay negocios aprobados disponibles","No approved businesses available"),""));
+  }
+  if(previous && [...select.options].some(o=>o.value===previous)) select.value=previous;
+}
+async function loadOwnerClaims() {
+  await loadClaimBusinessOptions();
   $("ownerClaimMessage").textContent="";
   $("ownerDashboard").hidden=true;
   try {
@@ -2023,6 +2043,8 @@ async function loadOwnerClaims() {
     $("ownerClaimMessage").textContent=ownerText("No se pudieron cargar tus solicitudes. Vuelve a iniciar sesión.","Could not load your claims. Please sign in again.");
   }
 }
+// Actualizar también al abrir el selector, por si se aprobó o agregó un negocio recientemente.
+$("claimBusiness")?.addEventListener("focus",loadClaimBusinessOptions);
 
 async function loadAdminReviewModeration() {
   const list = $("adminReviewModerationList");
