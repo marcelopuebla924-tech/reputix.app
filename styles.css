@@ -2104,3 +2104,43 @@ select option, select optgroup {
   outline-offset: 2px !important;
   border-color: #35d4ff !important;
 }
+
+
+/* Selector Reputix personalizado: no abrir el desplegable blanco de Android */
+#claimBusiness.claim-business-native-select{
+ position:absolute!important;width:1px!important;height:1px!important;min-height:1px!important;
+ opacity:0!important;pointer-events:none!important;left:-10000px!important;padding:0!important;
+}
+.claim-business-picker-trigger{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:12px!important;width:100%!important;min-height:52px!important;padding:12px 15px!important;
+ border:1px solid #168ed0!important;border-radius:13px!important;
+ background:linear-gradient(120deg,#0b2340,#061225)!important;color:#d8f4ff!important;
+ text-align:left!important;font-size:15px!important;box-shadow:inset 0 0 14px rgba(0,150,255,.12),0 0 12px rgba(0,150,255,.08)!important;
+}
+.claim-business-picker-trigger:after{content:"⌄";font-size:23px;color:#38d4ff;margin-left:auto}
+.claim-business-picker-trigger.has-selection{border-color:#2bd4ff!important;color:#fff!important}
+.claim-business-picker-overlay[hidden]{display:none!important}
+.claim-business-picker-overlay{
+ position:fixed!important;inset:0!important;z-index:2147483600!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ padding:16px!important;background:rgba(0,5,16,.88)!important;backdrop-filter:blur(9px)!important;
+}
+.claim-business-picker-dialog{
+ width:min(100%,520px)!important;max-height:min(82dvh,720px)!important;overflow:hidden!important;
+ display:flex!important;flex-direction:column!important;gap:13px!important;padding:18px!important;
+ border:1.5px solid #17bfff!important;border-radius:22px!important;
+ background:radial-gradient(ellipse at top left,rgba(0,160,255,.2),transparent 55%),linear-gradient(145deg,#0b2340,#020a17 78%)!important;
+ color:#effaff!important;box-shadow:0 0 35px rgba(0,160,255,.38),inset 0 0 25px rgba(0,120,255,.1)!important;
+}
+.claim-business-picker-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.claim-business-picker-head small{color:#38d5ff;font-size:10px;font-weight:900;letter-spacing:1.5px}
+.claim-business-picker-head h3{margin:5px 0 0!important;color:#fff!important;font-size:21px!important}
+.claim-business-picker-close{width:38px!important;height:38px!important;flex:0 0 38px!important;border:1px solid #168ed0!important;border-radius:50%!important;background:#071a30!important;color:#bfefff!important;font-size:25px!important}
+.claim-business-picker-search input{width:100%!important;box-sizing:border-box!important;min-height:45px!important;border:1px solid #17699b!important;border-radius:12px!important;background:#06172b!important;color:#fff!important;padding:10px 13px!important}
+.claim-business-picker-list{overflow-y:auto!important;display:grid!important;gap:8px!important;padding:2px!important}
+.claim-business-picker-option{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;width:100%!important;min-height:58px!important;padding:11px 13px!important;border:1px solid #15517b!important;border-radius:13px!important;background:linear-gradient(110deg,#0c2a49,#07182c)!important;color:#f2fbff!important;text-align:left!important}
+.claim-business-picker-option[aria-selected="true"]{border-color:#3bdcff!important;box-shadow:0 0 13px rgba(0,185,255,.25)!important}
+.claim-business-picker-option strong{font-size:14px!important}
+.claim-business-picker-option small,.claim-business-picker-empty{color:#8fc8e8!important;font-size:11px!important}
+@media(max-width:540px){.claim-business-picker-dialog{padding:14px!important;border-radius:19px!important}.claim-business-picker-head h3{font-size:19px!important}}
