@@ -214,16 +214,16 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       <h3>Reputix Basic</h3>
       <div class="stripe-plan-price">$13 <span class="stripe-plan-period">USD / mes</span></div>
       <p id="basicPlanDesc">Gestión esencial de reputación y opiniones de clientes.</p>
-      <button class="stripe-plan-button" type="button" data-reputix-checkout="basic" id="basicCheckoutButton" onclick="window.reputixStartCheckout('basic')">Elegir Basic · $13/mes</button>
+      <button class="stripe-plan-button" type="button" data-reputix-checkout="basic" id="basicCheckoutButton" onclick="window.reputixStartCheckout('basic')">Elegir Basic · $13/mes</button><p class="stripe-checkout-status" id="basicCheckoutStatus" role="status" aria-live="polite"></p>
     </article>
     <article class="stripe-plan-card featured">
       <h3>Reputix Pro</h3>
       <div class="stripe-plan-price">$25 <span class="stripe-plan-period">USD / mes</span></div>
       <p id="proPlanDesc">Herramientas avanzadas para analizar opiniones y mejorar el rendimiento.</p>
-      <button class="stripe-plan-button" type="button" data-reputix-checkout="pro" id="proCheckoutButton" onclick="window.reputixStartCheckout('pro')">Elegir Pro · $25/mes</button>
+      <button class="stripe-plan-button" type="button" data-reputix-checkout="pro" id="proCheckoutButton" onclick="window.reputixStartCheckout('pro')">Elegir Pro · $25/mes</button><p class="stripe-checkout-status" id="proCheckoutStatus" role="status" aria-live="polite"></p>
     </article>
   </div>
-  <p class="stripe-checkout-status" id="checkoutStatus" role="status" aria-live="polite"></p>
+  
 </section>
 
 <section class="community">
