@@ -26,7 +26,8 @@ document.addEventListener("click", event => {
   event.preventDefault();
   event.stopImmediatePropagation();
   const status = document.getElementById("checkoutStatus");
-  if (status) status.textContent = "Toque recibido. Iniciando conexión segura…";
+  const status = document.getElementById(plan === "pro" ? "proCheckoutStatus" : "basicCheckoutStatus");
+  if (status) { status.textContent = "Toque recibido. Iniciando conexión segura…"; status.scrollIntoView({behavior:"smooth",block:"nearest"}); }
   const plan = button.getAttribute("data-reputix-checkout");
   if (typeof window.reputixStartCheckout === "function") {
     window.reputixStartCheckout(plan);
@@ -1945,7 +1946,7 @@ function ownerText(es,en){return lang==="es"?es:en;}
 
 /* Stripe Checkout: función global invocada directamente desde cada botón. */
 window.reputixStartCheckout = async function(plan) {
-  const status = $("checkoutStatus");
+  const status = $(plan === "pro" ? "proCheckoutStatus" : "basicCheckoutStatus");
   const message = $("ownerAuthMessage");
   const buttons = [...document.querySelectorAll("[data-reputix-checkout]")];
   const showStatus = value => { if (status) status.textContent = value; };
