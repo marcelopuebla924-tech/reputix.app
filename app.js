@@ -2000,5 +2000,5 @@ async function loadApprovedBusinesses() {
 })();;
 
 
-/* Botón de navegación: volver al inicio de Reputix */
-document.addEventListener("DOMContentLoaded",()=>{const homeButton=document.getElementById("homeNavBtn");if(homeButton)homeButton.addEventListener("click",()=>{window.scrollTo({top:0,behavior:"smooth"});});});
+/* El eslogan superior sirve como botón para volver al inicio */
+document.addEventListener("DOMContentLoaded",()=>{const homeButton=document.getElementById("tagline");if(homeButton)homeButton.addEventListener("click",()=>{window.scrollTo({top:0,behavior:"smooth"});});});
