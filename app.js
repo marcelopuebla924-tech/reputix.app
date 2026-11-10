@@ -354,8 +354,8 @@ function setLanguage(value) {
   $("ownerSignOut").textContent = lang === "es" ? "Cerrar sesión" : "Sign out";
   $("claimTitle").textContent = lang === "es" ? "Solicitar acceso al negocio" : "Request business access";
   $("claimIntro").textContent = lang === "es" ? "Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada." : "Select the business and briefly explain how you can prove you are its owner or authorized representative. Your request will be reviewed.";
-  $("claimBusinessLabel").textContent = lang === "es" ? "Negocio" : "Business";
-  $("claimEvidenceLabel").textContent = lang === "es" ? "Prueba de relación con el negocio" : "Proof of relationship to the business";
+  if ($("claimBusinessLabel")) $("claimBusinessLabel").textContent = lang === "es" ? "Negocio" : "Business";
+  if ($("claimEvidenceLabel")) $("claimEvidenceLabel").textContent = lang === "es" ? "Prueba de relación con el negocio" : "Proof of relationship to the business";
   $("claimSubmit").textContent = lang === "es" ? "Enviar solicitud" : "Submit request";
   $("dashboardTitle").textContent = lang === "es" ? "Tus estadísticas" : "Your analytics";
   $("adminClaimsTitle").textContent = lang === "es" ? "🛡️ Revisión administrativa" : "🛡️ Admin review";
