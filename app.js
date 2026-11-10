@@ -1882,6 +1882,115 @@ async function ownerAuthRequest(path,payload) {
   return body;
 }
 function ownerText(es,en){return lang==="es"?es:en;}
+
+/* Reputix Ads: módulo integrado al panel privado; no modifica autenticación. */
+async function loadReputixAdsBusinesses(){
+  const select=$("adsBusiness");
+  if(!select)return;
+  const rows=await api("businesses?select=id,name,city&status=eq.approved&order=name.asc&limit=1000");
+  select.replaceChildren(node("option","","Selecciona un negocio aprobado"));
+  select.options[0].value="";
+  (rows||[]).forEach(b=>{
+    const option=node("option","",b.name+(b.city?" · "+b.city:""));
+    option.value=b.id;
+    select.append(option);
+  });
+}
+async function adsCount(table,campaignId){
+  const response=await fetch(SUPABASE_URL+"/rest/v1/"+table+"?select=id&campaign_id=eq."+encodeURIComponent(campaignId),{
+    method:"HEAD",
+    headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+ownerSession.access_token,Prefer:"count=exact",Range:"0-0"}
+  });
+  if(!response.ok)return 0;
+  const match=(response.headers.get("content-range")||"").match(/\/(\d+)$/);
+  return match?Number(match[1]):0;
+}
+async function loadReputixAdsCampaigns(){
+  const list=$("reputixAdsCampaignList");
+  if(!list||!ownerSession?.access_token)return;
+  list.replaceChildren(node("p","owner-copy","Cargando campañas…"));
+  try{
+    const [campaigns,businesses]=await Promise.all([
+      api("ad_campaigns?select=*&order=created_at.desc&limit=200"),
+      api("businesses?select=id,name&limit=1000")
+    ]);
+    const names=new Map((businesses||[]).map(b=>[b.id,b.name]));
+    let impressions=0,clicks=0,active=0;
+    const counts=await Promise.all((campaigns||[]).map(async c=>({
+      c,impressions:await adsCount("ad_impressions",c.id),clicks:await adsCount("ad_clicks",c.id)
+    })));
+    counts.forEach(x=>{impressions+=x.impressions;clicks+=x.clicks;if(x.c.status==="active")active++;});
+    $("adsTotalCount").textContent=String((campaigns||[]).length);
+    $("adsActiveCount").textContent=String(active);
+    $("adsImpressionCount").textContent=impressions.toLocaleString();
+    $("adsClickCount").textContent=clicks.toLocaleString();
+    list.replaceChildren();
+    if(!counts.length){list.append(node("p","insight-empty","Todavía no hay campañas publicitarias."));return;}
+    counts.forEach(({c,impressions:views,clicks:visits})=>{
+      const card=node("article","admin-claim");
+      card.append(node("div","admin-claim-title",c.title));
+      card.append(node("div","admin-claim-meta",(names.get(c.business_id)||"Negocio no disponible")+" · "+c.placement));
+      card.append(node("div","admin-claim-meta","Presupuesto: $"+((Number(c.budget_cents)||0)/100).toFixed(2)+" USD · Estado: "+c.status));
+      card.append(node("div","admin-claim-meta","Impresiones: "+views+" · Clics: "+visits));
+      const actions=node("div","owner-actions");
+      const addAction=(label,status)=>{
+        const button=node("button","secondary",label);button.type="button";
+        button.addEventListener("click",async()=>{
+          if(!window.confirm("¿Cambiar esta campaña a "+status+"?"))return;
+          button.disabled=true;
+          try{
+            await api("ad_campaigns?id=eq."+encodeURIComponent(c.id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status,updated_at:new Date().toISOString()})});
+            $("adsAdminMessage").textContent="Campaña actualizada.";
+            await loadReputixAdsCampaigns();
+          }catch(error){$("adsAdminMessage").textContent="No se pudo actualizar: "+error.message;button.disabled=false;}
+        });
+        actions.append(button);
+      };
+      if(["draft","rejected"].includes(c.status))addAction("Enviar a revisión","pending_review");
+      if(["pending_review","approved","paused"].includes(c.status))addAction("Activar","active");
+      if(["active","approved"].includes(c.status))addAction("Pausar","paused");
+      if(!["rejected","completed"].includes(c.status))addAction("Rechazar","rejected");
+      if(["active","paused"].includes(c.status))addAction("Finalizar","completed");
+      card.append(actions);list.append(card);
+    });
+  }catch(error){
+    list.replaceChildren(node("p","owner-message","No se pudieron cargar campañas: "+error.message));
+  }
+}
+function setupReputixAdsAdmin(){
+  const form=$("reputixAdsForm");
+  if(!form||form.dataset.bound==="1")return;
+  form.dataset.bound="1";
+  form.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const button=$("adsCreateButton");button.disabled=true;
+    $("adsAdminMessage").textContent="Guardando campaña para revisión…";
+    try{
+      const business_id=$("adsBusiness").value;
+      const title=$("adsTitle").value.trim();
+      const description=$("adsDescription").value.trim();
+      const destination_url=$("adsDestination").value.trim();
+      const budget=Number($("adsBudget").value);
+      if(!business_id)throw new Error("Selecciona un negocio aprobado.");
+      if(title.length<3||title.length>120)throw new Error("El título debe tener entre 3 y 120 caracteres.");
+      if(!Number.isFinite(budget)||budget<0||budget>1000000)throw new Error("Presupuesto inválido.");
+      if(destination_url&&!/^https?:\/\//i.test(destination_url))throw new Error("El enlace debe comenzar con https:// o http://.");
+      const starts=$("adsStarts").value?new Date($("adsStarts").value).toISOString():null;
+      const ends=$("adsEnds").value?new Date($("adsEnds").value).toISOString():null;
+      if(starts&&ends&&new Date(ends)<=new Date(starts))throw new Error("La fecha final debe ser posterior a la inicial.");
+      await api("ad_campaigns",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({
+        business_id,title,description:description||null,destination_url:destination_url||null,
+        placement:$("adsPlacement").value,status:"pending_review",budget_cents:Math.round(budget*100),starts_at:starts,ends_at:ends
+      })});
+      form.reset();$("adsBudget").value="50";
+      $("adsAdminMessage").textContent="Campaña creada y enviada a revisión. El cobro aún no está activo.";
+      await loadReputixAdsCampaigns();
+    }catch(error){$("adsAdminMessage").textContent="No se pudo crear la campaña: "+error.message;}
+    finally{button.disabled=false;}
+  });
+  $("adsRefreshButton")?.addEventListener("click",()=>loadReputixAdsCampaigns());
+}
+
 function ownerSetSession(session) {
   ownerSession=session;
   if(session) sessionStorage.setItem("reputix_owner_session",JSON.stringify(session));
@@ -1895,6 +2004,9 @@ function ownerSetSession(session) {
   $("adminClaimsPanel").hidden = !isAdmin;
   const moderationPanel = $("adminReviewModerationPanel");
   if (moderationPanel) moderationPanel.hidden = !isAdmin;
+  const adsPanel = $("adminAdsPanel");
+  if (adsPanel) adsPanel.hidden = !isAdmin;
+  if (isAdmin) { setupReputixAdsAdmin(); loadReputixAdsBusinesses().then(loadReputixAdsCampaigns).catch(error => { if ($("adsAdminMessage")) $("adsAdminMessage").textContent = "Error: "+error.message; }); }
   if(session) {
     loadOwnerClaims();
     loadPrivateSpace();
