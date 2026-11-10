@@ -664,43 +664,42 @@ function renderDiscoveryRails() {
     }
   }
   $("carouselStatus").textContent = lang === "es"
-    ? "Negocios aprobados por Reputix · Avanza automáticamente cada 4 segundos"
-    : "Featured businesses · Automatic carousel";
+    ? "Negocios destacados · Alternan automáticamente cada 4 segundos"
+    : "Featured businesses · Rotating automatically every 4 seconds";
 }
 
 function startDiscoveryRotation() {
   if (discoveryTimer) window.clearInterval(discoveryTimer);
   renderDiscoveryRails();
 
-  const rail = $("bottomDiscoveryRail");
-  if (!rail) return;
-
-  // Desplazamiento horizontal real del carrusel: conserva el gesto manual.
+  // Alterna realmente las tarjetas aprobadas: cada ciclo avanza un negocio,
+  // de modo que todos los negocios de la lista tengan su turno visible.
   discoveryTimer = window.setInterval(() => {
-    const currentRail = $("bottomDiscoveryRail");
-    if (!currentRail || document.hidden) return;
+    if (document.hidden) return;
+    const approved = lastBusinesses.filter(b =>
+      b && String(b.status || "").toLowerCase() === "approved"
+    );
+    if (approved.length < 2) return;
 
-    const cards = currentRail.querySelectorAll(":scope > .business-tile");
-    if (cards.length < 2) return;
+    discoveryOffset = (discoveryOffset + 1) % approved.length;
+    renderDiscoveryRails();
 
-    const firstCard = cards[0];
-    const styles = window.getComputedStyle(currentRail);
-    const gap = parseFloat(styles.columnGap || styles.gap) || 9;
-    const step = firstCard.getBoundingClientRect().width + gap;
-    const maxScroll = currentRail.scrollWidth - currentRail.clientWidth;
-
-    if (maxScroll <= 4) {
-      // Si caben todas, rota el orden visual sin alterar el contenido.
-      currentRail.appendChild(firstCard);
-      return;
+    // Entrada suave para que el cambio de tarjetas se perciba claramente.
+    const rail = $("bottomDiscoveryRail");
+    if (rail) {
+      rail.querySelectorAll(":scope > .business-tile").forEach((tile, index) => {
+        if (typeof tile.animate === "function") {
+          tile.animate(
+            [
+              { opacity: 0.55, transform: "translateY(7px)" },
+              { opacity: 1, transform: "translateY(0)" }
+            ],
+            { duration: 480, delay: index * 35, easing: "ease-out" }
+          );
+        }
+      });
     }
-
-    const nearEnd = currentRail.scrollLeft + step >= maxScroll - 4;
-    currentRail.scrollTo({
-      left: nearEnd ? 0 : Math.min(maxScroll, currentRail.scrollLeft + step),
-      behavior: "smooth"
-    });
-  }, 4200);
+  }, 4000);
 }
 
 function createPhotoUUID() {
