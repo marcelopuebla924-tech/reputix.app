@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050b16">
+<title>Mapa de negocios | Reputix</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<style>
+:root{color-scheme:dark;--bg:#050b16;--panel:#09182b;--line:#12659b;--blue:#18bfff;--cyan:#6deaff;--muted:#9db6cb}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#10345b 0,transparent 55%),var(--bg);color:#eff8ff;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{position:sticky;top:0;z-index:1000;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px clamp(14px,3vw,30px);background:rgba(3,10,22,.94);border-bottom:1px solid #147db7;backdrop-filter:blur(12px)}
+.brand{font-size:clamp(23px,4vw,32px);font-weight:950;font-style:italic;letter-spacing:-1px;color:#fff;text-decoration:none;text-shadow:0 0 15px #087ac7}.brand span{color:#17c5ff}.tag{display:block;color:#9bdcf8;font-size:10px;letter-spacing:.5px;font-style:normal}
+.back{color:#dff7ff;text-decoration:none;border:1px solid #168ac5;border-radius:22px;padding:9px 14px;font-weight:750;background:#09233b;white-space:nowrap}
+main{max-width:1500px;margin:auto;padding:18px}.intro{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:3px 0 15px}.intro h1{margin:0;font-size:clamp(24px,4vw,36px)}.intro p{margin:4px 0 0;color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(270px,350px) minmax(0,1fr);gap:14px;min-height:70vh}
+.sidebar,.map-panel{border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#0a2038,#061222);box-shadow:0 0 20px #0089d51a;overflow:hidden}
+.sidebar{display:flex;flex-direction:column;min-height:600px}.tools{padding:14px;border-bottom:1px solid #164466}.tools input,.tools select{width:100%;min-height:43px;margin:0 0 9px;padding:10px 12px;border:1px solid #17618e;border-radius:11px;background:#061426;color:#fff;font:inherit}.filters{display:flex;flex-wrap:wrap;gap:7px}.filter{border:1px solid #245577;border-radius:18px;background:#0a1b30;color:#ccecff;padding:7px 10px;font-size:12px;cursor:pointer}.filter.active{background:#087cba;border-color:#52dfff;color:white;box-shadow:0 0 12px #009ee966}
+.status{padding:10px 14px;color:#8fdcff;font-size:12px;min-height:38px}.business-list{overflow:auto;padding:0 10px 12px;display:grid;align-content:start;gap:8px}.business{width:100%;text-align:left;border:1px solid #164466;border-radius:13px;background:#07172a;color:#eff8ff;padding:12px;cursor:pointer}.business:hover,.business.selected{border-color:#22caff;box-shadow:0 0 13px #00aaff33}.business strong{display:block;font-size:14px}.business small{display:block;color:#a9c4d9;margin-top:4px}.business .rating{color:#ffd45c}
+.map-panel{position:relative;min-height:600px}.map-toolbar{position:absolute;z-index:500;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.map-toolbar span,.map-toolbar button{pointer-events:auto;background:#06182beF;border:1px solid #1c8bc4;border-radius:10px;color:#eafaff;padding:8px 11px;font-size:12px;font-weight:750}.map-toolbar button{cursor:pointer}#map{height:100%;min-height:600px;background:#07172a}.leaflet-container{font:inherit}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#071a2e;color:#eff8ff;border:1px solid #168ac5}.leaflet-popup-content a{color:#4ed7ff}.leaflet-control-zoom a{background:#071a2e!important;color:#eafaff!important;border-color:#17618e!important}
+.pin{width:30px;height:30px;border:2px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:linear-gradient(135deg,#00d5ff,#086bd5);box-shadow:0 0 14px #00aaff}.pin span{display:block;transform:rotate(45deg);text-align:center;line-height:26px;font-size:14px}
+.leaflet-popup-content{min-width:180px}.popup-title{font-weight:850;font-size:14px}.popup-meta{font-size:12px;color:#b7d0e2;margin:5px 0}.popup-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.popup-actions a{display:inline-block;padding:6px 9px;border:1px solid #1389c9;border-radius:8px;text-decoration:none;font-weight:750}
+.empty{padding:20px;text-align:center;color:#a9c4d9}
+@media(max-width:800px){main{padding:12px}.layout{grid-template-columns:1fr;min-height:0}.sidebar{min-height:300px;max-height:420px}.map-panel,#map{min-height:55vh;height:55vh}.business-list{max-height:230px}.intro{margin-bottom:12px}}
+</style>
+</head>
+<body>
+<header><a class="brand" href="./index.html">REPUTI<span>X</span><i class="tag">Opiniones reales. Soluciones reales.</i></a><a class="back" href="./index.html">← Volver a Reputix</a></header>
+<main>
+<div class="intro"><div><h1>Mapa de negocios</h1><p>Descubre negocios aprobados y explora sus ubicaciones.</p></div></div>
+<div class="layout">
+<aside class="sidebar">
+ <div class="tools">
+  <input id="query" type="search" placeholder="Buscar negocio, categoría o dirección…" aria-label="Buscar negocios">
+  <div class="filters" id="filters">
+   <button class="filter active" data-category="all">Todos</button><button class="filter" data-category="restaurant">Restaurantes</button><button class="filter" data-category="shop">Tiendas</button><button class="filter" data-category="service">Servicios</button><button class="filter" data-category="smoke">Smoke shops</button>
+  </div>
+ </div>
+ <div class="status" id="status" aria-live="polite">Cargando negocios aprobados…</div>
+ <div class="business-list" id="businessList"><div class="empty">Conectando con Reputix…</div></div>
+</aside>
+<section class="map-panel" aria-label="Mapa interactivo">
+ <div class="map-toolbar"><span>⌖ Mapa Reputix · Los Ángeles</span><button id="resetView" type="button">Ver todos</button></div>
+ <div id="map"></div>
+</section>
+</div>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+(function(){
+"use strict";
+const SUPABASE_URL="https://udvsrmfgjfinwbgvhchs.supabase.co";
+const SUPABASE_KEY="sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+const $=id=>document.getElementById(id);
+const map=L.map("map",{scrollWheelZoom:false}).setView([33.95,-118.25],10);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(map);
+const markers=new Map();let businesses=[];let selectedCategory="all";
+const cacheKey="reputix_map_geocode_v1";
+function readCache(){try{return JSON.parse(localStorage.getItem(cacheKey)||"{}")}catch(_){return {}}}
+function writeCache(cache){try{localStorage.setItem(cacheKey,JSON.stringify(cache))}catch(_){}}
+function text(value){return String(value||"").trim()}
+function coords(b){const lat=Number(b.latitude??b.lat??b.latitud),lng=Number(b.longitude??b.lng??b.lon??b.longitud);return Number.isFinite(lat)&&Number.isFinite(lng)&&Math.abs(lat)<=90&&Math.abs(lng)<=180&&lat!==0&&lng!==0?[lat,lng]:null}
+function addressOf(b){return [b.address,b.city,b.zip,b.state||"California","USA"].map(text).filter(Boolean).join(", ")}
+function categoryType(b){const c=text(b.category).toLowerCase();if(/smoke|vape|tabaco/.test(c))return"smoke";if(/restaurant|restaurante|cafe|comida/.test(c))return"restaurant";if(/shop|tienda|store|ropa|market|supermarket/.test(c))return"shop";return"service"}
+function mapsUrl(b){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(addressOf(b)||b.name||"")}
+function escapeHtml(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function icon(){return L.divIcon({className:"",html:'<div class="pin"><span>R</span></div>',iconSize:[30,36],iconAnchor:[15,34],popupAnchor:[0,-30]})}
+function popup(b){const addr=addressOf(b);return '<div class="popup-title">'+escapeHtml(b.name)+'</div><div class="popup-meta">'+escapeHtml(b.category||"Negocio")+'</div><div class="popup-meta">'+escapeHtml(addr||"Dirección pendiente")+'</div><div class="popup-actions"><a href="'+mapsUrl(b)+'" target="_blank" rel="noopener">Cómo llegar</a><a href="./index.html">Ver en Reputix</a></div>'}
+function visibleBusinesses(){const q=text($("query").value).toLocaleLowerCase();return businesses.filter(b=>{const hay=[b.name,b.category,b.address,b.city,b.zip].map(text).join(" ").toLocaleLowerCase();return(!q||hay.includes(q))&&(selectedCategory==="all"||categoryType(b)===selectedCategory)})}
+function draw(){const list=$("businessList");list.replaceChildren();const rows=visibleBusinesses();if(!rows.length){list.innerHTML='<div class="empty">No hay negocios que coincidan con la búsqueda.</div>';return}rows.forEach(b=>{const item=document.createElement("button");item.type="button";item.className="business"+(markers.get(String(b.id))?.isPopupOpen()?" selected":"");const name=document.createElement("strong");name.textContent=b.name||"Negocio";const meta=document.createElement("small");meta.textContent=[b.category,b.city,b.zip].filter(Boolean).join(" · ");const address=document.createElement("small");address.textContent=b.address||"Dirección pendiente de completar";item.append(name,meta,address);item.addEventListener("click",()=>{const m=markers.get(String(b.id));if(m){map.flyTo(m.getLatLng(),15,{duration:.8});m.openPopup()}else if(addressOf(b)){window.open(mapsUrl(b),"_blank","noopener")} });list.append(item)})}
+async function geocode(b,cache){const key=addressOf(b);if(!key||!b.address)return null;if(cache[key])return cache[key];try{const url="https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q="+encodeURIComponent(key);const res=await fetch(url,{headers:{Accept:"application/json"}});if(!res.ok)throw new Error("Geocodificación "+res.status);const data=await res.json();if(data&&data[0]){const point=[Number(data[0].lat),Number(data[0].lon)];cache[key]=point;writeCache(cache);return point}}catch(err){console.warn("Reputix map geocode:",err)}return null}
+async function load(){try{const res=await fetch(SUPABASE_URL+"/rest/v1/businesses?select=*&status=eq.approved&order=name.asc&limit=250",{headers:{apikey:SUPABASE_KEY,Accept:"application/json"}});if(!res.ok)throw new Error("Supabase "+res.status);const data=await res.json();if(!Array.isArray(data))throw new Error("Respuesta inesperada");businesses=data.filter(b=>b&&b.id&&b.name);draw();const cache=readCache();let located=0,needsGeo=businesses.filter(b=>!coords(b)&&b.address);$("status").textContent=businesses.length+" negocios aprobados · ubicando direcciones…";
+for(const b of businesses){let point=coords(b);if(!point&&b.address){point=await geocode(b,cache);await new Promise(resolve=>setTimeout(resolve,1100))}if(point){const marker=L.marker(point,{icon:icon()}).addTo(map).bindPopup(popup(b));markers.set(String(b.id),marker);located++}}
+const group=L.featureGroup([...markers.values()]);if(located){map.fitBounds(group.getBounds().pad(.12),{maxZoom:12})}
+$("status").textContent=located+" de "+businesses.length+" negocios ubicados en el mapa"+(needsGeo.length>30?" · se limita la geocodificación para cuidar el servicio gratuito":"");draw()
+}catch(err){console.error("Reputix map:",err);$("status").textContent="No se pudieron cargar los negocios: "+err.message;$("businessList").innerHTML='<div class="empty">Intenta recargar la página más tarde.</div>'}}
+$("query").addEventListener("input",draw);$("filters").addEventListener("click",e=>{const btn=e.target.closest("button[data-category]");if(!btn)return;selectedCategory=btn.dataset.category;$("filters").querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===btn));draw()});$("resetView").addEventListener("click",()=>{const group=L.featureGroup([...markers.values()]);if(markers.size)map.fitBounds(group.getBounds().pad(.12),{maxZoom:12});else map.setView([33.95,-118.25],10)});load();
+})();
+</script>
+</body>
+</html>
