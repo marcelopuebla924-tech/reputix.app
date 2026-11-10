@@ -2015,7 +2015,7 @@ async function ownerShowPasswordResetFromLink() {
     const message = $("ownerAuthMessage");
     message.textContent = ownerText("Validando el enlace de recuperación…","Validating recovery link…");
     try {
-      const verified = await ownerAuthRequest("verify", {token_hash:tokenHash,type:"recovery"});
+      const verified = await ownerAuthRequest("verify", {token:tokenHash,type:"recovery"});
       if (!verified?.access_token) throw new Error(ownerText("Supabase no confirmó el enlace. Solicita uno nuevo.","Supabase did not confirm the link. Request a new one."));
       ownerRecoveryAccessToken = verified.access_token;
       history.replaceState(null,"",window.location.pathname+"?recovery=1#ownerArea");
