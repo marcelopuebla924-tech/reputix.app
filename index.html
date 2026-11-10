@@ -273,8 +273,8 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
         <label class="owner-field"><span id="ownerPasswordLabel">Contraseña</span><input id="ownerPassword" type="password" autocomplete="current-password" required></label>
       </div>
       <div class="owner-actions">
-        <button class="primary" type="button" id="ownerSignUp">Crear cuenta</button>
-        <button class="secondary" type="button" id="ownerSignIn">Ya tengo cuenta · Iniciar sesión</button>
+        <button class="primary" type="button" id="ownerSignUp" onclick="window.reputixOwnerAuthAction && window.reputixOwnerAuthAction('signup')">Crear cuenta</button>
+        <button class="secondary" type="button" id="ownerSignIn" onclick="window.reputixOwnerAuthAction && window.reputixOwnerAuthAction('signin')">Ya tengo cuenta · Iniciar sesión</button>
         <button class="secondary" type="button" id="ownerSignOut" hidden>Cerrar sesión</button>
       </div>
     </form>
@@ -378,6 +378,6 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 
 <!-- Owner authentication is handled once by app.js to avoid competing click handlers. -->
 
-  <script src="./app.js?v=owner-auth-unified-20261109-5" defer></script>
+  <script src="./app.js?v=owner-auth-direct-click-20261109-6" defer></script>
 </body>
 </html>
