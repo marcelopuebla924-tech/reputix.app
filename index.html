@@ -396,6 +396,35 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
         <p class="owner-message" id="adminReviewModerationStatus" aria-live="polite"></p>
         <div id="adminReviewModerationList"></div>
       </section>
+      <section id="adminAdsPanel" hidden>
+        <div class="divider"></div>
+        <h3>📣 Reputix Ads · Administración</h3>
+        <p class="admin-warning">Reputix conserva el 100% de los ingresos publicitarios. Los anuncios no alteran opiniones, calificaciones ni estadísticas. Los cobros reales se habilitarán después de conectar y verificar la cuenta de pagos de Reputix.</p>
+        <div class="owner-grid">
+          <div class="owner-field"><strong>Campañas registradas</strong><div id="adsTotalCount">—</div></div>
+          <div class="owner-field"><strong>Campañas activas</strong><div id="adsActiveCount">—</div></div>
+          <div class="owner-field"><strong>Impresiones</strong><div id="adsImpressionCount">—</div></div>
+          <div class="owner-field"><strong>Clics</strong><div id="adsClickCount">—</div></div>
+        </div>
+        <h4>Crear campaña publicitaria</h4>
+        <form id="reputixAdsForm">
+          <div class="owner-grid">
+            <label class="owner-field full"><span>Negocio aprobado</span><select id="adsBusiness" required><option value="">Cargando negocios…</option></select></label>
+            <label class="owner-field"><span>Título del anuncio</span><input id="adsTitle" maxlength="120" minlength="3" required></label>
+            <label class="owner-field"><span>Presupuesto (USD)</span><input id="adsBudget" type="number" min="0" step="0.01" value="50" required></label>
+            <label class="owner-field full"><span>Descripción</span><textarea id="adsDescription" rows="3" maxlength="1000"></textarea></label>
+            <label class="owner-field full"><span>Enlace de destino (opcional)</span><input id="adsDestination" type="url" placeholder="https://…"></label>
+            <label class="owner-field"><span>Ubicación</span><select id="adsPlacement"><option value="business_carousel">Carrusel de negocios</option><option value="discovery_feed">Feed de descubrimiento</option><option value="category_featured">Destacado por categoría</option></select></label>
+            <label class="owner-field"><span>Fecha de inicio (opcional)</span><input id="adsStarts" type="datetime-local"></label>
+            <label class="owner-field"><span>Fecha de término (opcional)</span><input id="adsEnds" type="datetime-local"></label>
+          </div>
+          <div class="owner-actions"><button class="primary" id="adsCreateButton" type="submit">Guardar para revisión</button><button class="secondary" id="adsRefreshButton" type="button">Actualizar campañas</button></div>
+          <p class="owner-message" id="adsAdminMessage" aria-live="polite"></p>
+        </form>
+        <h4>Campañas y resultados</h4>
+        <div id="reputixAdsCampaignList"></div>
+        <p class="owner-copy">Pagos: pendientes de activar. Para cobrar campañas conectaremos Stripe a una cuenta comercial de Reputix y configuraremos el depósito bancario del titular.</p>
+      </section>
       <section id="adminClaimsPanel" hidden>
         <div class="divider"></div>
         <h3 id="adminClaimsTitle">🛡️ Revisión administrativa</h3>
