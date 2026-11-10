@@ -1898,12 +1898,14 @@ function ownerSetSession(session) {
   $("privateSpace").hidden=!session;
   const isAdmin = !!(session?.user?.app_metadata?.reputix_role === "admin");
   $("adminClaimsPanel").hidden = !isAdmin;
+  const moderationPanel = $("adminReviewModerationPanel");
+  if (moderationPanel) moderationPanel.hidden = !isAdmin;
   if(session) {
     loadOwnerClaims();
     loadPrivateSpace();
     loadMessageCenter();
     $("privateSpace").scrollIntoView({behavior:"smooth",block:"start"});
-    if(isAdmin) loadAdminClaims();
+    if(isAdmin) { loadAdminClaims(); loadAdminReviewModeration(); }
   } else {
     $("adminClaimsList").replaceChildren();
     $("privatePostsList").replaceChildren();
@@ -2021,6 +2023,70 @@ async function loadOwnerClaims() {
     $("ownerClaimMessage").textContent=ownerText("No se pudieron cargar tus solicitudes. Vuelve a iniciar sesión.","Could not load your claims. Please sign in again.");
   }
 }
+
+async function loadAdminReviewModeration() {
+  const list = $("adminReviewModerationList");
+  const status = $("adminReviewModerationStatus");
+  if (!list || !status || ownerSession?.user?.app_metadata?.reputix_role !== "admin") return;
+  list.replaceChildren();
+  status.textContent = ownerText("Cargando análisis de opiniones…","Loading review assessments…");
+  try {
+    let response = await fetch(SUPABASE_URL + "/functions/v1/reputix-ai", {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + ownerSession.access_token,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({mode:"admin_moderation_list"})
+    });
+    if (response.status === 401 && ownerSession.refresh_token) {
+      const refreshed = await ownerAuthRequest("token?grant_type=refresh_token", {refresh_token:ownerSession.refresh_token});
+      if (refreshed?.access_token && refreshed?.user?.id) {
+        ownerSetSession(refreshed);
+        response = await fetch(SUPABASE_URL + "/functions/v1/reputix-ai", {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: "Bearer " + refreshed.access_token,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({mode:"admin_moderation_list"})
+        });
+      }
+    }
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || ("HTTP " + response.status));
+    const items = Array.isArray(data.items) ? data.items : [];
+    if (!items.length) {
+      status.textContent = ownerText("Todavía no hay análisis de IA guardados.","No AI assessments have been saved yet.");
+      return;
+    }
+    status.textContent = ownerText(items.length + " análisis recientes. La decisión final sigue siendo humana.", items.length + " recent assessments. Final decisions remain human.");
+    for (const item of items) {
+      const card = node("article","admin-claim");
+      const business = [item.business?.name,item.business?.city].filter(Boolean).join(" · ") || ownerText("Negocio no identificado","Business not identified");
+      const heading = item.outcome === "clear"
+        ? ownerText("Sin alertas detectadas","No flags detected")
+        : item.outcome === "high_risk"
+          ? ownerText("Riesgo alto: revisar primero","High risk: review first")
+          : ownerText("Requiere revisión humana","Needs human review");
+      card.append(node("div","admin-claim-title",heading));
+      card.append(node("div","admin-claim-meta",business + " · " + (item.assessed_at ? new Date(item.assessed_at).toLocaleString() : "")));
+      card.append(node("p","admin-claim-evidence",item.review?.comment || ownerText("Opinión sin texto.","Review has no text.")));
+      if (item.reasons?.length) card.append(node("div","admin-claim-meta",ownerText("Motivos sugeridos: ","Suggested reasons: ") + item.reasons.join(", ")));
+      if (item.confidence !== null && item.confidence !== undefined) {
+        card.append(node("div","admin-claim-meta",ownerText("Confianza estimada: ","Estimated confidence: ") + Math.round(Number(item.confidence)*100) + "%"));
+      }
+      card.append(node("div","admin-claim-meta",ownerText("Estado de publicación: pendiente de revisión humana; la IA no tomó ninguna decisión.","Publication status: awaiting human review; AI did not make a decision.")));
+      list.append(card);
+    }
+  } catch (error) {
+    status.textContent = ownerText("No se pudo cargar la cola: ","Could not load the queue: ") + (error?.message || String(error));
+  }
+}
+
+document.getElementById("adminReviewModerationRefresh")?.addEventListener("click", loadAdminReviewModeration);
 
 async function loadAdminClaims() {
   const list=$("adminClaimsList");
