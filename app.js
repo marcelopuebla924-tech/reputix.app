@@ -1998,3 +1998,7 @@ async function loadApprovedBusinesses() {
   ask.addEventListener("click",submit);
   prompt.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();submit();}});
 })();;
+
+
+/* Botón de navegación: volver al inicio de Reputix */
+document.addEventListener("DOMContentLoaded",()=>{const homeButton=document.getElementById("homeNavBtn");if(homeButton)homeButton.addEventListener("click",()=>{window.scrollTo({top:0,behavior:"smooth"});});});
