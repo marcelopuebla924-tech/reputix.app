@@ -19,16 +19,18 @@ const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
 const $ = id => document.getElementById(id);
 
-/* Checkout: captura el toque en fase temprana y siempre muestra respuesta visible. */
+/* Checkout: captura el toque en fase temprana y muestra respuesta bajo el plan. */
 document.addEventListener("click", event => {
   const button = event.target?.closest?.("[data-reputix-checkout]");
   if (!button) return;
   event.preventDefault();
   event.stopImmediatePropagation();
-  const status = document.getElementById("checkoutStatus");
-  const status = document.getElementById(plan === "pro" ? "proCheckoutStatus" : "basicCheckoutStatus");
-  if (status) { status.textContent = "Toque recibido. Iniciando conexión segura…"; status.scrollIntoView({behavior:"smooth",block:"nearest"}); }
   const plan = button.getAttribute("data-reputix-checkout");
+  const status = document.getElementById(plan === "pro" ? "proCheckoutStatus" : "basicCheckoutStatus");
+  if (status) {
+    status.textContent = "Toque recibido. Iniciando conexión segura…";
+    status.scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
   if (typeof window.reputixStartCheckout === "function") {
     window.reputixStartCheckout(plan);
   } else if (status) {
