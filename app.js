@@ -23,14 +23,18 @@ const $ = id => document.getElementById(id);
    módulos secundarios para que un error ajeno no deje botones sin respuesta. */
 document.addEventListener("click", async event => {
   const button = event.target?.closest?.(
-    "#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
+    "#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut,#ownerSignIn,#ownerSignUp"
   );
   if (!button) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   const message = document.getElementById("ownerAuthMessage");
   try {
-    if (button.id === "privateProfileAction") {
+    if (button.id === "ownerSignIn" || button.id === "ownerSignUp") {
+      const password = document.getElementById("ownerPassword");
+      if (password) password.setAttribute("autocomplete",button.id === "ownerSignIn" ? "current-password" : "new-password");
+      await handleOwnerAuthAction(button.id === "ownerSignIn" ? "signin" : "signup");
+    } else if (button.id === "privateProfileAction") {
       if (!ownerSession?.user?.id) throw new Error("La sesión no está activa. Vuelve a iniciar sesión.");
       const current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
       const name = window.prompt(ownerText("¿Cómo quieres que aparezca tu nombre?","What name should appear on your profile?"),current?.[0]?.display_name||"");
