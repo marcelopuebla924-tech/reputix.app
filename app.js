@@ -2448,31 +2448,47 @@ $("ownerSignOut").addEventListener("click",()=>{
 });
 $("ownerClaimForm").addEventListener("submit",async e=>{
   e.preventDefault();
+  const message=$("ownerClaimMessage");
   const businessId=$("claimBusiness").value;
   const evidence=$("claimEvidence").value.trim();
   const linksText=$("claimEvidenceLinks").value.trim();
   const evidenceLinks=linksText ? linksText.split(/[\\n,]+/).map(x=>x.trim()).filter(Boolean) : [];
   const relationshipType=$("claimRelationship").value;
   const verificationLevel=$("claimLevel").value;
-  const evidenceType=$("claimEvidenceType").value;
-  if(!businessId||!evidence||!relationshipType||!verificationLevel||!evidenceType)return;
-  if(evidenceLinks.some(url=>!/^https?:\/\//i.test(url))){
-    $("ownerClaimMessage").textContent=ownerText("Cada enlace debe comenzar con https:// o http://.","Each link must start with https:// or http://.");return;
+  const evidenceType=$("claimEvidenceType").value || "written_statement";
+  if(!ownerSession?.access_token || !ownerSession?.user?.id){
+    message.textContent=ownerText("Tu sesión expiró. Inicia sesión nuevamente y vuelve a enviar la solicitud.","Your session expired. Sign in again and resubmit.");
+    return;
   }
-  $("claimSubmit").disabled=true;
-  $("ownerClaimMessage").textContent=ownerText("Enviando solicitud para revisión…","Submitting request for review…");
+  if(!businessId){message.textContent=ownerText("Selecciona el negocio que deseas reclamar.","Select the business you want to claim.");return;}
+  if(!evidence){message.textContent=ownerText("Describe tu actividad para continuar.","Describe your work or activity to continue.");$("claimEvidence").focus();return;}
+  if(!relationshipType||!verificationLevel){message.textContent=ownerText("Completa tu relación con el negocio y qué deseas acreditar.","Complete your relationship to the business and what you want verified.");return;}
+  if(evidenceLinks.some(url=>!/^https?:\\/\\//i.test(url))){
+    message.textContent=ownerText("Cada enlace debe comenzar con https:// o http://.","Each link must start with https:// or http://.");return;
+  }
+  const submit=$("claimSubmit");submit.disabled=true;
+  message.textContent=ownerText("Enviando solicitud para revisión…","Submitting request for review…");
   try {
-    await api("business_owner_claims",{
+    const result=await api("business_owner_claims",{
       method:"POST",
-      headers:{Prefer:"return=minimal"},
+      headers:{Prefer:"return=representation"},
       body:JSON.stringify({business_id:businessId,user_id:ownerSession.user.id,evidence_note:evidence,relationship_type:relationshipType,verification_level:verificationLevel,evidence_type:evidenceType,evidence_links:evidenceLinks,status:"pending"})
     });
+    if(!Array.isArray(result)||!result.length) throw new Error("Supabase no confirmó la creación de la solicitud.");
     $("claimEvidence").value="";$("claimEvidenceLinks").value="";
-    $("ownerClaimMessage").textContent=ownerText("Solicitud enviada. Reputix revisará la actividad y las pruebas. La verificación no se concede automáticamente.","Request submitted. Reputix will review the activity and evidence. Verification is not automatic.");
+    message.textContent=ownerText("¡Solicitud recibida! Quedó pendiente de revisión. No necesitas tener redes sociales para reclamar el negocio.","Request received! It is pending review. You do not need social media to claim the business.");
     await loadOwnerClaims();
   } catch(err) {
-    $("ownerClaimMessage").textContent=ownerText("No se pudo enviar. Puede que ya exista una solicitud para este negocio.","Could not submit. A request for this business may already exist.");
-  } finally {$("claimSubmit").disabled=false;}
+    console.error("Reputix owner claim submit:",err);
+    const detail=err?.message||String(err);
+    if(/duplicate|unique constraint|23505/i.test(detail)){
+      message.textContent=ownerText("Ya existe una solicitud para este negocio con esta cuenta. No necesitas enviarla otra vez.","A claim for this business already exists for this account. You do not need to submit it again.");
+    } else if(/row-level security|permission denied|42501|403/i.test(detail)){
+      message.textContent=ownerText("Supabase rechazó el envío por permisos. Cierra sesión, vuelve a entrar con el correo de Carolina y prueba otra vez. Detalle: ","Supabase rejected the submission due to permissions. Sign out, sign back in with Carolina's email, and try again. Details: ")+detail;
+    } else {
+      message.textContent=ownerText("No se pudo guardar la solicitud. Detalle: ","The request could not be saved. Details: ")+detail;
+    }
+  } finally {submit.disabled=false;}
 });
 if(ownerSession?.access_token) ownerSetSession(ownerSession);
 
