@@ -503,7 +503,7 @@ setupFeatureButtons();
 
 /* API REST DE SUPABASE */
 async function api(path, options = {}) {
-  const response = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+  const request = () => fetch(SUPABASE_URL + "/rest/v1/" + path, {
     ...options,
     headers: {
       apikey:SUPABASE_KEY,
@@ -513,6 +513,23 @@ async function api(path, options = {}) {
       ...(options.headers || {})
     }
   });
+
+  let response = await request();
+  // Renovar una sesión vencida una sola vez antes de mostrar un error de permisos.
+  if (response.status === 401 && ownerSession?.refresh_token) {
+    try {
+      const refreshed = await ownerAuthRequest("token?grant_type=refresh_token", {
+        refresh_token: ownerSession.refresh_token
+      });
+      if (refreshed?.access_token && refreshed?.user?.id) {
+        ownerSession = refreshed;
+        sessionStorage.setItem("reputix_owner_session", JSON.stringify(refreshed));
+        response = await request();
+      }
+    } catch (refreshError) {
+      console.warn("Reputix session refresh failed:", refreshError);
+    }
+  }
 
   const body = await response.text();
   if (!response.ok) {
@@ -2411,7 +2428,8 @@ async function loadOwnerClaims() {
     if(pending.length) $("ownerClaimMessage").textContent=ownerText("Tu solicitud está pendiente de verificación.","Your ownership request is pending verification.");
     await loadOwnerDashboard();
   } catch(err) {
-    $("ownerClaimMessage").textContent=ownerText("No se pudieron cargar tus solicitudes. Vuelve a iniciar sesión.","Could not load your claims. Please sign in again.");
+    console.error("Reputix owner claims load:", err);
+    $("ownerClaimMessage").textContent=ownerText("No se pudieron cargar tus solicitudes. Detalle: ","Could not load your claims. Details: ")+(err?.message||String(err));
   }
 }
 // Actualizar también al abrir el selector, por si se aprobó o agregó un negocio recientemente.
