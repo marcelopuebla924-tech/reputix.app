@@ -1852,10 +1852,12 @@ async function loadAdminClaims() {
       card.append(node("div","admin-claim-meta","Prueba: "+(evidenceLabels[claim.evidence_type]||claim.evidence_type||"No indicada")));
       (claim.evidence_links||[]).forEach(url=>{if(/^https?:\\/\\//i.test(url)){const link=node("a","admin-claim-meta",url);link.href=url;link.target="_blank";link.rel="noopener noreferrer";card.append(link);}});
       const actions=node("div","admin-claim-actions");
-      const approve=node("button","primary",ownerText("Verificar propietario","Verify owner"));
+      const approvalStatus=claim.verification_level==="owner"?"verified":claim.verification_level==="business_responsible"?"responsible_verified":"activity_verified";
+      const approvalLabel=approvalStatus==="verified"?ownerText("Verificar propietario","Verify owner"):approvalStatus==="responsible_verified"?ownerText("Verificar responsable","Verify representative"):ownerText("Confirmar actividad","Confirm activity");
+      const approve=node("button","primary",approvalLabel);
       const reject=node("button","secondary",ownerText("Rechazar","Reject"));
       approve.type=reject.type="button";
-      approve.addEventListener("click",()=>reviewOwnerClaim(claim.id,"verified",approve,reject));
+      approve.addEventListener("click",()=>reviewOwnerClaim(claim.id,approvalStatus,approve,reject));
       reject.addEventListener("click",()=>reviewOwnerClaim(claim.id,"rejected",approve,reject));
       actions.append(approve,reject);card.append(actions);list.append(card);
     }
@@ -1867,8 +1869,12 @@ async function loadAdminClaims() {
 async function reviewOwnerClaim(id,status,approve,reject) {
   if(ownerSession?.user?.app_metadata?.reputix_role!=="admin") return;
   const label=status==="verified"
-    ? ownerText("¿Confirmaste identidad y documentos del propietario?","Have you verified the owner's identity and documents?")
-    : ownerText("¿Quieres rechazar esta solicitud?","Do you want to reject this claim?");
+    ? ownerText("¿Comprobaste suficientemente que esta persona es propietaria?","Have you sufficiently verified this person is the owner?")
+    : status==="responsible_verified"
+      ? ownerText("¿Comprobaste que esta persona administra o representa el negocio? Esto no la convierte en propietaria.","Have you verified this person manages or represents the business? This does not make them the owner.")
+      : status==="activity_verified"
+        ? ownerText("¿Comprobaste que esta persona realiza esta actividad? Esto no concede propiedad ni acceso a estadísticas privadas.","Have you verified this person performs this activity? This does not grant ownership or private analytics.")
+        : ownerText("¿Quieres rechazar esta solicitud?","Do you want to reject this claim?");
   if(!window.confirm(label)) return;
   approve.disabled=reject.disabled=true;
   try {
