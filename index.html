@@ -386,6 +386,80 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 
 
 
-  <script src="./app.js?v=owner-auth-overlay-fix-20261110-4" defer></script>
+  <script>
+  /* Reputix owner auth isolated bridge: does not depend on app.js handlers. */
+  (() => {
+    const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+    let busy = false;
+    async function runOwnerAuth(mode) {
+      if (busy) return;
+      const emailEl = document.getElementById("ownerEmail");
+      const passwordEl = document.getElementById("ownerPassword");
+      const message = document.getElementById("ownerAuthMessage");
+      const buttons = ["ownerSignUp","ownerSignIn"].map(id => document.getElementById(id)).filter(Boolean);
+      if (!emailEl || !passwordEl || !message) {
+        alert("No se encontró el formulario de propietarios. Recarga Reputix.");
+        return;
+      }
+      const email = emailEl.value.trim();
+      const password = passwordEl.value;
+      if (!email || !password) {
+        message.textContent = "Escribe el correo y la contraseña para continuar.";
+        return;
+      }
+      busy = true;
+      buttons.forEach(b => b.disabled = true);
+      message.textContent = mode === "signup" ? "Conectando directamente con el registro seguro…" : "Conectando directamente con el inicio de sesión…";
+      try {
+        const endpoint = mode === "signup"
+          ? "/auth/v1/signup?redirect_to=" + encodeURIComponent(location.origin + location.pathname + "#ownerArea")
+          : "/auth/v1/token?grant_type=password";
+        const response = await fetch(SUPABASE_URL + endpoint, {
+          method: "POST",
+          headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(data.msg || data.message || data.error_description || data.error || ("Respuesta HTTP " + response.status));
+        }
+        if (mode === "signin") {
+          if (!data.access_token) throw new Error("Supabase no devolvió una sesión de acceso.");
+          sessionStorage.setItem("reputix_owner_session", JSON.stringify(data));
+          message.textContent = "Sesión iniciada. Abriendo tu espacio…";
+          location.reload();
+          return;
+        }
+        if (data.access_token && data.user) {
+          sessionStorage.setItem("reputix_owner_session", JSON.stringify(data));
+          message.textContent = "Cuenta creada. Abriendo tu espacio…";
+          location.reload();
+          return;
+        }
+        message.textContent = "Solicitud enviada a Supabase. Revisa el correo " + email + " y confirma el registro. Después vuelve aquí e inicia sesión.";
+      } catch (error) {
+        message.textContent = "No se pudo completar: " + (error && error.message ? error.message : String(error));
+      } finally {
+        busy = false;
+        buttons.forEach(b => b.disabled = false);
+      }
+    }
+    document.addEventListener("click", event => {
+      const button = event.target && event.target.closest ? event.target.closest("#ownerSignUp,#ownerSignIn") : null;
+      if (!button) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      runOwnerAuth(button.id === "ownerSignUp" ? "signup" : "signin");
+    }, true);
+    document.addEventListener("submit", event => {
+      if (!event.target || event.target.id !== "ownerAuthForm") return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      runOwnerAuth(document.activeElement && document.activeElement.id === "ownerSignIn" ? "signin" : "signup");
+    }, true);
+  })();
+  </script>
+  <script src="./app.js?v=owner-auth-isolated-20261110-5" defer></script>
 </body>
 </html>
