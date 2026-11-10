@@ -93,6 +93,12 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 .stripe-checkout-status{min-height:22px;margin:14px 0 0;color:#a9d8f1;font-size:13px}
 @media(max-width:620px){.stripe-plan-grid{grid-template-columns:1fr}.stripe-plan-card p{min-height:0}}
 </style>
+
+<style id="reputix-map-entry">
+.map-header-access{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 13px;border:1px solid #20baff;border-radius:22px;background:linear-gradient(120deg,#06213b,#074c7c);color:#eafaff;text-decoration:none;font-size:13px;font-weight:850;white-space:nowrap;box-shadow:0 0 12px rgba(0,174,255,.18)}
+.map-header-access:hover,.map-header-access:focus-visible{border-color:#62e6ff;box-shadow:0 0 16px rgba(0,190,255,.4);outline:none}
+@media(max-width:600px){.map-header-access{min-height:34px;padding:6px 9px;font-size:11px}}
+</style>
 </head>
 
 <body id="pageTop">
@@ -140,6 +146,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
   </div>
   <div class="header-actions">
     <button class="independent-header-access" type="button" id="independentHeaderBtn">Ofrece tu servicio</button>
+    <a class="map-header-access" href="./mapa.html" aria-label="Abrir mapa de negocios">⌖ <span>Mapa</span></a>
     <button class="account-access" type="button" id="accountAccessBtn">Registrarse / Iniciar sesión</button>
     <select id="language" aria-label="Language" style="width:auto">
       <option value="es">Español</option>
