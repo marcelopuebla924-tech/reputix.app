@@ -1,5 +1,18 @@
 "use strict";
 
+/* Oculta temporalmente el acceso flotante de IA cuando el formulario de propietarios
+   está visible, para que nunca intercepte los botones de registro o inicio de sesión. */
+document.addEventListener("DOMContentLoaded", () => {
+  const ownerArea = document.getElementById("ownerArea");
+  if (!ownerArea || !("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries.some(entry => entry.isIntersecting && entry.intersectionRatio > 0.08);
+    document.body.classList.toggle("owner-auth-in-view", visible);
+  }, { threshold: [0, 0.08, 0.25] });
+  observer.observe(ownerArea);
+});
+
+
 /* CONFIGURACIÓN DE SUPABASE */
 const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
 const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
