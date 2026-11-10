@@ -11,7 +11,7 @@
 
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 
-  <link rel="stylesheet" href="./styles.css?v=claim-picker-hotfix-20261109-2">
+  <link rel="stylesheet" href="./styles.css?v=hidden-business-input-20261109-3">
   <style id="reputix-ai-inline-v6">
 /* REPUTIX AI — interfaz renovada, compacta y adaptable */
 .reputix-ai-fab{position:fixed!important;right:16px!important;bottom:22px!important;z-index:2147483000!important;display:flex!important;align-items:center!important;gap:11px!important;width:auto!important;max-width:calc(100vw - 28px)!important;padding:9px 14px 9px 9px!important;border:1.5px solid #27caff!important;border-radius:22px!important;background:linear-gradient(120deg,#06172c,#075da0)!important;color:#fff!important;box-shadow:0 0 14px #00bfff,0 0 32px #0077ff!important;cursor:pointer!important;text-align:left!important;animation:reputixAiPulse 3s ease-in-out infinite}
@@ -333,14 +333,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:flex!important;pointer-events:au
       <form id="ownerClaimForm">
         <div class="owner-grid">
           <label class="owner-field full"><span>Negocio</span>
-            <select id="claimBusiness" required aria-hidden="true" tabindex="-1" style="position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;pointer-events:none!important">
-              <option value="">Selecciona un negocio</option>
-              <option value="764e1139-38b2-494e-9b22-f81e8540c6bc">Carolina Fashion Boutique · Los Angeles</option>
-              <option value="69e31935-830c-4efe-9b42-e1565e481de1">McDonald · Los Angeles</option>
-              <option value="a2861806-7e33-4eff-907f-f6206535fb7c">Quick Cleaning Services · Los Angeles</option>
-              <option value="b2a18a5d-2fca-44f2-aa62-038b972d1a2b">Tamos Chelo Smoke Shop · Los Angeles</option>
-              <option value="82d23337-58b0-437e-8a80-ddb568d584b9">Los primos · Los Angeles</option>
-            </select>
+            <input type="hidden" id="claimBusiness" name="business_id" required value="">
             <button type="button" id="claimBusinessOpen" class="claim-business-picker-trigger">Selecciona un negocio</button>
           </label>
           <div id="claimBusinessModal" class="claim-business-picker-overlay" hidden>
@@ -467,8 +460,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:flex!important;pointer-events:au
    if(!res.ok)throw new Error("HTTP "+res.status);
    const rows=await res.json();if(Array.isArray(rows)){const map=new Map(businesses.map(b=>[b.id,b]));rows.forEach(b=>map.set(b.id,b));businesses=[...map.values()].sort((a,b)=>a.name.localeCompare(b.name));}
   }catch(e){console.warn("Reputix: usando lista local de negocios aprobados",e);}
-  select.replaceChildren(new Option("Selecciona un negocio",""));
-  businesses.forEach(b=>select.add(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+  select.value=select.value||"";
   sync();draw();
  }
  open.addEventListener("click",async()=>{modal.hidden=false;search.value="";await refresh();draw();search.focus();});
@@ -480,7 +472,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:flex!important;pointer-events:au
  refresh();
 })();
 </script>
-<script src="./app.js?v=claim-picker-hotfix-20261109-2" defer></script>
+<script src="./app.js?v=hidden-business-input-20261109-3" defer></script>
 
 </body>
 </html>
