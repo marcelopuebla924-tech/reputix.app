@@ -2021,15 +2021,83 @@ async function loadClaimBusinessOptions() {
     lastBusinesses=rows;
     select.replaceChildren(new Option(ownerText("Selecciona un negocio","Choose a business"),""));
     rows.forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+    window.dispatchEvent(new Event("reputix:claim-businesses-updated"));
   } catch(err) {
     console.warn("No se pudo actualizar la lista de negocios para solicitudes:",err);
     const rows=(Array.isArray(lastBusinesses)?lastBusinesses:[]).filter(b=>b.status==="approved");
     select.replaceChildren(new Option(ownerText("Selecciona un negocio","Choose a business"),""));
     rows.forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
     if(!rows.length) select.replaceChildren(new Option(ownerText("No hay negocios aprobados disponibles","No approved businesses available"),""));
+    window.dispatchEvent(new Event("reputix:claim-businesses-updated"));
   }
   if(previous && [...select.options].some(o=>o.value===previous)) select.value=previous;
 }
+
+/* Selector visual propio para evitar el menú blanco nativo de Android */
+(function setupClaimBusinessPicker(){
+  const select=$("claimBusiness");
+  if(!select || select.dataset.customPicker==="ready") return;
+  select.dataset.customPicker="ready";
+  select.classList.add("claim-business-native-select");
+  const trigger=document.createElement("button");
+  trigger.type="button";
+  trigger.className="claim-business-picker-trigger";
+  trigger.textContent=ownerText("Selecciona un negocio","Select a business");
+  trigger.setAttribute("aria-haspopup","dialog");
+  trigger.setAttribute("aria-expanded","false");
+  select.insertAdjacentElement("afterend",trigger);
+  const overlay=document.createElement("div");
+  overlay.className="claim-business-picker-overlay";
+  overlay.hidden=true;
+  overlay.innerHTML='<section class="claim-business-picker-dialog" role="dialog" aria-modal="true" aria-label="Selecciona un negocio"><div class="claim-business-picker-head"><div><small>REPUTIX · NEGOCIOS</small><h3></h3></div><button type="button" class="claim-business-picker-close" aria-label="Cerrar">×</button></div><div class="claim-business-picker-search"><input type="search" autocomplete="off" placeholder="Buscar negocio…"></div><div class="claim-business-picker-list" role="listbox"></div></section>';
+  document.body.append(overlay);
+  const dialog=overlay.querySelector(".claim-business-picker-dialog");
+  const heading=overlay.querySelector("h3");
+  const search=overlay.querySelector("input");
+  const list=overlay.querySelector(".claim-business-picker-list");
+  const close=()=>{overlay.hidden=true;trigger.setAttribute("aria-expanded","false");};
+  const draw=()=>{
+    const q=search.value.trim().toLocaleLowerCase();
+    list.replaceChildren();
+    const options=[...select.options].filter(o=>o.value && o.textContent.toLocaleLowerCase().includes(q));
+    if(!options.length){const empty=document.createElement("p");empty.className="claim-business-picker-empty";empty.textContent=ownerText("No se encontraron negocios aprobados.","No approved businesses found.");list.append(empty);return;}
+    options.forEach(option=>{
+      const item=document.createElement("button");
+      item.type="button";item.className="claim-business-picker-option";
+      item.setAttribute("role","option");item.setAttribute("aria-selected",String(select.value===option.value));
+      const name=document.createElement("strong");name.textContent=option.textContent;
+      const hint=document.createElement("small");hint.textContent=ownerText("Negocio aprobado en Reputix","Approved Reputix business");
+      item.append(name,hint);
+      item.addEventListener("click",()=>{
+        select.value=option.value;
+        select.dispatchEvent(new Event("change",{bubbles:true}));
+        trigger.textContent=option.textContent;
+        trigger.classList.add("has-selection");
+        close();
+      });
+      list.append(item);
+    });
+  };
+  const sync=()=>{
+    const selected=select.selectedOptions[0];
+    trigger.textContent=selected?.value?selected.textContent:ownerText("Selecciona un negocio","Select a business");
+    trigger.classList.toggle("has-selection",!!selected?.value);
+  };
+  trigger.addEventListener("click",async()=>{
+    await loadClaimBusinessOptions();
+    heading.textContent=ownerText("Selecciona un negocio","Choose a business");
+    search.value="";draw();overlay.hidden=false;trigger.setAttribute("aria-expanded","true");
+    requestAnimationFrame(()=>search.focus());
+  });
+  close && overlay.querySelector(".claim-business-picker-close").addEventListener("click",close);
+  overlay.addEventListener("click",e=>{if(e.target===overlay)close();});
+  search.addEventListener("input",draw);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!overlay.hidden)close();});
+  select.addEventListener("change",sync);
+  window.addEventListener("reputix:claim-businesses-updated",()=>{sync();});
+  sync();
+})();
+
 async function loadOwnerClaims() {
   await loadClaimBusinessOptions();
   $("ownerClaimMessage").textContent="";
