@@ -97,8 +97,7 @@ async function loadCampaigns(){
   const tr=el("tr"),name=el("td");name.append(el("strong",c.title),el("div",names.get(c.business_id)||"Negocio sin nombre","muted"));
   const placement=el("td",({business_carousel:"Carrusel",discovery_feed:"Feed",category_featured:"Categoría"})[c.placement]||c.placement);
   const budget=el("td",usd(c.budget_cents));
-  const dates=el("td",(c.starts_at?safeDate(c.starts_at):"Sin inicio")+"
-"+(c.ends_at?safeDate(c.ends_at):"Sin fin"));
+  const dates=el("td",(c.starts_at?safeDate(c.starts_at):"Sin inicio")+" · "+(c.ends_at?safeDate(c.ends_at):"Sin fin"));
   const state=el("td");state.append(el("span",c.status,"pill"));
   const metrics=el("td","👁 "+impressions+" · ↗ "+clicks);
   const actions=el("td"),wrap=el("div",undefined,"row-actions");
