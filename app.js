@@ -19,6 +19,21 @@ const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
 const $ = id => document.getElementById(id);
 
+/* Recuperación de contraseña: captura temprana y compatible con toque móvil. */
+document.addEventListener("click", event => {
+  const button = event.target?.closest?.("#ownerForgotPassword");
+  if (!button) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (typeof ownerSendPasswordRecovery === "function") {
+    ownerSendPasswordRecovery();
+  } else {
+    const message = document.getElementById("ownerAuthMessage");
+    if (message) message.textContent = "La recuperación todavía está cargando. Recarga la página e inténtalo otra vez.";
+  }
+}, true);
+
+
 /* Checkout: captura el toque en fase temprana y muestra respuesta bajo el plan. */
 document.addEventListener("click", event => {
   const button = event.target?.closest?.("[data-reputix-checkout]");
