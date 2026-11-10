@@ -2477,7 +2477,7 @@ $("ownerClaimForm").addEventListener("submit", async e => {
   if (!businessId) { message.textContent = ownerText("Selecciona el negocio que deseas reclamar.", "Select the business you want to claim."); return; }
   if (!evidence) { message.textContent = ownerText("Describe tu actividad para continuar.", "Describe your work or activity to continue."); $("claimEvidence").focus(); return; }
   if (!relationshipType || !verificationLevel) { message.textContent = ownerText("Completa tu relación con el negocio y qué deseas acreditar.", "Complete your relationship to the business and what you want verified."); return; }
-  if (evidenceLinks.some(url => !/^https?:\\/\\//i.test(url))) {
+  if (evidenceLinks.some(url => !/^https?:\/\//i.test(url))) {
     message.textContent = ownerText("Cada enlace debe comenzar con https:// o http://.", "Each link must start with https:// or http://."); return;
   }
 
