@@ -482,53 +482,37 @@ function renderDiscoveryRails() {
 }
 
 function startDiscoveryRotation() {
-  if (discoveryTimer) clearInterval(discoveryTimer);
+  if (discoveryTimer) window.clearInterval(discoveryTimer);
   renderDiscoveryRails();
 
   const rail = $("bottomDiscoveryRail");
   if (!rail) return;
 
-  // Usa la animación nativa del navegador para que el movimiento sea visible
-  // incluso cuando el carrusel no necesita desplazamiento horizontal.
+  // Desplazamiento horizontal real del carrusel: conserva el gesto manual.
   discoveryTimer = window.setInterval(() => {
     const currentRail = $("bottomDiscoveryRail");
     if (!currentRail || document.hidden) return;
 
-    const cards = Array.from(currentRail.children)
-      .filter(card => card.classList && card.classList.contains("business-tile"));
+    const cards = currentRail.querySelectorAll(":scope > .business-tile");
     if (cards.length < 2) return;
 
     const firstCard = cards[0];
-    const distance = firstCard.getBoundingClientRect().width +
-      (parseFloat(getComputedStyle(currentRail).gap) || 9);
+    const styles = window.getComputedStyle(currentRail);
+    const gap = parseFloat(styles.columnGap || styles.gap) || 9;
+    const step = firstCard.getBoundingClientRect().width + gap;
+    const maxScroll = currentRail.scrollWidth - currentRail.clientWidth;
 
-    if (typeof firstCard.animate === "function") {
-      const motion = firstCard.animate(
-        [
-          { transform: "translateX(0)", opacity: 1 },
-          { transform: "translateX(-" + distance + "px)", opacity: 0.25 }
-        ],
-        { duration: 650, easing: "ease-in", fill: "forwards" }
-      );
-      motion.onfinish = () => {
-        if (!firstCard.isConnected || !currentRail.isConnected) return;
-        currentRail.appendChild(firstCard);
-        motion.cancel();
-        firstCard.style.transform = "none";
-        firstCard.style.opacity = "1";
-      };
-    } else {
-      firstCard.style.transition = "transform 650ms ease, opacity 650ms ease";
-      firstCard.style.transform = "translateX(-" + distance + "px)";
-      firstCard.style.opacity = "0.25";
-      window.setTimeout(() => {
-        if (!firstCard.isConnected || !currentRail.isConnected) return;
-        currentRail.appendChild(firstCard);
-        firstCard.style.transition = "none";
-        firstCard.style.transform = "none";
-        firstCard.style.opacity = "1";
-      }, 680);
+    if (maxScroll <= 4) {
+      // Si caben todas, rota el orden visual sin alterar el contenido.
+      currentRail.appendChild(firstCard);
+      return;
     }
+
+    const nearEnd = currentRail.scrollLeft + step >= maxScroll - 4;
+    currentRail.scrollTo({
+      left: nearEnd ? 0 : Math.min(maxScroll, currentRail.scrollLeft + step),
+      behavior: "smooth"
+    });
   }, 4200);
 }
 
