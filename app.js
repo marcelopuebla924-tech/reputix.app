@@ -5,6 +5,35 @@ const SUPABASE_URL = "https://udvsrmfgjfinwbgvhchs.supabase.co";
 const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
 const $ = id => document.getElementById(id);
+
+/* Acceso de propietarios: delegado temprano para que el registro no dependa
+   de que otros módulos de la página terminen de inicializarse. */
+document.addEventListener("click", event => {
+  const button = event.target && event.target.closest
+    ? event.target.closest("#ownerSignUp, #ownerSignIn")
+    : null;
+  if (!button) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const message = document.getElementById("ownerAuthMessage");
+  if (message) message.textContent = button.id === "ownerSignUp"
+    ? "Conectando el registro seguro de Reputix…"
+    : "Conectando el inicio de sesión seguro de Reputix…";
+  if (typeof handleOwnerAuthAction === "function") {
+    handleOwnerAuthAction(button.id === "ownerSignUp" ? "signup" : "signin");
+  } else if (message) {
+    message.textContent = "El módulo de acceso no terminó de cargar. Recarga la página e inténtalo una vez.";
+  }
+}, true);
+
+document.addEventListener("submit", event => {
+  if (event.target?.id !== "ownerAuthForm") return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const signingIn = document.activeElement?.id === "ownerSignIn";
+  handleOwnerAuthAction(signingIn ? "signin" : "signup");
+}, true);
+
 const form = $("searchForm");
 const input = $("business");
 const notice = $("notice");
