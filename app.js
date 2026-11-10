@@ -1817,7 +1817,7 @@ async function loadOwnerClaims() {
   $("ownerClaimMessage").textContent="";
   $("ownerDashboard").hidden=true;
   try {
-    const claims=await api("business_owner_claims?select=id,business_id,status,evidence_note,created_at&order=created_at.desc");
+    const claims=await api("business_owner_claims?select=id,business_id,status,evidence_note,relationship_type,verification_level,evidence_type,evidence_links,created_at&order=created_at.desc");
     const pending=(claims||[]).filter(c=>c.status==="pending");
     if(pending.length) $("ownerClaimMessage").textContent=ownerText("Tu solicitud está pendiente de verificación.","Your ownership request is pending verification.");
     await loadOwnerDashboard();
@@ -1830,7 +1830,7 @@ async function loadAdminClaims() {
   const list=$("adminClaimsList");
   list.replaceChildren();
   try {
-    const claims=await api("business_owner_claims?select=id,business_id,user_id,evidence_note,created_at,status&status=eq.pending&order=created_at.asc");
+    const claims=await api("business_owner_claims?select=id,business_id,user_id,evidence_note,relationship_type,verification_level,evidence_type,evidence_links,created_at,status&status=eq.pending&order=created_at.asc");
     if(!Array.isArray(claims)||!claims.length) {
       list.append(node("p","insight-empty",ownerText("No hay solicitudes pendientes.","No pending ownership claims.")));
       return;
@@ -1844,6 +1844,13 @@ async function loadAdminClaims() {
       card.append(node("div","admin-claim-meta",ownerText("Solicitud: ","Submitted: ")+new Date(claim.created_at).toLocaleString()));
       if(business?.address||business?.city) card.append(node("div","admin-claim-meta",[business.address,business.city].filter(Boolean).join(" · ")));
       card.append(node("p","admin-claim-evidence",claim.evidence_note || ownerText("Sin detalles adicionales.","No additional details.")));
+      const relationshipLabels={owner:"Propietario/a",partner:"Socio/a",manager:"Administrador/a o encargado/a",independent_worker:"Trabajador/a independiente",new_entrepreneur:"Emprendimiento nuevo"};
+      const levelLabels={activity:"Actividad comprobada",business_responsible:"Responsable del negocio",owner:"Propiedad del negocio"};
+      const evidenceLabels={work_photos:"Fotos de trabajos",customer_references:"Referencias de clientes",business_social:"Redes sociales",phone_or_email:"Teléfono o correo",storefront_photos:"Local, vehículo o equipo",business_documents:"Documentos comerciales",written_statement:"Declaración personal",multiple:"Varias pruebas"};
+      card.append(node("div","admin-claim-meta","Relación: "+(relationshipLabels[claim.relationship_type]||claim.relationship_type||"No indicada")));
+      card.append(node("div","admin-claim-meta","Nivel solicitado: "+(levelLabels[claim.verification_level]||claim.verification_level||"No indicado")));
+      card.append(node("div","admin-claim-meta","Prueba: "+(evidenceLabels[claim.evidence_type]||claim.evidence_type||"No indicada")));
+      (claim.evidence_links||[]).forEach(url=>{if(/^https?:\\/\\//i.test(url)){const link=node("a","admin-claim-meta",url);link.href=url;link.target="_blank";link.rel="noopener noreferrer";card.append(link);}});
       const actions=node("div","admin-claim-actions");
       const approve=node("button","primary",ownerText("Verificar propietario","Verify owner"));
       const reject=node("button","secondary",ownerText("Rechazar","Reject"));
@@ -2170,17 +2177,25 @@ $("ownerClaimForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const businessId=$("claimBusiness").value;
   const evidence=$("claimEvidence").value.trim();
-  if(!businessId||!evidence)return;
+  const linksText=$("claimEvidenceLinks").value.trim();
+  const evidenceLinks=linksText ? linksText.split(/[\\n,]+/).map(x=>x.trim()).filter(Boolean) : [];
+  const relationshipType=$("claimRelationship").value;
+  const verificationLevel=$("claimLevel").value;
+  const evidenceType=$("claimEvidenceType").value;
+  if(!businessId||!evidence||!relationshipType||!verificationLevel||!evidenceType)return;
+  if(evidenceLinks.some(url=>!/^https?:\\/\\//i.test(url))){
+    $("ownerClaimMessage").textContent=ownerText("Cada enlace debe comenzar con https:// o http://.","Each link must start with https:// or http://.");return;
+  }
   $("claimSubmit").disabled=true;
-  $("ownerClaimMessage").textContent=ownerText("Enviando solicitud…","Submitting request…");
+  $("ownerClaimMessage").textContent=ownerText("Enviando solicitud para revisión…","Submitting request for review…");
   try {
     await api("business_owner_claims",{
       method:"POST",
       headers:{Prefer:"return=minimal"},
-      body:JSON.stringify({business_id:businessId,user_id:ownerSession.user.id,evidence_note:evidence,status:"pending"})
+      body:JSON.stringify({business_id:businessId,user_id:ownerSession.user.id,evidence_note:evidence,relationship_type:relationshipType,verification_level:verificationLevel,evidence_type:evidenceType,evidence_links:evidenceLinks,status:"pending"})
     });
-    $("claimEvidence").value="";
-    $("ownerClaimMessage").textContent=ownerText("Solicitud enviada. El equipo de Reputix debe verificar la propiedad antes de habilitar estadísticas privadas.","Request submitted. Reputix must verify ownership before enabling private analytics.");
+    $("claimEvidence").value="";$("claimEvidenceLinks").value="";
+    $("ownerClaimMessage").textContent=ownerText("Solicitud enviada. Reputix revisará la actividad y las pruebas. La verificación no se concede automáticamente.","Request submitted. Reputix will review the activity and evidence. Verification is not automatic.");
     await loadOwnerClaims();
   } catch(err) {
     $("ownerClaimMessage").textContent=ownerText("No se pudo enviar. Puede que ya exista una solicitud para este negocio.","Could not submit. A request for this business may already exist.");
