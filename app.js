@@ -127,6 +127,7 @@ const notice = $("notice");
 const resultsBox = $("results");
 const searchButton = $("searchButton");
 let ownerSession = null;
+let ownerRecoveryAccessToken = null;
 try { ownerSession = JSON.parse(sessionStorage.getItem("reputix_owner_session") || "null"); } catch (_) { ownerSession = null; }
 
 /* Reputix AI: un único flujo de apertura y envío, con renovación segura de sesión. */
@@ -413,6 +414,7 @@ function setLanguage(value) {
   $("ownerPasswordLabel").textContent = lang === "es" ? "Contraseña" : "Password";
   $("ownerSignIn").textContent = lang === "es" ? "Ya tengo cuenta · Iniciar sesión" : "I already have an account · Sign in";
   $("ownerSignUp").textContent = lang === "es" ? "Crear cuenta" : "Create account";
+  if ($("ownerForgotPassword")) $("ownerForgotPassword").textContent = lang === "es" ? "¿Olvidaste tu contraseña?" : "Forgot your password?";
   $("ownerSignOut").textContent = lang === "es" ? "Cerrar sesión" : "Sign out";
   $("claimTitle").textContent = lang === "es" ? "Solicitar acceso al negocio" : "Request business access";
   $("claimIntro").textContent = lang === "es" ? "Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada." : "Select the business and briefly explain how you can prove you are its owner or authorized representative. Your request will be reviewed.";
@@ -1944,6 +1946,105 @@ async function ownerAuthRequest(path,payload) {
   return body;
 }
 function ownerText(es,en){return lang==="es"?es:en;}
+
+async function ownerSendPasswordRecovery() {
+  const email = $("ownerEmail").value.trim();
+  const message = $("ownerAuthMessage");
+  const button = $("ownerForgotPassword");
+  if (!email) {
+    message.textContent = ownerText("Escribe tu correo electrónico y vuelve a pulsar «¿Olvidaste tu contraseña?».","Enter your email address, then choose “Forgot your password?” again.");
+    $("ownerEmail").focus();
+    return;
+  }
+  button.disabled = true;
+  message.textContent = ownerText("Enviando instrucciones de recuperación…","Sending password recovery instructions…");
+  try {
+    const redirectTo = window.location.origin + window.location.pathname;
+    await ownerAuthRequest("recover?redirect_to=" + encodeURIComponent(redirectTo), {email});
+    message.textContent = ownerText(
+      "Si existe una cuenta con ese correo, recibirás un enlace para crear una contraseña nueva. Revisa también correo no deseado.",
+      "If an account exists for that email, you will receive a link to create a new password. Check your spam folder too."
+    );
+  } catch (error) {
+    message.textContent = ownerText("No se pudo enviar el correo de recuperación: ","Could not send the recovery email: ") + (error?.message || String(error));
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function ownerShowPasswordResetFromLink() {
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  const type = hash.get("type");
+  const token = hash.get("access_token");
+  const authError = hash.get("error_description") || hash.get("error");
+  if (authError) {
+    $("ownerAuthMessage").textContent = decodeURIComponent(authError.replace(/\\+/g," "));
+    return;
+  }
+  if (type !== "recovery" || !token) return;
+  ownerRecoveryAccessToken = token;
+  $("ownerAuthForm").hidden = true;
+  $("ownerPasswordResetPanel").hidden = false;
+  $("ownerAuthMessage").textContent = ownerText("Enlace de recuperación reconocido. Crea tu nueva contraseña.","Recovery link recognized. Create your new password.");
+  $("ownerArea").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+async function ownerSaveNewPassword() {
+  const password = $("ownerNewPassword").value;
+  const confirmation = $("ownerConfirmPassword").value;
+  const message = $("ownerAuthMessage");
+  const button = $("ownerSaveNewPassword");
+  if (!ownerRecoveryAccessToken) {
+    message.textContent = ownerText("El enlace de recuperación no está activo. Solicita uno nuevo.","The recovery link is not active. Request a new one.");
+    return;
+  }
+  if (!password || password.length < 8) {
+    message.textContent = ownerText("La contraseña debe tener al menos 8 caracteres.","Your password must be at least 8 characters long.");
+    $("ownerNewPassword").focus();
+    return;
+  }
+  if (password !== confirmation) {
+    message.textContent = ownerText("Las contraseñas no coinciden.","The passwords do not match.");
+    $("ownerConfirmPassword").focus();
+    return;
+  }
+  button.disabled = true;
+  message.textContent = ownerText("Actualizando contraseña…","Updating password…");
+  try {
+    const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+      method:"PUT",
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:"Bearer " + ownerRecoveryAccessToken,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({password})
+    });
+    const body = await response.json().catch(()=>({}));
+    if (!response.ok) {
+      const detail = body.msg || body.message || body.error_description || body.error;
+      throw new Error(detail || ("Error de actualización (" + response.status + ")."));
+    }
+    ownerRecoveryAccessToken = null;
+    $("ownerPasswordResetPanel").hidden = true;
+    $("ownerAuthForm").hidden = false;
+    $("ownerPassword").value = "";
+    $("ownerNewPassword").value = "";
+    $("ownerConfirmPassword").value = "";
+    history.replaceState(null,"",window.location.pathname + window.location.search + "#ownerArea");
+    message.textContent = ownerText("¡Contraseña actualizada! Ya puedes iniciar sesión con tu nueva contraseña.","Password updated! You can now sign in with your new password.");
+    $("ownerEmail").focus();
+  } catch (error) {
+    message.textContent = ownerText("No se pudo actualizar la contraseña: ","Could not update the password: ") + (error?.message || String(error));
+  } finally {
+    button.disabled = false;
+  }
+}
+
+$("ownerForgotPassword")?.addEventListener("click", ownerSendPasswordRecovery);
+$("ownerSaveNewPassword")?.addEventListener("click", ownerSaveNewPassword);
+window.addEventListener("load", ownerShowPasswordResetFromLink);
+
 
 
 /* Stripe Checkout: función global invocada directamente desde cada botón. */
