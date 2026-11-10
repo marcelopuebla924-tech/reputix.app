@@ -1939,7 +1939,7 @@ async function loadPrivateSpace() {
   if(!ownerSession?.access_token || !ownerSession?.user?.id) return;
   const userId=ownerSession.user.id;
   const email=ownerSession.user.email || "";
-  const [profile,posts,ownReviews,complaints,claims] = await Promise.allSettled([
+  const [profile,posts,ownReviews,ownComplaints,claims] = await Promise.allSettled([
     api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(userId)),
     api("user_publications?select=id,body,status,created_at&order=created_at.desc&limit=30"),
     api("reviews?select=id,business_id,comment,status,created_at&user_id=eq."+encodeURIComponent(userId)+"&order=created_at.desc&limit=30"),
@@ -1955,12 +1955,8 @@ async function loadPrivateSpace() {
     (posts.value||[]).forEach(p=>{const item=node("div","private-entry");item.append(node("p","",p.body),node("small","",new Date(p.created_at).toLocaleString()));postList.append(item);});
     if(!postList.childElementCount) postList.append(node("small","",ownerText("Todavía no tienes publicaciones.","You have no posts yet.")));
   } else postList.append(node("small","",ownerText("No se pudieron cargar tus publicaciones.","Could not load your posts.")));
-  const complaintList=$("privateComplaintsContent");complaintList.replaceChildren();
-  if(complaints.status==="fulfilled") {
-    (complaints.value||[]).forEach(x=>{const item=node("div","private-entry");item.append(node("p","",x.complaint||""),node("small","",ownerText("Estado: ","Status: ")+x.status));if(x.business_response)item.append(node("p","",ownerText("Respuesta: ","Response: ")+x.business_response));complaintList.append(item);});
-    if(!complaintList.childElementCount) complaintList.append(node("small","",ownerText("Todavía no tienes reclamos.","You have no complaints yet.")));
-  } else complaintList.append(node("small","",ownerText("No se pudieron cargar tus reclamos.","Could not load your complaints.")));
   const businessIds=claims.status==="fulfilled"?(claims.value||[]).map(x=>x.business_id).filter(Boolean):[];
+  const businessNames=new Map(lastBusinesses.map(b=>[String(b.id),b.name]));
   $("privateBusinessContent").replaceChildren();
   if(businessIds.length) {
     for(const id of businessIds) {
@@ -1972,16 +1968,68 @@ async function loadPrivateSpace() {
   if(businessIds.length) {
     try {
       const ids=businessIds.map(id=>encodeURIComponent(id)).join(",");
-      const customerReviews=await api("reviews?select=id,business_id,comment,status,created_at&business_id=in.("+ids+")&status=eq.published&order=created_at.desc&limit=30");
-      (customerReviews||[]).forEach(x=>{const item=node("div","private-entry");item.append(node("p","",x.comment||ownerText("Opinión sin comentario","Review without comment")),node("small","",new Date(x.created_at).toLocaleString()));reviewList.append(item);});
+      const customerReviews=await api("reviews?select=id,business_id,comment,status,created_at,cleanliness,service_quality,product_quality,speed,value_for_money&business_id=in.("+ids+")&status=eq.published&order=created_at.desc&limit=50");
+      (customerReviews||[]).forEach(x=>{
+        const item=node("div","private-entry");
+        item.append(node("strong","",businessNames.get(String(x.business_id))||ownerText("Tu negocio","Your business")));
+        item.append(node("p","",x.comment||ownerText("Opinión sin comentario","Review without comment")));
+        item.append(node("small","",new Date(x.created_at).toLocaleString()));
+        reviewList.append(item);
+      });
       if(!reviewList.childElementCount) reviewList.append(node("small","",ownerText("Tus negocios todavía no tienen opiniones publicadas.","Your businesses have no published reviews yet.")));
     } catch(err) {reviewList.append(node("small","",ownerText("No se pudieron cargar las opiniones de tus negocios.","Could not load reviews for your businesses.")));}
-  } else {
-    reviewList.append(node("small","",ownerText("Las opiniones de clientes aparecerán cuando tengas un negocio verificado.","Customer reviews will appear once you have a verified business.")));
+  } else reviewList.append(node("small","",ownerText("Las opiniones de clientes aparecerán cuando tengas un negocio verificado.","Customer reviews will appear once you have a verified business.")));
+  const complaintList=$("privateComplaintsContent");complaintList.replaceChildren();
+  if(ownComplaints.status==="fulfilled") {
+    (ownComplaints.value||[]).forEach(x=>{
+      const item=node("div","private-entry");
+      item.append(node("strong","",ownerText("Tu reclamo enviado","Your submitted complaint")));
+      item.append(node("p","",x.complaint||""));
+      item.append(node("small","",ownerText("Estado: ","Status: ")+x.status));
+      if(x.business_response)item.append(node("p","",ownerText("Respuesta del negocio: ","Business response: ")+x.business_response));
+      complaintList.append(item);
+    });
   }
+  if(businessIds.length) {
+    try {
+      const ids=businessIds.map(id=>encodeURIComponent(id)).join(",");
+      const received=await api("complaints?select=id,business_id,complaint,status,business_response,created_at&business_id=in.("+ids+")&order=created_at.desc&limit=50");
+      (received||[]).forEach(x=>{
+        const item=node("article","private-entry");
+        item.append(node("strong","",ownerText("Reclamo recibido · ","Customer complaint · ")+(businessNames.get(String(x.business_id))||ownerText("Tu negocio","Your business"))));
+        item.append(node("p","",x.complaint||""));
+        item.append(node("small","",ownerText("Estado: ","Status: ")+x.status+" · "+new Date(x.created_at).toLocaleString()));
+        if(x.business_response) item.append(node("p","",ownerText("Tu respuesta: ","Your response: ")+x.business_response));
+        if(x.status!=="rejected") {
+          const form=node("form","owner-complaint-response");
+          const field=node("textarea");field.rows=3;field.maxLength=3000;field.required=true;
+          field.placeholder=ownerText("Escribe una respuesta para el cliente…","Write a response to the customer…");
+          if(x.business_response)field.value=x.business_response;
+          const submit=node("button","primary",x.business_response?ownerText("Actualizar respuesta","Update response"):ownerText("Responder reclamo","Reply to complaint"));
+          submit.type="submit";
+          const msg=node("small","form-message","");
+          form.append(field,submit,msg);
+          form.addEventListener("submit",async e=>{
+            e.preventDefault();
+            const response=field.value.trim();if(response.length<3){msg.textContent=ownerText("Escribe una respuesta más completa.","Please enter a longer response.");return;}
+            submit.disabled=true;msg.textContent=ownerText("Guardando…","Saving…");
+            try {
+              await api("rpc/owner_respond_to_complaint",{method:"POST",body:JSON.stringify({p_complaint_id:x.id,p_response:response})});
+              msg.textContent=ownerText("Respuesta publicada.","Response published.");
+              await loadPrivateSpace();
+            } catch(err){msg.textContent=ownerText("No se pudo guardar: ","Could not save: ")+err.message;submit.disabled=false;}
+          });
+          item.append(form);
+        }
+        complaintList.append(item);
+      });
+    } catch(err) {
+      complaintList.append(node("small","",ownerText("No se pudieron cargar los reclamos de tus negocios: ","Could not load complaints for your businesses: ")+err.message));
+    }
+  }
+  if(!complaintList.childElementCount) complaintList.append(node("small","",ownerText("Aún no tienes reclamos enviados ni recibidos.","You have no submitted or received complaints yet.")));
   $("privateDiscoverContent").replaceChildren(node("div","private-entry",ownerText("Los negocios recomendados siguen disponibles en la página principal.","Recommended businesses remain available on the main page.")));
 }
-
 $("privateProfileAction").addEventListener("click",async()=>{
   const current=await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
   const name=window.prompt(ownerText("¿Cómo quieres que aparezca tu nombre?","What name should appear on your profile?"),current?.[0]?.display_name||"");
