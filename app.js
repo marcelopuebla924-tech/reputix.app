@@ -2065,6 +2065,10 @@ $("ownerSaveNewPassword")?.addEventListener("click", ownerSaveNewPassword);
 window.addEventListener("load", ownerShowPasswordResetFromLink);
 window.addEventListener("hashchange", ownerShowPasswordResetFromLink);
 window.addEventListener("pageshow", ownerShowPasswordResetFromLink);
+// Ejecutar también al cargar el módulo: algunos navegadores móviles restauran
+// la página sin volver a disparar "load" y el enlace puede llegar con el token
+// antes de que se registren los listeners.
+ownerShowPasswordResetFromLink();
 
 
 
