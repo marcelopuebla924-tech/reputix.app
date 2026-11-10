@@ -11,7 +11,7 @@
 
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 
-  <link rel="stylesheet" href="./styles.css?v=20261109-taghome2">
+  <link rel="stylesheet" href="./styles.css?v=20261109-taghome3">
   <style id="reputix-ai-inline-v6">
 /* REPUTIX AI — interfaz renovada, compacta y adaptable */
 .reputix-ai-fab{position:fixed!important;right:16px!important;bottom:22px!important;z-index:2147483000!important;display:flex!important;align-items:center!important;gap:11px!important;width:auto!important;max-width:calc(100vw - 28px)!important;padding:9px 14px 9px 9px!important;border:1.5px solid #27caff!important;border-radius:22px!important;background:linear-gradient(120deg,#06172c,#075da0)!important;color:#fff!important;box-shadow:0 0 14px #00bfff,0 0 32px #0077ff!important;cursor:pointer!important;text-align:left!important;animation:reputixAiPulse 3s ease-in-out infinite}
@@ -59,10 +59,14 @@
 header .home-tagline{display:inline-block!important;margin:2px 0 0!important;padding:2px 0!important;border:0!important;background:transparent!important;color:#bcecff!important;font:inherit!important;font-size:12px!important;font-weight:700!important;line-height:1.25!important;text-align:left!important;cursor:pointer!important;text-decoration:none!important}
 header .home-tagline:hover,header .home-tagline:focus-visible{color:#39d4ff!important;text-shadow:0 0 10px rgba(0,190,255,.7)!important;outline:none!important}
 header .home-tagline:focus-visible{outline:1px solid #20caff!important;outline-offset:4px!important;border-radius:4px!important}
+
+header .home-tagline{display:inline-block!important;margin:2px 0 0!important;padding:2px 0!important;border:0!important;background:transparent!important;color:#bcecff!important;font-size:12px!important;font-weight:700!important;line-height:1.25!important;text-align:left!important;text-decoration:none!important;cursor:pointer!important}
+header .home-tagline:hover,header .home-tagline:focus-visible{color:#39d4ff!important;text-shadow:0 0 10px rgba(0,190,255,.7)!important}
+html{scroll-behavior:smooth}
   </style>
 </head>
 
-<body>
+<body id="pageTop">
 <button class="reputix-ai-fab" id="reputixAiFab" type="button" aria-label="Abrir Reputix AI">
   <span class="reputix-ai-fab-orb" aria-hidden="true"><span>R</span></span>
   <span class="reputix-ai-fab-copy"><strong>✦ Reputix AI</strong><small>Tu asistente inteligente</small></span>
@@ -103,7 +107,7 @@ header .home-tagline:focus-visible{outline:1px solid #20caff!important;outline-o
 <header>
   <div>
     <div class="logo">REPUTI<span>X</span></div>
-    <button class="tag home-tagline" id="tagline" type="button" aria-label="Volver al inicio" title="Volver al inicio">Opiniones reales. Soluciones reales.</button>
+    <a class="tag home-tagline" id="tagline" href="#pageTop" aria-label="Volver al inicio" title="Volver al inicio">Opiniones reales. Soluciones reales.</a>
   </div>
   <div class="header-actions">
     <button class="independent-header-access" type="button" id="independentHeaderBtn">Ofrece tu servicio</button>
@@ -353,6 +357,6 @@ header .home-tagline:focus-visible{outline:1px solid #20caff!important;outline-o
 
 
 
-  <script src="./app.js?v=20261109-taghome2" defer></script>
+  <script src="./app.js?v=20261109-taghome3" defer></script>
 </body>
 </html>
