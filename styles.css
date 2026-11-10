@@ -2162,3 +2162,6 @@ select option, select optgroup {
 .claim-business-picker-option{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;width:100%!important;min-height:58px!important;padding:11px 13px!important;border:1px solid #15517b!important;border-radius:13px!important;background:linear-gradient(110deg,#0c2a49,#07182c)!important;color:#f2fbff!important;text-align:left!important}
 .claim-business-picker-option strong{font-size:14px!important}
 .claim-business-picker-option small,.claim-business-picker-empty{color:#8fc8e8!important;font-size:11px!important}
+
+/* El identificador del negocio es un input oculto, nunca un <select> */
+#claimBusiness{display:none!important}
