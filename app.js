@@ -225,13 +225,32 @@ $("independentHeaderBtn").addEventListener("click",() => {
   $("communityFormWrap").scrollIntoView({behavior:"smooth",block:"start"});
 });
 
-$("accountAccessBtn").addEventListener("click",() => {
-  $("ownerArea").scrollIntoView({behavior:"smooth",block:"start"});
-  window.setTimeout(() => {
-    if(!ownerSession) $("ownerEmail").focus({preventScroll:true});
-    else $("ownerDashboard").scrollIntoView({behavior:"smooth",block:"center"});
-  },450);
+function openOwnerAccess(){
+  const area=$("ownerArea");
+  const email=$("ownerEmail");
+  const form=$("ownerAuthForm");
+  if(!area||!form)return;
+  area.scrollIntoView({behavior:"smooth",block:"start"});
+  window.setTimeout(()=>{
+    if(ownerSession){
+      $("privateSpace")?.scrollIntoView({behavior:"smooth",block:"start"});
+    }else{
+      form.scrollIntoView({behavior:"smooth",block:"center"});
+      if(email)email.focus({preventScroll:true});
+    }
+  },500);
+}
+$("accountAccessBtn").addEventListener("click",event=>{
+  event.preventDefault();
+  openOwnerAccess();
 });
+document.addEventListener("click",event=>{
+  const trigger=event.target&&event.target.closest?event.target.closest("#accountAccessBtn"):null;
+  if(!trigger)return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  openOwnerAccess();
+},true);
 
 $("language").addEventListener("change",e => {
   setLanguage(e.target.value);
