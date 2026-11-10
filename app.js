@@ -110,49 +110,6 @@ const searchButton = $("searchButton");
 let ownerSession = null;
 try { ownerSession = JSON.parse(sessionStorage.getItem("reputix_owner_session") || "null"); } catch (_) { ownerSession = null; }
 
-/* Checkout: captura los toques móviles antes de inicializar los demás módulos. */
-document.addEventListener("click", async event => {
-  const button = event.target?.closest?.("[data-reputix-checkout]");
-  if (!button) return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  const status = $("checkoutStatus");
-  const message = $("ownerAuthMessage");
-  const plan = button.dataset.reputixCheckout;
-  const buttons = [...document.querySelectorAll("[data-reputix-checkout]")];
-  const showStatus = value => { if (status) status.textContent = value; };
-  try {
-    if (!ownerSession?.access_token && ownerSession?.refresh_token) {
-      const refreshed = await ownerAuthRequest("token?grant_type=refresh_token", {refresh_token:ownerSession.refresh_token});
-      if (refreshed?.access_token && refreshed?.user?.id) ownerSetSession(refreshed);
-    }
-    if (!ownerSession?.access_token) {
-      const prompt = ownerText("Inicia sesión o crea una cuenta para continuar con el pago.", "Sign in or create an account to continue to checkout.");
-      showStatus(prompt);
-      if (message) message.textContent = prompt;
-      openOwnerAccess();
-      return;
-    }
-    buttons.forEach(item => item.disabled = true);
-    showStatus(ownerText("Conectando con Stripe de forma segura…", "Connecting securely to Stripe…"));
-    const response = await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
-      method: "POST",
-      headers: {apikey:SUPABASE_KEY, Authorization:"Bearer "+ownerSession.access_token, "Content-Type":"application/json"},
-      body: JSON.stringify({plan})
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(result.error || ("Error "+response.status+": "+ownerText("No se pudo iniciar el pago.","Could not start checkout.")));
-    if (!result.url) throw new Error(ownerText("Stripe no devolvió un enlace de pago.","Stripe did not return a checkout URL."));
-    showStatus(ownerText("Abriendo el pago seguro de Stripe…","Opening secure Stripe checkout…"));
-    window.location.assign(result.url);
-  } catch (error) {
-    showStatus(error?.message || String(error));
-    if (message) message.textContent = error?.message || String(error);
-    buttons.forEach(item => item.disabled = false);
-    console.error("Reputix Stripe Checkout:", error);
-  }
-}, true);
-
 /* Reputix AI: un único flujo de apertura y envío, con renovación segura de sesión. */
 (function setupPublicReputixAI(){
   const fab=document.getElementById("reputixAiFab");
@@ -1969,7 +1926,46 @@ async function ownerAuthRequest(path,payload) {
 }
 function ownerText(es,en){return lang==="es"?es:en;}
 
-/* Stripe Checkout listener delegado registrado al inicio del archivo. */
+
+/* Stripe Checkout: función global invocada directamente desde cada botón. */
+window.reputixStartCheckout = async function(plan) {
+  const status = $("checkoutStatus");
+  const message = $("ownerAuthMessage");
+  const buttons = [...document.querySelectorAll("[data-reputix-checkout]")];
+  const showStatus = value => { if (status) status.textContent = value; };
+  try {
+    showStatus(ownerText("Botón detectado. Preparando conexión segura…","Button detected. Preparing secure connection…"));
+    if (!ownerSession?.access_token && ownerSession?.refresh_token) {
+      const refreshed = await ownerAuthRequest("token?grant_type=refresh_token", {refresh_token:ownerSession.refresh_token});
+      if (refreshed?.access_token && refreshed?.user?.id) ownerSetSession(refreshed);
+    }
+    if (!ownerSession?.access_token) {
+      const prompt = ownerText("Inicia sesión o crea una cuenta para continuar con el pago.","Sign in or create an account to continue to checkout.");
+      showStatus(prompt);
+      if (message) message.textContent = prompt;
+      openOwnerAccess();
+      return;
+    }
+    buttons.forEach(item => item.disabled = true);
+    showStatus(ownerText("Conectando con Stripe de forma segura…","Connecting securely to Stripe…"));
+    const response = await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
+      method:"POST",
+      headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+ownerSession.access_token,"Content-Type":"application/json"},
+      body:JSON.stringify({plan})
+    });
+    const result = await response.json().catch(()=>({}));
+    if (!response.ok) throw new Error(result.error || ("Error "+response.status+": "+ownerText("No se pudo iniciar el pago.","Could not start checkout.")));
+    if (!result.url) throw new Error(ownerText("Stripe no devolvió un enlace de pago.","Stripe did not return a checkout URL."));
+    showStatus(ownerText("Abriendo el pago seguro de Stripe…","Opening secure Stripe checkout…"));
+    window.location.href = result.url;
+  } catch(error) {
+    showStatus(error?.message || String(error));
+    if(message) message.textContent=error?.message || String(error);
+    buttons.forEach(item=>item.disabled=false);
+    console.error("Reputix Stripe Checkout:",error);
+  }
+};
+
 
 
 /* Reputix Ads: módulo integrado al panel privado; no modifica autenticación. */
