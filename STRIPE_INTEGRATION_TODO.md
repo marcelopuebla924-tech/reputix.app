@@ -78,10 +78,10 @@ The existing `mode`, `success_url`, `cancel_url`, and `line_items` behavior was 
 
 - The existing Checkout Session API call was found in the codebase (Scenario A). Its Checkout Studio parameters already match the requested values, so the call itself was left unchanged.
 - Supabase Edge Function `create-checkout-session` is **ACTIVE** (version 1) with JWT verification enabled.
-- The Basic Price ID has been identified from Stripe Sandbox: `price_1UaHTzD2KjPamMkY2Iyhm3qB`. It still needs to be added as the `STRIPE_PRICE_BASIC` Supabase secret.
-- The Pro Price ID and Stripe test secret key still need to be added as Supabase secrets.
+- Basic Price ID identified: `price_1UaHTzD2KjPamMkY2Iyhm3qB`; user reports adding it as `STRIPE_PRICE_BASIC` in Supabase Function Secrets.
+- Pro Price ID identified: `price_1UaHW6D2KjPamMkYKZFz925A`; user reports adding it as `STRIPE_PRICE_PRO`. User also reports adding `STRIPE_SECRET_KEY` in Sandbox/Test mode. Secret values are not readable for verification.
 - The repository does not show a pinned Stripe SDK version; verify the version before deciding whether `hosted_page` or `hosted` is required.
-- The Reputix plan buttons still need to be wired to call this endpoint.
+- The public Reputix Basic ($13/month) and Pro ($25/month) plan cards now call this endpoint with the selected plan. The server resolves the Stripe Price ID from Supabase Function Secrets; the browser never receives a Price ID or secret key.
 - No Stripe webhook or paid-plan entitlement handler was added in this minimal Checkout task.
 - No Stripe customer/subscription database table was added because no existing billing persistence pattern was found in the inspected app code.
 
