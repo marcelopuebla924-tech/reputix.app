@@ -19,6 +19,50 @@ const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
 const $ = id => document.getElementById(id);
 
+/* Delegación de acciones del panel privado: queda registrada antes de inicializar
+   módulos secundarios para que un error ajeno no deje botones sin respuesta. */
+document.addEventListener("click", async event => {
+  const button = event.target?.closest?.(
+    "#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
+  );
+  if (!button) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const message = document.getElementById("ownerAuthMessage");
+  try {
+    if (button.id === "privateProfileAction") {
+      if (!ownerSession?.user?.id) throw new Error("La sesión no está activa. Vuelve a iniciar sesión.");
+      const current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
+      const name = window.prompt(ownerText("¿Cómo quieres que aparezca tu nombre?","What name should appear on your profile?"),current?.[0]?.display_name||"");
+      if (name === null) return;
+      const bio = window.prompt(ownerText("Escribe una breve descripción (opcional).","Write a short bio (optional)."),current?.[0]?.bio||"");
+      if (bio === null) return;
+      await api("user_profiles?on_conflict=user_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({user_id:ownerSession.user.id,display_name:name.trim(),bio:bio.trim()})});
+      document.getElementById("privateProfileContent").replaceChildren(node("div","private-entry",name.trim()||ownerSession.user.email),node("div","private-entry",bio.trim()));
+      document.getElementById("privateWelcome").textContent=ownerText("Hola, ","Hello, ")+(name.trim()||"");
+    } else if (button.id === "privateBusinessAction") {
+      document.getElementById("ownerClaimForm").scrollIntoView({behavior:"smooth",block:"center"});
+      document.getElementById("claimBusiness").focus({preventScroll:true});
+    } else if (button.id === "privateMessagesAction") {
+      document.getElementById("privateMessagesContent").scrollIntoView({behavior:"smooth",block:"center"});
+      await loadMessageCenter();
+    } else if (button.id === "privateComplaintsAction") {
+      document.getElementById("privateComplaintsContent").scrollIntoView({behavior:"smooth",block:"center"});
+      await loadPrivateSpace();
+    } else if (button.id === "privateReviewsAction") {
+      await loadPrivateSpace();
+      document.getElementById("privateReviewsContent").scrollIntoView({behavior:"smooth",block:"center"});
+    } else if (button.id === "ownerSignOut") {
+      ownerSetSession(null);
+      if (message) message.textContent=ownerText("Sesión cerrada.","Signed out.");
+    }
+  } catch (error) {
+    if (message) message.textContent=ownerText("No se pudo completar la acción: ","Could not complete action: ")+(error?.message||String(error));
+    console.error("Reputix private panel action:",error);
+  }
+}, true);
+
+
 /* El acceso se conecta una sola vez en el bloque de autenticación inferior. */
 
 const form = $("searchForm");
