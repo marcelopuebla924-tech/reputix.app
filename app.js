@@ -1338,9 +1338,9 @@ function makeReviewForm(business) {
 
       if (!business.id) throw new Error(t("invalidBusiness"));
 
-      await api("reviews",{
+      const insertedReviews = await api("reviews",{
         method:"POST",
-        headers:{Prefer:"return=minimal"},
+        headers:{Prefer:"return=representation"},
         body:JSON.stringify({
           business_id:business.id,
           user_id:ownerSession?.user?.id || null,
@@ -1360,8 +1360,50 @@ function makeReviewForm(business) {
         })
       });
 
+      // Moderación IA orientativa: nunca publica, rechaza ni modifica el estado pending.
+      let moderationNote = "";
+      const insertedReview = Array.isArray(insertedReviews) ? insertedReviews[0] : null;
+      if (insertedReview?.id && ownerSession?.access_token) {
+        try {
+          let moderationResponse = await fetch(SUPABASE_URL + "/functions/v1/reputix-ai", {
+            method: "POST",
+            headers: {
+              apikey: SUPABASE_KEY,
+              Authorization: "Bearer " + ownerSession.access_token,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({mode:"moderate", review_id:insertedReview.id})
+          });
+          if (moderationResponse.status === 401 && ownerSession.refresh_token) {
+            const refreshed = await ownerAuthRequest("token?grant_type=refresh_token", {refresh_token:ownerSession.refresh_token});
+            if (refreshed?.access_token && refreshed?.user?.id) {
+              ownerSetSession(refreshed);
+              moderationResponse = await fetch(SUPABASE_URL + "/functions/v1/reputix-ai", {
+                method: "POST",
+                headers: {
+                  apikey: SUPABASE_KEY,
+                  Authorization: "Bearer " + refreshed.access_token,
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify({mode:"moderate", review_id:insertedReview.id})
+              });
+            }
+          }
+          const moderationData = await moderationResponse.json().catch(() => ({}));
+          if (moderationResponse.ok) {
+            moderationNote = moderationData.outcome === "clear"
+              ? (lang === "es" ? " La revisión automática no detectó alertas; sigue pendiente de aprobación." : " Automated screening found no flags; it is still awaiting approval.")
+              : (lang === "es" ? " La IA señaló contenido para revisión humana; tu opinión sigue pendiente." : " AI flagged content for human review; your review remains pending.");
+          } else {
+            console.warn("AI moderation unavailable:", moderationData.error || moderationResponse.status);
+          }
+        } catch (moderationError) {
+          console.warn("AI moderation request failed:", moderationError);
+        }
+      }
+
       f.reset();
-      msg.textContent = t("sent");
+      msg.textContent = t("sent") + moderationNote;
     } catch (err) {
       console.error("Error al enviar reseña:",err);
       msg.textContent = t("failed") + " " + (err.message || "");
