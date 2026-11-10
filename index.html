@@ -11,7 +11,7 @@
 
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 
-  <link rel="stylesheet" href="./styles.css?v=20261109-ai6">
+  <link rel="stylesheet" href="./styles.css?v=20261109-home1">
   <style id="reputix-ai-inline-v6">
 /* REPUTIX AI — interfaz renovada, compacta y adaptable */
 .reputix-ai-fab{position:fixed!important;right:16px!important;bottom:22px!important;z-index:2147483000!important;display:flex!important;align-items:center!important;gap:11px!important;width:auto!important;max-width:calc(100vw - 28px)!important;padding:9px 14px 9px 9px!important;border:1.5px solid #27caff!important;border-radius:22px!important;background:linear-gradient(120deg,#06172c,#075da0)!important;color:#fff!important;box-shadow:0 0 14px #00bfff,0 0 32px #0077ff!important;cursor:pointer!important;text-align:left!important;animation:reputixAiPulse 3s ease-in-out infinite}
@@ -49,6 +49,11 @@
 .reputix-ai-submit:disabled{opacity:.6;cursor:wait}.reputix-ai-submit span{font-size:20px}.reputix-ai-footnote{margin:12px 0 0!important;text-align:center;color:#6e9fbd!important;font-size:10px!important}
 @media(max-width:560px){.reputix-ai-modal{padding:9px!important}.reputix-ai-dialog{max-height:94dvh!important;padding:15px!important;border-radius:20px!important}.reputix-ai-brand{gap:10px;min-height:112px;padding-right:34px}.reputix-ai-mascot{flex-basis:77px;height:100px}.ai-face{width:68px;height:51px}.ai-body{width:40px;height:29px;line-height:25px;font-size:18px}.reputix-ai-tools{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin-bottom:12px}.reputix-ai-tools button{min-height:76px;padding:6px 2px;font-size:9px;border-radius:11px}.reputix-ai-tools button span{font-size:22px}.reputix-ai-welcome{padding:10px;gap:9px}.reputix-ai-mini-bot{flex-basis:39px;width:39px;height:39px}.reputix-ai-welcome strong{font-size:17px}.reputix-ai-dialog textarea{min-height:86px!important}.reputix-ai-fab{bottom:16px!important;right:12px!important}}
 @media(max-width:370px){.reputix-ai-mascot{display:none}.reputix-ai-tools button{font-size:8px}.reputix-ai-tools button span{font-size:19px}}
+
+/* Acceso rápido para volver al inicio */
+.home-header-access{padding:9px 13px!important;border:1px solid #20baff!important;border-radius:22px!important;background:rgba(0,145,230,.13)!important;color:#bceeff!important;font-size:12px!important;font-weight:800!important;white-space:nowrap!important;cursor:pointer!important;box-shadow:0 0 10px rgba(0,174,255,.13)!important}
+.home-header-access:hover,.home-header-access:focus-visible{background:rgba(0,145,230,.28)!important;box-shadow:0 0 13px rgba(0,190,255,.35)!important}
+@media(max-width:600px){.home-header-access{padding:6px 7px!important;font-size:9px!important}}
   </style>
 </head>
 
@@ -96,6 +101,7 @@
     <div class="tag" id="tagline">Opiniones reales. Soluciones reales.</div>
   </div>
   <div class="header-actions">
+    <button class="home-header-access" type="button" id="homeNavBtn">⌂ Inicio</button>
     <button class="independent-header-access" type="button" id="independentHeaderBtn">Ofrece tu servicio</button>
     <button class="account-access" type="button" id="accountAccessBtn">Registrarse / Iniciar sesión</button>
     <select id="language" aria-label="Language" style="width:auto">
@@ -343,6 +349,6 @@
 
 
 
-  <script src="./app.js?v=20261109-ai6" defer></script>
+  <script src="./app.js?v=20261109-home1" defer></script>
 </body>
 </html>
