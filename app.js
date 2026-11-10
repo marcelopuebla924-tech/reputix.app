@@ -477,7 +477,7 @@ function renderDiscoveryRails() {
     }
   }
   $("carouselStatus").textContent = lang === "es"
-    ? "Negocios aprobados por Reputix · Se actualiza cada 40 segundos"
+    ? "Negocios aprobados por Reputix · Avanza automáticamente cada 4 segundos"
     : "Featured businesses · Automatic carousel";
 }
 
@@ -488,21 +488,40 @@ function startDiscoveryRotation() {
   const rail = $("bottomDiscoveryRail");
   if (!rail) return;
 
-  // Desplazamiento real del carrusel: una tarjeta por vez.
-  // El usuario puede seguir deslizando manualmente con el dedo.
+  // Avanza una tarjeta cada intervalo. Si hay espacio para desplazarse,
+  // mueve la franja; si todas caben en pantalla, rota el orden de las tarjetas.
   discoveryTimer = setInterval(() => {
-    const cards = rail.querySelectorAll(":scope > .business-tile");
-    if (cards.length < 2 || rail.scrollWidth <= rail.clientWidth + 4) return;
+    const currentRail = $("bottomDiscoveryRail");
+    if (!currentRail) return;
+    const cards = currentRail.querySelectorAll(":scope > .business-tile");
+    if (cards.length < 2) return;
 
-    const firstCard = cards[0];
-    const gap = parseFloat(getComputedStyle(rail).columnGap || getComputedStyle(rail).gap) || 9;
-    const step = firstCard.getBoundingClientRect().width + gap;
-    const atEnd = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8;
+    if (currentRail.scrollWidth > currentRail.clientWidth + 4) {
+      const firstCard = cards[0];
+      const gap = parseFloat(getComputedStyle(currentRail).columnGap || getComputedStyle(currentRail).gap) || 9;
+      const step = firstCard.getBoundingClientRect().width + gap;
+      const atEnd = currentRail.scrollLeft + currentRail.clientWidth >= currentRail.scrollWidth - 8;
+      if (atEnd) currentRail.scrollTo({left:0,behavior:"smooth"});
+      else currentRail.scrollBy({left:step,behavior:"smooth"});
+      return;
+    }
 
-    if (atEnd) {
-      rail.scrollTo({left:0,behavior:"smooth"});
-    } else {
-      rail.scrollBy({left:step,behavior:"smooth"});
+    // En pantallas donde caben todas las tarjetas, cambia el orden para
+    // que el carrusel siga avanzando y no parezca congelado.
+    const available = lastBusinesses.filter(b => b && String(b.status || "").toLowerCase() === "approved");
+    if (available.length > 1) {
+      discoveryOffset = (discoveryOffset + 1) % available.length;
+      currentRail.style.transition = "opacity .22s ease, transform .22s ease";
+      currentRail.style.opacity = "0.45";
+      currentRail.style.transform = "translateX(-5px)";
+      window.setTimeout(() => {
+        renderDiscoveryRails();
+        const refreshedRail = $("bottomDiscoveryRail");
+        if (refreshedRail) {
+          refreshedRail.style.opacity = "1";
+          refreshedRail.style.transform = "translateX(0)";
+        }
+      },220);
     }
   },4200);
 }
