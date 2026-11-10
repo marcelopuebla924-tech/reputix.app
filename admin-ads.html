@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d19">
+<title>Reputix Ads · Administración</title>
+<style>
+:root{color-scheme:dark;--bg:#050b16;--panel:#0a1a2e;--line:#174a70;--blue:#20bfff;--muted:#a7bfd3;--text:#eff8ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0,#0b2b49 0,transparent 35%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{width:min(1120px,calc(100% - 28px));margin:28px auto 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.brand{font-size:27px;font-weight:950;letter-spacing:-1px}.brand span{color:var(--blue)}.sub{color:var(--muted);font-size:13px}
+a{color:#8ee2ff}.button,button{border:1px solid #168bc6;background:#0c3150;color:#eaf9ff;padding:10px 14px;border-radius:11px;font-weight:750;cursor:pointer;text-decoration:none}
+button.primary{background:linear-gradient(110deg,#087bd8,#00a9e8);border-color:#59d8ff}button.danger{border-color:#9c4750;background:#3b1821}button:disabled{opacity:.5;cursor:wait}
+.card{background:linear-gradient(145deg,#0b2038,#071426);border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 12px 35px #0003}
+h1{font-size:clamp(24px,5vw,36px);margin:4px 0}h2{font-size:19px;margin:0 0 12px}.muted{color:var(--muted)}.notice{padding:12px;border-radius:12px;background:#102b43;border:1px solid #1b628c;margin:12px 0;white-space:pre-wrap}.notice.error{border-color:#a34b58;background:#351923}.notice.good{border-color:#278b69;background:#102b2a}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.metric{padding:14px;border:1px solid #16486d;border-radius:14px;background:#081a2d}.metric strong{display:block;font-size:25px;color:#57d1ff}.metric span{font-size:12px;color:var(--muted)}
+form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}label{display:grid;gap:6px;color:#b9d6e9;font-size:13px;font-weight:700}label.wide{grid-column:1/-1}input,select,textarea{width:100%;padding:11px;border:1px solid #24577a;border-radius:10px;background:#061426;color:#fff;font:inherit}textarea{min-height:78px;resize:vertical}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:720px}th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #183b59;vertical-align:top}th{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#67d9ff}td{font-size:13px}.pill{display:inline-block;border:1px solid #27648b;border-radius:30px;padding:3px 8px;font-size:11px;color:#bdeaff}.row-actions{display:flex;gap:6px;flex-wrap:wrap}.row-actions button{font-size:11px;padding:7px 9px}.empty{text-align:center;padding:25px;color:var(--muted)}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}form{grid-template-columns:1fr}label.wide{grid-column:auto}.card{padding:14px}main{width:calc(100% - 20px);margin-top:18px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div><div class="brand">REPUTI<span>X</span> ADS</div><div class="sub">Centro privado de publicidad · Administración</div></div>
+ <div class="actions"><a href="/" class="button">Volver a Reputix</a><button id="reload" type="button">Actualizar datos</button></div>
+</header>
+<section class="card">
+ <h1>Monetización publicitaria</h1>
+ <p class="muted">Administra campañas y consulta resultados. Reputix conserva el 100% de los ingresos publicitarios. Los anuncios nunca modifican opiniones ni calificaciones.</p>
+ <div id="status" class="notice" role="status" aria-live="polite">Comprobando acceso administrativo…</div>
+</section>
+<section id="dashboard" hidden>
+ <div class="grid">
+  <div class="metric"><strong id="campaignCount">—</strong><span>Campañas registradas</span></div>
+  <div class="metric"><strong id="activeCount">—</strong><span>Campañas activas</span></div>
+  <div class="metric"><strong id="impressionCount">—</strong><span>Impresiones registradas</span></div>
+  <div class="metric"><strong id="clickCount">—</strong><span>Clics registrados</span></div>
+ </div>
+ <section class="card">
+  <h2>Crear campaña</h2>
+  <p class="muted">La campaña quedará en revisión. Antes de publicarla, verifica que el negocio y el anuncio sean legítimos.</p>
+  <form id="campaignForm">
+   <label>Negocio anunciante<select id="businessId" required><option value="">Cargando negocios aprobados…</option></select></label>
+   <label>Título del anuncio<input id="title" maxlength="120" minlength="3" required placeholder="Ej. Promoción de apertura"></label>
+   <label class="wide">Descripción<textarea id="description" maxlength="1000" placeholder="Describe la oferta o servicio"></textarea></label>
+   <label class="wide">Enlace de destino (opcional)<input id="destination" type="url" placeholder="https://…"></label>
+   <label>Ubicación<select id="placement"><option value="business_carousel">Carrusel de negocios</option><option value="discovery_feed">Feed de descubrimiento</option><option value="category_featured">Destacado por categoría</option></select></label>
+   <label>Presupuesto en USD<input id="budget" type="number" min="0" step="0.01" value="50" required></label>
+   <label>Inicio (opcional)<input id="starts" type="datetime-local"></label>
+   <label>Fin (opcional)<input id="ends" type="datetime-local"></label>
+   <div class="wide actions"><button class="primary" id="createCampaign" type="submit">Guardar para revisión</button><span class="muted" id="formMessage"></span></div>
+  </form>
+ </section>
+ <section class="card">
+  <h2>Campañas</h2><div class="tablewrap"><table><thead><tr><th>Campaña / negocio</th><th>Ubicación</th><th>Presupuesto</th><th>Fechas</th><th>Estado</th><th>Resultados</th><th>Acciones</th></tr></thead><tbody id="campaignRows"><tr><td colspan="7" class="empty">Cargando…</td></tr></tbody></table></div>
+ </section>
+</section>
+</main>
+<script>
+"use strict";
+const BASE="https://udvsrmfgjfinwbgvhchs.supabase.co";
+const KEY="sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
+const $=id=>document.getElementById(id);
+let session=null, campaigns=[];
+function message(text,type=""){const el=$("status");el.textContent=text;el.className="notice"+(type?" "+type:"");}
+function safeDate(value){if(!value)return "—";const d=new Date(value);return Number.isNaN(d.getTime())?"—":d.toLocaleString();}
+function usd(cents){return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD"}).format((Number(cents)||0)/100);}
+function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
+async function rest(path,options={}){
+ const res=await fetch(BASE+"/rest/v1/"+path,{...options,headers:{apikey:KEY,Authorization:"Bearer "+session.access_token,Accept:"application/json","Content-Type":"application/json",...(options.headers||{})}});
+ const body=await res.text();if(!res.ok)throw new Error("Supabase "+res.status+": "+body.slice(0,300));
+ if(!body)return null;try{return JSON.parse(body)}catch(_){return null}
+}
+function campaignAction(id,label,status,cls=""){
+ const b=el("button",label,cls);b.type="button";b.addEventListener("click",()=>changeStatus(id,status));return b;
+}
+async function countFor(table,id){const r=await fetch(BASE+"/rest/v1/"+table+"?select=id&campaign_id=eq."+encodeURIComponent(id),{method:"HEAD",headers:{apikey:KEY,Authorization:"Bearer "+session.access_token,Prefer:"count=exact","Range":"0-0"}});if(!r.ok)return "—";const range=r.headers.get("content-range")||"";const match=range.match(/\/(\d+)$/);return match?Number(match[1]):0;}
+async function loadBusinesses(){
+ const rows=await rest("businesses?select=id,name,city&status=eq.approved&order=name.asc&limit=1000");
+ const select=$("businessId");select.replaceChildren(el("option","Selecciona un negocio aprobado"));select.options[0].value="";
+ (rows||[]).forEach(b=>{const o=el("option",b.name+(b.city?" · "+b.city:""));o.value=b.id;select.append(o)});
+}
+async function loadCampaigns(){
+ campaigns=await rest("ad_campaigns?select=*&order=created_at.desc&limit=200")||[];
+ const businessRows=await rest("businesses?select=id,name&limit=1000")||[];
+ const names=new Map(businessRows.map(b=>[b.id,b.name]));
+ $("campaignCount").textContent=campaigns.length;
+ $("activeCount").textContent=campaigns.filter(c=>c.status==="active"&&(!c.ends_at||new Date(c.ends_at)>new Date())).length;
+ const rows=await Promise.all(campaigns.map(async c=>({c,impressions:await countFor("ad_impressions",c.id),clicks:await countFor("ad_clicks",c.id)})));
+ $("impressionCount").textContent=rows.reduce((n,x)=>n+(Number(x.impressions)||0),0).toLocaleString();
+ $("clickCount").textContent=rows.reduce((n,x)=>n+(Number(x.clicks)||0),0).toLocaleString();
+ const body=$("campaignRows");body.replaceChildren();
+ if(!rows.length){body.append(el("tr"));const td=el("td","Todavía no hay campañas.");td.colSpan=7;td.className="empty";body.firstChild.append(td);return}
+ rows.forEach(({c,impressions,clicks})=>{
+  const tr=el("tr"),name=el("td");name.append(el("strong",c.title),el("div",names.get(c.business_id)||"Negocio sin nombre","muted"));
+  const placement=el("td",({business_carousel:"Carrusel",discovery_feed:"Feed",category_featured:"Categoría"})[c.placement]||c.placement);
+  const budget=el("td",usd(c.budget_cents));
+  const dates=el("td",(c.starts_at?safeDate(c.starts_at):"Sin inicio")+"
+"+(c.ends_at?safeDate(c.ends_at):"Sin fin"));
+  const state=el("td");state.append(el("span",c.status,"pill"));
+  const metrics=el("td","👁 "+impressions+" · ↗ "+clicks);
+  const actions=el("td"),wrap=el("div",undefined,"row-actions");
+  if(c.status==="draft"||c.status==="rejected")wrap.append(campaignAction(c.id,"Enviar revisión","pending_review"));
+  if(["pending_review","approved","paused"].includes(c.status))wrap.append(campaignAction(c.id,"Activar","active"));
+  if(c.status==="active"||c.status==="approved")wrap.append(campaignAction(c.id,"Pausar","paused"));
+  if(c.status!=="rejected"&&c.status!=="completed")wrap.append(campaignAction(c.id,"Rechazar","rejected","danger"));
+  if(c.status==="active"||c.status==="paused")wrap.append(campaignAction(c.id,"Completar","completed"));
+  actions.append(wrap);tr.append(name,placement,budget,dates,state,metrics,actions);body.append(tr);
+ });
+}
+async function changeStatus(id,status){
+ if(!confirm("¿Cambiar el estado de esta campaña a "+status+"?"))return;
+ try{await rest("ad_campaigns?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status,updated_at:new Date().toISOString()})});message("Estado de campaña actualizado.","good");await refreshData()}
+ catch(e){message("No se pudo actualizar la campaña: "+e.message,"error")}
+}
+async function refreshData(){try{await Promise.all([loadBusinesses(),loadCampaigns()]);message("Panel actualizado correctamente.","good")}catch(e){message("Error al cargar los datos: "+e.message,"error")}}
+$("campaignForm").addEventListener("submit",async e=>{
+ e.preventDefault();const btn=$("createCampaign");btn.disabled=true;$("formMessage").textContent="Guardando…";
+ try{
+  const business_id=$("businessId").value,title=$("title").value.trim(),description=$("description").value.trim(),destination_url=$("destination").value.trim(),budget=Number($("budget").value);
+  if(!business_id)throw new Error("Selecciona un negocio aprobado.");
+  if(!Number.isFinite(budget)||budget<0||budget>1000000)throw new Error("Presupuesto inválido.");
+  if(destination_url&&!/^https?:\/\//i.test(destination_url))throw new Error("El enlace debe comenzar con https:// o http://.");
+  const starts=$("starts").value?new Date($("starts").value).toISOString():null,ends=$("ends").value?new Date($("ends").value).toISOString():null;
+  if(starts&&ends&&new Date(ends)<=new Date(starts))throw new Error("La fecha final debe ser posterior a la inicial.");
+  await rest("ad_campaigns",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({business_id,title,description:description||null,destination_url:destination_url||null,placement:$("placement").value,status:"pending_review",budget_cents:Math.round(budget*100),starts_at:starts,ends_at:ends})});
+  $("campaignForm").reset();$("budget").value="50";$("formMessage").textContent="Campaña guardada para revisión.";message("Campaña creada y enviada a revisión.","good");await refreshData();
+ }catch(err){$("formMessage").textContent=err.message;message("No se pudo crear la campaña: "+err.message,"error")}
+ finally{btn.disabled=false}
+});
+$("reload").addEventListener("click",refreshData);
+(async()=>{
+ try{
+  session=JSON.parse(sessionStorage.getItem("reputix_owner_session")||"null");
+  if(!session?.access_token||!session?.user?.id){message("No hay una sesión activa. Vuelve a Reputix e inicia sesión con tu cuenta administrativa; luego abre esta página en la misma pestaña.","error");return}
+  if(session.user?.app_metadata?.reputix_role!=="admin"){message("Esta cuenta no tiene el permiso administrativo de Reputix Ads. El acceso también está protegido por Supabase RLS.","error");return}
+  $("dashboard").hidden=false;message("Acceso administrativo reconocido. Cargando campañas…");await refreshData();
+ }catch(e){message("No se pudo verificar el acceso: "+e.message,"error")}
+})();
+</script>
+</body></html>
