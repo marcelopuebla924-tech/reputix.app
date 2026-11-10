@@ -23,16 +23,14 @@ const $ = id => document.getElementById(id);
    módulos secundarios para que un error ajeno no deje botones sin respuesta. */
 document.addEventListener("click", async event => {
   const button = event.target?.closest?.(
-    "#ownerSignIn,#ownerSignUp,#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
+    "#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
   );
   if (!button) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   const message = document.getElementById("ownerAuthMessage");
   try {
-    if (button.id === "ownerSignIn" || button.id === "ownerSignUp") {
-      await handleOwnerAuthAction(button.id === "ownerSignIn" ? "signin" : "signup");
-    } else if (button.id === "privateProfileAction") {
+    if (button.id === "privateProfileAction") {
       if (!ownerSession?.user?.id) throw new Error("La sesión no está activa. Vuelve a iniciar sesión.");
       const current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
       const name = window.prompt(ownerText("¿Cómo quieres que aparezca tu nombre?","What name should appear on your profile?"),current?.[0]?.display_name||"");
@@ -2435,9 +2433,9 @@ async function handleOwnerAuthAction(action) {
 
 $("ownerAuthForm").addEventListener("submit", event => {
   event.preventDefault();
-  // Permite enviar con Enter sin provocar una recarga del documento.
-  const focused = document.activeElement;
-  handleOwnerAuthAction(focused === $("ownerSignIn") ? "signin" : "signup");
+  // Única ruta de autenticación: el botón que envió el formulario determina la acción.
+  const action = event.submitter?.id === "ownerSignIn" ? "signin" : "signup";
+  handleOwnerAuthAction(action);
 });
 $("ownerSignOut").addEventListener("click",()=>{
   ownerSetSession(null);
