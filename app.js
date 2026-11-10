@@ -1850,7 +1850,7 @@ async function loadAdminClaims() {
       card.append(node("div","admin-claim-meta","Relación: "+(relationshipLabels[claim.relationship_type]||claim.relationship_type||"No indicada")));
       card.append(node("div","admin-claim-meta","Nivel solicitado: "+(levelLabels[claim.verification_level]||claim.verification_level||"No indicado")));
       card.append(node("div","admin-claim-meta","Prueba: "+(evidenceLabels[claim.evidence_type]||claim.evidence_type||"No indicada")));
-      (claim.evidence_links||[]).forEach(url=>{if(/^https?:\\/\\//i.test(url)){const link=node("a","admin-claim-meta",url);link.href=url;link.target="_blank";link.rel="noopener noreferrer";card.append(link);}});
+      (claim.evidence_links||[]).forEach(url=>{if(/^https?:\/\//i.test(url)){const link=node("a","admin-claim-meta",url);link.href=url;link.target="_blank";link.rel="noopener noreferrer";card.append(link);}});
       const actions=node("div","admin-claim-actions");
       const approvalStatus=claim.verification_level==="owner"?"verified":claim.verification_level==="business_responsible"?"responsible_verified":"activity_verified";
       const approvalLabel=approvalStatus==="verified"?ownerText("Verificar propietario","Verify owner"):approvalStatus==="responsible_verified"?ownerText("Verificar responsable","Verify representative"):ownerText("Confirmar actividad","Confirm activity");
@@ -2189,7 +2189,7 @@ $("ownerClaimForm").addEventListener("submit",async e=>{
   const verificationLevel=$("claimLevel").value;
   const evidenceType=$("claimEvidenceType").value;
   if(!businessId||!evidence||!relationshipType||!verificationLevel||!evidenceType)return;
-  if(evidenceLinks.some(url=>!/^https?:\\/\\//i.test(url))){
+  if(evidenceLinks.some(url=>!/^https?:\/\//i.test(url))){
     $("ownerClaimMessage").textContent=ownerText("Cada enlace debe comenzar con https:// o http://.","Each link must start with https:// or http://.");return;
   }
   $("claimSubmit").disabled=true;
