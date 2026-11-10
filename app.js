@@ -1974,7 +1974,8 @@ async function ownerSendPasswordRecovery() {
   button.disabled = true;
   message.textContent = ownerText("Enviando instrucciones de recuperación…","Sending password recovery instructions…");
   try {
-    const redirectTo = window.location.origin + window.location.pathname;
+    // Usa siempre el dominio canónico autorizado en Supabase.
+    const redirectTo = "https://www.reputixapp.com/";
     await ownerAuthRequest("recover?redirect_to=" + encodeURIComponent(redirectTo), {email});
     message.textContent = ownerText(
       "Si existe una cuenta con ese correo, recibirás un enlace para crear una contraseña nueva. Revisa también correo no deseado.",
@@ -1988,12 +1989,15 @@ async function ownerSendPasswordRecovery() {
 }
 
 function ownerShowPasswordResetFromLink() {
+  // Supabase puede devolver tokens o errores en el fragmento (#) o en la consulta (?).
   const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-  const type = hash.get("type");
-  const token = hash.get("access_token");
-  const authError = hash.get("error_description") || hash.get("error");
+  const query = new URLSearchParams(window.location.search);
+  const type = hash.get("type") || query.get("type");
+  const token = hash.get("access_token") || query.get("access_token");
+  const authError = hash.get("error_description") || hash.get("error") ||
+                    query.get("error_description") || query.get("error");
   if (authError) {
-    $("ownerAuthMessage").textContent = decodeURIComponent(authError.replace(/\\+/g," "));
+    $("ownerAuthMessage").textContent = authError.replace(/\\+/g," ");
     return;
   }
   if (type !== "recovery" || !token) return;
@@ -2058,7 +2062,7 @@ async function ownerSaveNewPassword() {
 
 $("ownerForgotPassword")?.addEventListener("click", ownerSendPasswordRecovery);
 $("ownerSaveNewPassword")?.addEventListener("click", ownerSaveNewPassword);
-window.addEventListener("load", ownerShowPasswordResetFromLink);
+window.addEventListener("load", ownerShowPasswordResetFromLink);\nwindow.addEventListener("hashchange", ownerShowPasswordResetFromLink);\nwindow.addEventListener("pageshow", ownerShowPasswordResetFromLink);
 
 
 
