@@ -2446,50 +2446,71 @@ $("ownerSignOut").addEventListener("click",()=>{
   ownerSetSession(null);
   $("ownerAuthMessage").textContent=ownerText("Sesión cerrada.","Signed out.");
 });
-$("ownerClaimForm").addEventListener("submit",async e=>{
+/* Envío protegido de reclamaciones: intercepta el submit antes de cualquier otro
+   listener y evita recargas/navegaciones que puedan aparentar un cierre de sesión. */
+$("ownerClaimForm").addEventListener("submit", async e => {
   e.preventDefault();
-  const message=$("ownerClaimMessage");
-  const businessId=$("claimBusiness").value;
-  const evidence=$("claimEvidence").value.trim();
-  const linksText=$("claimEvidenceLinks").value.trim();
-  const evidenceLinks=linksText ? linksText.split(/[\\n,]+/).map(x=>x.trim()).filter(Boolean) : [];
-  const relationshipType=$("claimRelationship").value;
-  const verificationLevel=$("claimLevel").value;
-  const evidenceType=$("claimEvidenceType").value || "written_statement";
-  if(!ownerSession?.access_token || !ownerSession?.user?.id){
-    message.textContent=ownerText("Tu sesión expiró. Inicia sesión nuevamente y vuelve a enviar la solicitud.","Your session expired. Sign in again and resubmit.");
+  e.stopImmediatePropagation();
+  const message = $("ownerClaimMessage");
+  const submit = $("claimSubmit");
+  if (submit.disabled) return;
+  const businessId = $("claimBusiness").value;
+  const evidence = $("claimEvidence").value.trim();
+  const linksText = $("claimEvidenceLinks").value.trim();
+  const evidenceLinks = linksText ? linksText.split(/[\\n,]+/).map(x => x.trim()).filter(Boolean) : [];
+  const relationshipType = $("claimRelationship").value;
+  const verificationLevel = $("claimLevel").value;
+  const evidenceType = $("claimEvidenceType").value || "written_statement";
+
+  // Recupera la sesión de la pestaña si la variable aún no está sincronizada.
+  if (!ownerSession?.access_token) {
+    try { ownerSession = JSON.parse(sessionStorage.getItem("reputix_owner_session") || "null"); } catch (_) {}
+  }
+  if (!ownerSession?.access_token || !ownerSession?.user?.id) {
+    message.textContent = ownerText("Tu sesión no está activa. Inicia sesión nuevamente; tus datos del formulario siguen aquí.", "Your session is not active. Sign in again; your form details are still here.");
     return;
   }
-  if(!businessId){message.textContent=ownerText("Selecciona el negocio que deseas reclamar.","Select the business you want to claim.");return;}
-  if(!evidence){message.textContent=ownerText("Describe tu actividad para continuar.","Describe your work or activity to continue.");$("claimEvidence").focus();return;}
-  if(!relationshipType||!verificationLevel){message.textContent=ownerText("Completa tu relación con el negocio y qué deseas acreditar.","Complete your relationship to the business and what you want verified.");return;}
-  if(evidenceLinks.some(url=>!/^https?:\\/\\//i.test(url))){
-    message.textContent=ownerText("Cada enlace debe comenzar con https:// o http://.","Each link must start with https:// or http://.");return;
+  if (!businessId) { message.textContent = ownerText("Selecciona el negocio que deseas reclamar.", "Select the business you want to claim."); return; }
+  if (!evidence) { message.textContent = ownerText("Describe tu actividad para continuar.", "Describe your work or activity to continue."); $("claimEvidence").focus(); return; }
+  if (!relationshipType || !verificationLevel) { message.textContent = ownerText("Completa tu relación con el negocio y qué deseas acreditar.", "Complete your relationship to the business and what you want verified."); return; }
+  if (evidenceLinks.some(url => !/^https?:\\/\\//i.test(url))) {
+    message.textContent = ownerText("Cada enlace debe comenzar con https:// o http://.", "Each link must start with https:// or http://."); return;
   }
-  const submit=$("claimSubmit");submit.disabled=true;
-  message.textContent=ownerText("Enviando solicitud para revisión…","Submitting request for review…");
+
+  submit.disabled = true;
+  message.textContent = ownerText("Enviando solicitud para revisión…", "Submitting request for review…");
   try {
-    const result=await api("business_owner_claims",{
-      method:"POST",
-      headers:{Prefer:"return=representation"},
-      body:JSON.stringify({business_id:businessId,user_id:ownerSession.user.id,evidence_note:evidence,relationship_type:relationshipType,verification_level:verificationLevel,evidence_type:evidenceType,evidence_links:evidenceLinks,status:"pending"})
+    const result = await api("business_owner_claims", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({
+        business_id: businessId,
+        user_id: ownerSession.user.id,
+        evidence_note: evidence,
+        relationship_type: relationshipType,
+        verification_level: verificationLevel,
+        evidence_type: evidenceType,
+        evidence_links: evidenceLinks,
+        status: "pending"
+      })
     });
-    if(!Array.isArray(result)||!result.length) throw new Error("Supabase no confirmó la creación de la solicitud.");
-    $("claimEvidence").value="";$("claimEvidenceLinks").value="";
-    message.textContent=ownerText("¡Solicitud recibida! Quedó pendiente de revisión. No necesitas tener redes sociales para reclamar el negocio.","Request received! It is pending review. You do not need social media to claim the business.");
+    if (!Array.isArray(result) || !result.length) throw new Error("Supabase no confirmó la creación de la solicitud.");
+    message.textContent = ownerText("¡Solicitud recibida! Quedó pendiente de revisión. Tu sesión sigue activa.", "Request received! It is pending review. Your session remains active.");
     await loadOwnerClaims();
-  } catch(err) {
-    console.error("Reputix owner claim submit:",err);
-    const detail=err?.message||String(err);
-    if(/duplicate|unique constraint|23505/i.test(detail)){
-      message.textContent=ownerText("Ya existe una solicitud para este negocio con esta cuenta. No necesitas enviarla otra vez.","A claim for this business already exists for this account. You do not need to submit it again.");
-    } else if(/row-level security|permission denied|42501|403/i.test(detail)){
-      message.textContent=ownerText("Supabase rechazó el envío por permisos. Cierra sesión, vuelve a entrar con el correo de Carolina y prueba otra vez. Detalle: ","Supabase rejected the submission due to permissions. Sign out, sign back in with Carolina's email, and try again. Details: ")+detail;
+  } catch (err) {
+    console.error("Reputix owner claim submit:", err);
+    const detail = err?.message || String(err);
+    if (/duplicate|unique constraint|23505/i.test(detail)) {
+      message.textContent = ownerText("Ya existe una solicitud para este negocio con esta cuenta. No necesitas enviarla otra vez.", "A claim for this business already exists for this account. You do not need to submit it again.");
+    } else if (/row-level security|permission denied|42501|403/i.test(detail)) {
+      message.textContent = ownerText("Supabase rechazó el envío por permisos. Tu sesión no se cerró. Detalle: ", "Supabase rejected the submission due to permissions. Your session was not signed out. Details: ") + detail;
     } else {
-      message.textContent=ownerText("No se pudo guardar la solicitud. Detalle: ","The request could not be saved. Details: ")+detail;
+      message.textContent = ownerText("No se pudo guardar la solicitud. Tus datos siguen en el formulario. Detalle: ", "The request could not be saved. Your form details remain. Details: ") + detail;
     }
-  } finally {submit.disabled=false;}
-});
+  } finally {
+    submit.disabled = false;
+  }
+}, true);
 if(ownerSession?.access_token) ownerSetSession(ownerSession);
 
 async function loadApprovedBusinesses() {
