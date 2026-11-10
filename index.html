@@ -99,6 +99,33 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 .map-header-access:hover,.map-header-access:focus-visible{border-color:#62e6ff;box-shadow:0 0 16px rgba(0,190,255,.4);outline:none}
 @media(max-width:600px){.map-header-access{min-height:34px;padding:6px 9px;font-size:11px}}
 </style>
+<style id="reputix-premium-header-buttons">
+/* Accesos principales: acabado neón premium */
+.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.header-actions .independent-header-access,
+.header-actions .map-header-access,
+.header-actions .account-access{
+ position:relative;isolation:isolate;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:43px;padding:10px 15px;border-radius:14px;text-decoration:none;
+ font-size:12px;font-weight:900;letter-spacing:.15px;white-space:nowrap;
+ transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+}
+.header-actions .independent-header-access{border:1px solid #18baff;color:#a9eaff;background:linear-gradient(145deg,#071b31,#092c49);box-shadow:inset 0 0 13px #00aaff12,0 0 12px #008cff25}
+.header-actions .independent-header-access:before{content:"✦";font-size:15px;color:#61e5ff;text-shadow:0 0 10px #00baff}
+.header-actions .map-header-access{border:1px solid #55e6ff;color:#fff;background:linear-gradient(135deg,#087bc0,#06345c 70%,#041a32);box-shadow:inset 0 0 12px #48dfff25,0 0 17px #00baff55}
+.header-actions .map-header-access:before{content:"⌖";font-size:20px;line-height:12px;color:#8cf4ff;text-shadow:0 0 12px #00c8ff}
+.header-actions .account-access{border:1px solid #8cecff;color:#fff;background:linear-gradient(115deg,#087fe0,#00b9ed 55%,#0875d3);box-shadow:inset 0 1px 0 #ffffff55,0 0 18px #009dff66}
+.header-actions .account-access:before{content:"◉";font-size:15px;color:#d9fbff;text-shadow:0 0 9px #fff}
+.header-actions .independent-header-access:hover,.header-actions .map-header-access:hover,.header-actions .account-access:hover{transform:translateY(-2px);filter:brightness(1.15);box-shadow:0 0 22px #00baff66}
+.header-actions #language{min-height:41px;border:1px solid #278ec4!important;border-radius:12px!important;background:#071a30!important;color:#eafaff!important;padding:8px 10px!important;box-shadow:0 0 10px #008cff22}
+@media(max-width:700px){
+ header{align-items:flex-start!important;gap:9px!important}
+ .header-actions{max-width:100%!important;flex:1 1 100%!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px!important}
+ .header-actions .independent-header-access,.header-actions .map-header-access,.header-actions .account-access{width:100%;min-width:0;min-height:42px;padding:9px 7px;font-size:11px;white-space:normal;text-align:center}
+ .header-actions #language{width:100%!important;min-height:42px;grid-column:1/-1}
+}
+@media(prefers-reduced-motion:reduce){.header-actions .independent-header-access,.header-actions .map-header-access,.header-actions .account-access{transition:none}}
+</style>
 </head>
 
 <body id="pageTop">
