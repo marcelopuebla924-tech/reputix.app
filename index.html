@@ -81,6 +81,18 @@ html{scroll-behavior:smooth}
 /* Mantener Reputix AI accesible también dentro del área de propietarios. */
 body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:none!important}
 </style>
+
+<style id="reputix-stripe-plans">
+.stripe-plans{max-width:1050px;margin:34px auto;padding:clamp(18px,3vw,30px);border:1px solid #147cb7;border-radius:22px;background:linear-gradient(145deg,#071a31,#030b18);color:#eff8ff;box-shadow:0 12px 34px rgba(0,135,220,.12)}
+.stripe-plans h2{margin:0 0 8px;font-size:clamp(25px,4vw,34px);color:#fff}.stripe-plans-intro{margin:0 0 22px;color:#b9cfe3;line-height:1.5}
+.stripe-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.stripe-plan-card{padding:20px;border:1px solid #1b5d89;border-radius:18px;background:linear-gradient(150deg,#0d2946,#07172b)}
+.stripe-plan-card.featured{border-color:#27c5ff;box-shadow:0 0 18px rgba(0,174,255,.16)}
+.stripe-plan-card h3{margin:0 0 7px;font-size:21px;color:#fff}.stripe-plan-price{font-size:30px;font-weight:900;color:#55d6ff}.stripe-plan-period{font-size:13px;color:#aac4dc}
+.stripe-plan-card p{min-height:44px;color:#c1d6e9;line-height:1.45}.stripe-plan-button{width:100%;min-height:48px;border:1px solid #5cdbff;border-radius:12px;background:linear-gradient(100deg,#087cdb,#00a9ed);color:#fff;font-size:15px;font-weight:800;cursor:pointer}.stripe-plan-button:disabled{opacity:.6;cursor:wait}
+.stripe-checkout-status{min-height:22px;margin:14px 0 0;color:#a9d8f1;font-size:13px}
+@media(max-width:620px){.stripe-plan-grid{grid-template-columns:1fr}.stripe-plan-card p{min-height:0}}
+</style>
 </head>
 
 <body id="pageTop">
@@ -191,6 +203,27 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
   <div class="tile-heading"><div class="tile-business-name">McDonald</div><div class="tile-business-category">Restaurante o cafetería</div><div class="tile-business-location">⌖ Los Angeles</div></div>
 </article></div>
   <p class="carousel-status" id="carouselStatus">Negocios destacados · Carrusel automático</p>
+</section>
+
+
+<section class="stripe-plans" id="reputixPlans">
+  <h2 id="plansTitle">Planes Reputix</h2>
+  <p class="stripe-plans-intro" id="plansIntro">Herramientas para administrar la reputación de tu negocio y entender mejor a tus clientes.</p>
+  <div class="stripe-plan-grid">
+    <article class="stripe-plan-card">
+      <h3>Reputix Basic</h3>
+      <div class="stripe-plan-price">$13 <span class="stripe-plan-period">USD / mes</span></div>
+      <p id="basicPlanDesc">Gestión esencial de reputación y opiniones de clientes.</p>
+      <button class="stripe-plan-button" type="button" data-reputix-checkout="basic" id="basicCheckoutButton">Elegir Basic · $13/mes</button>
+    </article>
+    <article class="stripe-plan-card featured">
+      <h3>Reputix Pro</h3>
+      <div class="stripe-plan-price">$25 <span class="stripe-plan-period">USD / mes</span></div>
+      <p id="proPlanDesc">Herramientas avanzadas para analizar opiniones y mejorar el rendimiento.</p>
+      <button class="stripe-plan-button" type="button" data-reputix-checkout="pro" id="proCheckoutButton">Elegir Pro · $25/mes</button>
+    </article>
+  </div>
+  <p class="stripe-checkout-status" id="checkoutStatus" role="status" aria-live="polite"></p>
 </section>
 
 <section class="community">
