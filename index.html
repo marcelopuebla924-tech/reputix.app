@@ -378,6 +378,14 @@ body.owner-auth-in-view .reputix-ai-fab{display:flex!important;pointer-events:au
         <div id="ownerDashboardList"></div>
         <p class="owner-insight" id="ownerDashboardNote">Los datos se calculan únicamente con opiniones publicadas. Los patrones por horario requieren un mínimo de 3 opiniones en cada franja.</p>
       </div>
+      <section id="adminReviewModerationPanel" hidden>
+        <div class="divider"></div>
+        <h3 id="adminReviewModerationTitle">🤖 Moderación inteligente de opiniones</h3>
+        <p class="admin-warning" id="adminReviewModerationWarning">La IA solo recomienda prioridades. Ninguna opinión se publica ni se rechaza automáticamente.</p>
+        <button type="button" class="secondary" id="adminReviewModerationRefresh">Actualizar análisis</button>
+        <p class="owner-message" id="adminReviewModerationStatus" aria-live="polite"></p>
+        <div id="adminReviewModerationList"></div>
+      </section>
       <section id="adminClaimsPanel" hidden>
         <div class="divider"></div>
         <h3 id="adminClaimsTitle">🛡️ Revisión administrativa</h3>
