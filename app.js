@@ -819,17 +819,105 @@ async function loadReviewTicker() {
 }
 
 function setupFeatureButtons() {
-  $("featureFind").addEventListener("click",() => {
-    $("searchForm").scrollIntoView({behavior:"smooth",block:"center"});
-    input.focus({preventScroll:true});
+  const reviewsButton=$("featureReviews");
+  const statsButton=$("featureStats");
+  if(reviewsButton)reviewsButton.addEventListener("click",()=>{
+    const target=$("reviewTickerPanel");
+    target.scrollIntoView({behavior:"smooth",block:"start"});
+    target.setAttribute("tabindex","-1");
+    window.setTimeout(()=>target.focus({preventScroll:true}),450);
   });
-  $("featureReviews").addEventListener("click",() => {
-    $("reviewTickerPanel").scrollIntoView({behavior:"smooth",block:"start"});
+  if(statsButton)statsButton.addEventListener("click",()=>{
+    const panel=$("advancedStatsDashboard");
+    panel.hidden=false;
+    panel.scrollIntoView({behavior:"smooth",block:"start"});
+    loadAdvancedStats();
   });
-  $("featureStats").addEventListener("click",() => {
-    $("weeklyRankingPanel").scrollIntoView({behavior:"smooth",block:"start"});
-    loadWeeklyRankings();
-  });
+  const refresh=$("advancedStatsRefresh");
+  if(refresh)refresh.addEventListener("click",loadAdvancedStats);
+}
+
+async function loadAdvancedStats(){
+  const status=$("advancedStatsStatus");
+  const kpis=$("advancedStatsKpis");
+  const weekly=$("advancedWeeklyChart");
+  const criteria=$("advancedCriteriaChart");
+  const table=$("advancedBusinessRows");
+  if(!status||!kpis||!weekly||!criteria||!table)return;
+  status.textContent=lang==="es"?"Cargando opiniones publicadas…":"Loading published reviews…";
+  kpis.replaceChildren();weekly.replaceChildren();criteria.replaceChildren();
+  table.replaceChildren();
+  try{
+    const [reviews,businesses]=await Promise.all([
+      api("reviews?select=id,business_id,visit_date,created_at,cleanliness,service_quality,product_quality,speed,value_for_money&status=eq.published&order=created_at.desc&limit=1000"),
+      api("businesses?select=id,name,category,city&status=eq.approved&limit=1000")
+    ]);
+    if(!Array.isArray(reviews)||!Array.isArray(businesses))throw new Error("No se pudieron leer las estadísticas.");
+    const businessMap=new Map(businesses.map(b=>[String(b.id),b]));
+    const fields=[
+      ["Limpieza","cleanliness"],["Servicio","service_quality"],["Calidad","product_quality"],["Rapidez","speed"],["Precio / valor","value_for_money"]
+    ];
+    const scoreValues=[];
+    const sums=Object.fromEntries(fields.map(([label,key])=>[key,{sum:0,count:0}]));
+    const byBusiness=new Map();
+    const dayCounts=new Map();
+    const now=new Date();
+    for(let d=6;d>=0;d--){const day=new Date(now);day.setHours(0,0,0,0);day.setDate(day.getDate()-d);dayCounts.set(day.toISOString().slice(0,10),0);}
+    reviews.forEach(r=>{
+      const id=String(r.business_id);
+      if(!byBusiness.has(id))byBusiness.set(id,{count:0,sum:0,n:0});
+      const item=byBusiness.get(id);item.count++;
+      const values=[];
+      fields.forEach(([label,key])=>{
+        const value=Number(r[key]);
+        if(r[key]!==null&&r[key]!==undefined&&r[key]!==""&&Number.isFinite(value)&&value>=0&&value<=5){
+          sums[key].sum+=value;sums[key].count++;values.push(value);
+        }
+      });
+      if(values.length){const avg=values.reduce((a,b)=>a+b,0)/values.length;item.sum+=avg;item.n++;scoreValues.push(avg);}
+      const date=(r.visit_date||r.created_at||"").slice(0,10);
+      if(dayCounts.has(date))dayCounts.set(date,dayCounts.get(date)+1);
+    });
+    const overall=scoreValues.length?scoreValues.reduce((a,b)=>a+b,0)/scoreValues.length:0;
+    const activeBusinesses=[...byBusiness.keys()].filter(id=>businessMap.has(id)).length;
+    const avgPerReview=reviews.length?reviews.length/Math.max(1,activeBusinesses):0;
+    const cards=[
+      [String(reviews.length),"Opiniones publicadas"],
+      [String(activeBusinesses),"Negocios con opiniones"],
+      [scoreValues.length?overall.toFixed(2)+"/5":"—","Promedio general"],
+      [avgPerReview.toFixed(1),"Opiniones por negocio"]
+    ];
+    cards.forEach(([value,label])=>{const card=node("div","advanced-kpi");card.append(node("strong","",value),node("span","",label));kpis.append(card);});
+    const maxDay=Math.max(1,...dayCounts.values());
+    dayCounts.forEach((count,date)=>{
+      const wrap=node("div","advanced-bar-item");
+      wrap.append(node("span","advanced-bar-value",String(count)));
+      const bar=node("div","advanced-bar");bar.style.height=Math.max(3,Math.round(count/maxDay*125))+"px";bar.setAttribute("role","img");bar.setAttribute("aria-label",count+" opiniones");
+      wrap.append(bar);
+      const d=new Date(date+"T12:00:00");wrap.append(node("span","advanced-bar-label",d.toLocaleDateString(lang==="es"?"es-US":"en-US",{weekday:"short"})));
+      weekly.append(wrap);
+    });
+    fields.forEach(([label,key])=>{
+      const v=sums[key],avg=v.count?v.sum/v.count:0;
+      const row=node("div","advanced-criterion-row");
+      row.append(node("span","",label));
+      const track=node("div","advanced-criterion-track"),fill=node("div","advanced-criterion-fill");
+      fill.style.width=(v.count?Math.max(0,Math.min(100,avg/5*100)):0)+"%";track.append(fill);
+      row.append(track,node("strong","",v.count?avg.toFixed(2):"—"));criteria.append(row);
+    });
+    const ranking=[...byBusiness.entries()].filter(([id])=>businessMap.has(id)).map(([id,v])=>({business:businessMap.get(id),...v,average:v.n?v.sum/v.n:0})).sort((a,b)=>b.count-a.count).slice(0,10);
+    if(!ranking.length){const tr=node("tr","");const td=node("td","",lang==="es"?"Aún no hay opiniones publicadas para mostrar.":"No published reviews to display yet.");td.colSpan=3;tr.append(td);table.append(tr);}
+    ranking.forEach(row=>{
+      const tr=node("tr","");
+      tr.append(node("td","",row.business.name||"Negocio"),node("td","",String(row.count)),node("td","",row.n?row.average.toFixed(2)+" / 5":"—"));
+      table.append(tr);
+    });
+    status.textContent=lang==="es"?"Datos actualizados: "+new Date().toLocaleString("es-US")+" · máximo 1.000 opiniones recientes.":"Updated: "+new Date().toLocaleString("en-US")+" · up to 1,000 recent reviews.";
+  }catch(err){
+    console.error("Advanced Reputix stats:",err);
+    status.textContent=(lang==="es"?"No se pudieron cargar las estadísticas: ":"Could not load statistics: ")+(err.message||String(err));
+    const tr=node("tr","");const td=node("td","",lang==="es"?"Revisa la conexión y vuelve a intentar.":"Check the connection and try again.");td.colSpan=3;tr.append(td);table.append(tr);
+  }
 }
 
 function renderReview(r) {
