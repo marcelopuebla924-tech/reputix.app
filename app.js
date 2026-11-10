@@ -23,13 +23,18 @@ const $ = id => document.getElementById(id);
    módulos secundarios para que un error ajeno no deje botones sin respuesta. */
 document.addEventListener("click", async event => {
   const button = event.target?.closest?.(
-    "#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
+    "#ownerSignIn,#ownerSignUp,#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
   );
   if (!button) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   const message = document.getElementById("ownerAuthMessage");
   try {
+    if (button.id === "ownerSignIn" || button.id === "ownerSignUp") {
+      event.preventDefault();
+      await handleOwnerAuthAction(button.id === "ownerSignIn" ? "signin" : "signup");
+      return;
+    }
     if (button.id === "privateProfileAction") {
       if (!ownerSession?.user?.id) throw new Error("La sesión no está activa. Vuelve a iniciar sesión.");
       const current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
@@ -2151,12 +2156,6 @@ async function handleOwnerAuthAction(action) {
   }
 }
 
-/* Entry point exposed for the two HTML auth buttons; avoids event-delegation conflicts. */
-window.reputixOwnerAuthAction = function(action) {
-  const password = $("ownerPassword");
-  if (password) password.setAttribute("autocomplete",action === "signin" ? "current-password" : "new-password");
-  return handleOwnerAuthAction(action);
-};
 $("ownerAuthForm").addEventListener("submit", event => {
   event.preventDefault();
   // Permite enviar con Enter sin provocar una recarga del documento.
