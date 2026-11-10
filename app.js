@@ -1972,32 +1972,41 @@ async function loadOwnerDashboard() {
     wrap.hidden=true;
   }
 }
-let ownerAuthAction = "signup";
-$("ownerSignUp").addEventListener("click",()=>{ownerAuthAction="signup";});
-$("ownerSignIn").addEventListener("click",()=>{ownerAuthAction="signin";});
-$("ownerAuthForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const action=e.submitter?.value || ownerAuthAction || "signup";
-  ownerAuthAction="signup";
-  const message=$("ownerAuthMessage");
-  const submitButtons=[$("ownerSignUp"),$("ownerSignIn")];
-  if(! $("ownerEmail").value.trim() || !$("ownerPassword").value) {
-    message.textContent=ownerText("Escribe tu correo y contraseña para continuar.","Enter your email and password to continue.");
+async function handleOwnerAuthAction(action) {
+  const message = $("ownerAuthMessage");
+  const buttons = [$("ownerSignUp"), $("ownerSignIn")];
+  if (!$("ownerEmail").value.trim() || !$("ownerPassword").value) {
+    message.textContent = ownerText("Escribe tu correo y contraseña para continuar.","Enter your email and password to continue.");
     return;
   }
-  submitButtons.forEach(b=>b.disabled=true);
-  message.textContent=action==="signin"
+  buttons.forEach(button => button.disabled = true);
+  message.textContent = action === "signin"
     ? ownerText("Conectando con Supabase…","Connecting to Supabase…")
     : ownerText("Creando tu cuenta…","Creating your account…");
   try {
-    await (action==="signin" ? ownerSignIn() : ownerSignUp());
-    if(!message.textContent) message.textContent=ownerText("No recibimos respuesta. Comprueba tu conexión e inténtalo más tarde.","No response received. Check your connection and try again later.");
-  } catch(err) {
-    message.textContent=ownerText("Error de registro: ","Sign-up error: ")+(err?.message || String(err));
-    console.error("Reputix auth form:",err);
+    if (action === "signin") await ownerSignIn();
+    else await ownerSignUp();
+  } catch (err) {
+    message.textContent = ownerText("No se pudo completar la operación: ","Could not complete the request: ") + (err?.message || String(err));
+    console.error("Reputix auth:", err);
   } finally {
-    submitButtons.forEach(b=>b.disabled=false);
+    buttons.forEach(button => button.disabled = false);
   }
+}
+
+$("ownerSignUp").addEventListener("click", event => {
+  event.preventDefault();
+  handleOwnerAuthAction("signup");
+});
+$("ownerSignIn").addEventListener("click", event => {
+  event.preventDefault();
+  handleOwnerAuthAction("signin");
+});
+$("ownerAuthForm").addEventListener("submit", event => {
+  event.preventDefault();
+  // Permite enviar con Enter sin provocar una recarga del documento.
+  const focused = document.activeElement;
+  handleOwnerAuthAction(focused === $("ownerSignIn") ? "signin" : "signup");
 });
 $("ownerSignOut").addEventListener("click",()=>{
   ownerSetSession(null);
