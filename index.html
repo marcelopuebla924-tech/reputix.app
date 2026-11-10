@@ -77,7 +77,10 @@ html{scroll-behavior:smooth}
 .advanced-table-card{margin-top:12px}.advanced-table-scroll{overflow-x:auto}.advanced-stats-table{width:100%;border-collapse:collapse;font-size:12px}.advanced-stats-table th,.advanced-stats-table td{padding:11px 9px;text-align:left;border-bottom:1px solid #183b59}.advanced-stats-table th{color:#65d8ff;font-size:10px;text-transform:uppercase;letter-spacing:.7px}.advanced-stats-table td{color:#d9eafa}.advanced-stats-table td:last-child{white-space:nowrap;color:#68dfff}.advanced-stats-foot{margin-top:12px;font-size:10px}
 #featureReviews,#featureStats{cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s}#featureReviews:hover,#featureStats:hover,#featureReviews:focus-visible,#featureStats:focus-visible{border-color:#1bbcff;box-shadow:0 0 18px rgba(0,157,255,.2);transform:translateY(-2px);outline:none}
 @media(max-width:650px){.advanced-stats-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.advanced-stats-grid{grid-template-columns:1fr}.advanced-stats{margin:16px 10px;padding:14px}.advanced-stats-card{padding:12px}}
-  </style>
+  
+/* Evitar que el botón flotante de Reputix AI tape los controles de propietarios en móvil. */
+body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:none!important}
+</style>
 </head>
 
 <body id="pageTop">
