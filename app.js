@@ -2062,7 +2062,9 @@ async function ownerSaveNewPassword() {
 
 $("ownerForgotPassword")?.addEventListener("click", ownerSendPasswordRecovery);
 $("ownerSaveNewPassword")?.addEventListener("click", ownerSaveNewPassword);
-window.addEventListener("load", ownerShowPasswordResetFromLink);\nwindow.addEventListener("hashchange", ownerShowPasswordResetFromLink);\nwindow.addEventListener("pageshow", ownerShowPasswordResetFromLink);
+window.addEventListener("load", ownerShowPasswordResetFromLink);
+window.addEventListener("hashchange", ownerShowPasswordResetFromLink);
+window.addEventListener("pageshow", ownerShowPasswordResetFromLink);
 
 
 
