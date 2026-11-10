@@ -2248,6 +2248,26 @@ function setupReputixAdsAdmin(){
   $("adsRefreshButton")?.addEventListener("click",()=>loadReputixAdsCampaigns());
 }
 
+let ownerSubscription = null;
+let ownerSubscriptionLoaded = false;
+async function loadOwnerSubscription() {
+  const card=$("ownerSubscriptionCard"),details=$("ownerSubscriptionDetails"),aiPanel=document.querySelector(".ai-assistant-panel");
+  if(!ownerSession?.access_token||!ownerSession?.user?.id){ownerSubscription=null;ownerSubscriptionLoaded=true;if(card)card.hidden=true;if(aiPanel)aiPanel.hidden=true;$("ownerDashboard").hidden=true;return null;}
+  if(details)details.textContent=ownerText("Consultando tu suscripción…","Checking your subscription…");
+  try{
+    const rows=await api("user_subscriptions?select=plan_code,status,current_period_end,cancel_at_period_end&user_id=eq."+encodeURIComponent(ownerSession.user.id)+"&order=updated_at.desc&limit=1");
+    const row=Array.isArray(rows)?rows[0]:null,end=row?.current_period_end?new Date(row.current_period_end):null;
+    const valid=!!row&&["active","trialing"].includes(String(row.status).toLowerCase())&&(!end||end.getTime()>Date.now());
+    ownerSubscription=valid?{plan:row.plan_code,status:row.status,end,cancelAtPeriodEnd:!!row.cancel_at_period_end}:null;ownerSubscriptionLoaded=true;
+    if(card)card.hidden=false;
+    if(details)details.textContent=ownerSubscription?((ownerSubscription.plan==="pro"?"Reputix Pro":"Reputix Basic")+" · "+ownerText("Suscripción activa","Active subscription")+(end?" · "+ownerText("Próxima renovación","Next renewal")+": "+end.toLocaleDateString(lang==="es"?"es-US":"en-US"):"")+(ownerSubscription.cancelAtPeriodEnd?" · "+ownerText("Cancelación al final del período","Cancels at period end"):"")):ownerText("No hay una suscripción activa. Basic activa herramientas esenciales; Pro añade estadísticas avanzadas y Reputix AI.","No active subscription. Basic unlocks essential tools; Pro adds advanced analytics and Reputix AI.");
+    if(aiPanel)aiPanel.hidden=ownerSubscription?.plan!=="pro";
+    if(ownerSubscription?.plan==="pro")$("ownerDashboardNote").textContent=ownerText("Plan Pro: estadísticas y patrones por horario con opiniones publicadas.","Pro plan: analytics and time-of-day patterns using published reviews.");
+    else if(ownerSubscription?.plan==="basic")$("ownerDashboardNote").textContent=ownerText("Plan Basic: estadísticas esenciales. Las tendencias y comparaciones por horario están incluidas en Pro.","Basic plan: essential analytics. Trends and time comparisons are included with Pro.");
+    return ownerSubscription;
+  }catch(error){ownerSubscriptionLoaded=false;if(details)details.textContent=ownerText("No pudimos verificar tu suscripción. Vuelve a intentarlo.","We couldn't verify your subscription. Please try again.");if(aiPanel)aiPanel.hidden=true;console.error("Reputix subscription lookup:",error);return null;}
+}
+
 function ownerSetSession(session) {
   ownerSession=session;
   if(session) sessionStorage.setItem("reputix_owner_session",JSON.stringify(session));
@@ -2265,12 +2285,14 @@ function ownerSetSession(session) {
   if (adsPanel) adsPanel.hidden = !isAdmin;
   if (isAdmin) { setupReputixAdsAdmin(); loadReputixAdsBusinesses().then(loadReputixAdsCampaigns).catch(error => { if ($("adsAdminMessage")) $("adsAdminMessage").textContent = "Error: "+error.message; }); }
   if(session) {
+    loadOwnerSubscription().then(() => loadOwnerDashboard());
     loadOwnerClaims();
     loadPrivateSpace();
     loadMessageCenter();
     $("privateSpace").scrollIntoView({behavior:"smooth",block:"start"});
     if(isAdmin) { loadAdminClaims(); loadAdminReviewModeration(); }
   } else {
+    ownerSubscription=null;ownerSubscriptionLoaded=false;
     $("adminClaimsList").replaceChildren();
     $("privatePostsList").replaceChildren();
     $("privateReviewsContent").replaceChildren();
@@ -2279,6 +2301,8 @@ function ownerSetSession(session) {
 }
 $("reputixAiForm").addEventListener("submit", async e => {
   e.preventDefault();
+  if(!ownerSubscriptionLoaded)await loadOwnerSubscription();
+  if(ownerSubscription?.plan!=="pro"){$("reputixAiStatus").textContent=ownerText("Reputix AI requiere una suscripción Pro activa ($25/mes).","Reputix AI requires an active Pro subscription ($25/month).");return;}
   const prompt = $("reputixAiPrompt").value.trim();
   const status = $("reputixAiStatus");
   const answer = $("reputixAiAnswer");
@@ -2733,6 +2757,8 @@ $("privatePostForm").addEventListener("submit",async e=>{
 async function loadOwnerDashboard() {
   const wrap=$("ownerDashboard"),list=$("ownerDashboardList");
   list.replaceChildren();
+  if(!ownerSubscriptionLoaded)await loadOwnerSubscription();
+  if(!ownerSubscription||!["basic","pro"].includes(ownerSubscription.plan)){wrap.hidden=true;return;}
   try {
     const rows=await api("owner_business_dashboard?select=business_id,business_name,category,city,published_reviews,average_score,average_cleanliness,average_service_quality,average_product_quality,average_speed,average_value_for_money,reviews_last_7_days");
     if(!Array.isArray(rows)||!rows.length){wrap.hidden=true;return;}
@@ -2756,6 +2782,7 @@ async function loadOwnerDashboard() {
       metric(row.average_product_quality===null?"—":Number(row.average_product_quality).toFixed(1)+"/5",ownerText("Calidad del producto","Product quality"));
       metric(row.average_value_for_money===null?"—":Number(row.average_value_for_money).toFixed(1)+"/5",ownerText("Relación calidad-precio","Value for money"));
       block.append(metrics);
+      if(ownerSubscription.plan==="pro"){
       const hourly=node("div","hourly-list");
       const hp=await api("owner_business_hourly_patterns?select=visit_hour,review_count,average_service_quality,average_speed,average_cleanliness,average_score&business_id=eq."+encodeURIComponent(row.business_id)+"&order=visit_hour.asc");
       if(hp.length) {
@@ -2771,6 +2798,7 @@ async function loadOwnerDashboard() {
       } else {
         block.append(node("p","insight-empty",ownerText("Aún no hay suficientes opiniones para comparar horarios (mínimo 3 por franja).","Not enough reviews to compare time slots yet (minimum 3 per slot).")));
       }
+      }else block.append(node("p","insight-empty",ownerText("Desbloquea Pro para ver tendencias y comparaciones por horario.","Upgrade to Pro to unlock trends and time-of-day comparisons.")));
       list.append(block);
     }
   } catch(err) {
@@ -2815,6 +2843,7 @@ $("ownerAuthForm").addEventListener("submit", event => {
   event.preventDefault();
   handleOwnerAuthAction("signin");
 });
+$("ownerSubscriptionPlans")?.addEventListener("click",()=>document.getElementById("plans")?.scrollIntoView({behavior:"smooth",block:"start"}));
 $("ownerSignOut").addEventListener("click",()=>{
   ownerSetSession(null);
   $("ownerAuthMessage").textContent=ownerText("Sesión cerrada.","Signed out.");
