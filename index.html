@@ -332,9 +332,43 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       <p class="owner-copy" id="claimIntro">Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada.</p>
       <form id="ownerClaimForm">
         <div class="owner-grid">
-          <label class="owner-field full"><span id="claimBusinessLabel">Negocio</span><select id="claimBusiness" required><option value="">Selecciona un negocio</option></select></label>
-          <label class="owner-field full"><span id="claimEvidenceLabel">Prueba de relación con el negocio</span><textarea id="claimEvidence" rows="3" maxlength="700" required placeholder="Ej. Soy propietario y puedo presentar licencia comercial..."></textarea></label>
+          <label class="owner-field full"><span>Negocio</span><select id="claimBusiness" required><option value="">Selecciona un negocio</option></select></label>
+          <label class="owner-field full"><span>¿Qué relación tienes con este negocio?</span>
+            <select id="claimRelationship" required>
+              <option value="owner">Soy propietario/a</option>
+              <option value="partner">Soy socio/a</option>
+              <option value="manager">Soy administrador/a o encargado/a</option>
+              <option value="independent_worker">Trabajo por cuenta propia / independiente</option>
+              <option value="new_entrepreneur">Estoy comenzando mi emprendimiento</option>
+            </select>
+          </label>
+          <label class="owner-field full"><span>¿Qué deseas acreditar?</span>
+            <select id="claimLevel" required>
+              <option value="activity">Que realizo esta actividad o trabajo</option>
+              <option value="business_responsible">Que administro o represento este negocio</option>
+              <option value="owner">Que soy propietario/a del negocio</option>
+            </select>
+          </label>
+          <label class="owner-field full"><span>¿Qué pruebas puedes compartir?</span>
+            <select id="claimEvidenceType" required>
+              <option value="multiple">Varias pruebas</option>
+              <option value="work_photos">Fotos de trabajos realizados</option>
+              <option value="customer_references">Referencias de clientes</option>
+              <option value="business_social">Redes sociales del negocio</option>
+              <option value="phone_or_email">Teléfono o correo comercial</option>
+              <option value="storefront_photos">Fotos del local, vehículo o equipo</option>
+              <option value="business_documents">Documentos comerciales (si existen)</option>
+              <option value="written_statement">Explicación y declaración personal</option>
+            </select>
+          </label>
+          <label class="owner-field full"><span>Explica tu actividad y cómo podemos comprobarla</span>
+            <textarea id="claimEvidence" rows="4" maxlength="1200" required placeholder="Cuéntanos qué trabajo realizas, desde cuándo, qué relación tienes con el negocio y qué pruebas puedes presentar. No necesitas tener licencia comercial para solicitar una revisión de actividad."></textarea>
+          </label>
+          <label class="owner-field full"><span>Enlaces opcionales a fotos, redes sociales o referencias</span>
+            <textarea id="claimEvidenceLinks" rows="2" maxlength="1000" placeholder="Pega enlaces separados por coma (Instagram, Facebook, fotos, portafolio...)"></textarea>
+          </label>
         </div>
+        <p class="owner-copy">Reputix revisará cada solicitud. Las pruebas ayudan a confirmar la actividad, pero enviar una solicitud no concede automáticamente la propiedad ni acceso a estadísticas privadas.</p>
         <div class="owner-actions"><button class="primary" type="submit" id="claimSubmit">Enviar solicitud</button></div>
       </form>
       <p class="owner-message" id="ownerClaimMessage" aria-live="polite"></p>
@@ -378,7 +412,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 
 <!-- Owner authentication is handled once by app.js to avoid competing click handlers. -->
 
-  <script src="./app.js?v=owner-auth-one-controller-20261109-9" defer></script>
+  <script src="./app.js?v=flexible-owner-verification-20261109-10" defer></script>
 
 </body>
 </html>
