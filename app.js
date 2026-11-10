@@ -19,6 +19,22 @@ const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
 const $ = id => document.getElementById(id);
 
+/* Checkout: captura el toque en fase temprana y siempre muestra respuesta visible. */
+document.addEventListener("click", event => {
+  const button = event.target?.closest?.("[data-reputix-checkout]");
+  if (!button) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const status = document.getElementById("checkoutStatus");
+  if (status) status.textContent = "Toque recibido. Iniciando conexión segura…";
+  const plan = button.getAttribute("data-reputix-checkout");
+  if (typeof window.reputixStartCheckout === "function") {
+    window.reputixStartCheckout(plan);
+  } else if (status) {
+    status.textContent = "El módulo de pagos todavía no cargó. Recarga la página e inténtalo otra vez.";
+  }
+}, true);
+
 /* Respaldo de acceso: captura los toques móviles antes de otros módulos. */
 document.addEventListener("click", event => {
   const control = event.target?.closest?.("#ownerSignIn,#ownerSignUp,#accountAccessBtn");
