@@ -1658,19 +1658,42 @@ async function ownerSignIn() {
   }
 }
 async function ownerSignUp() {
-  $("ownerAuthMessage").textContent=ownerText("Creando cuenta…","Creating account…");
+  const email = $("ownerEmail").value.trim();
+  $("ownerAuthMessage").textContent = ownerText("Enviando registro…","Submitting registration…");
   try {
-    const result=await ownerAuthRequest("signup",{
-      email:$("ownerEmail").value.trim(),password:$("ownerPassword").value
+    const result = await ownerAuthRequest("signup",{
+      email,
+      password:$("ownerPassword").value
     });
-    if(result.access_token) {
+
+    if (result.access_token && result.user) {
       ownerSetSession(result);
-      $("ownerAuthMessage").textContent=ownerText("Cuenta creada y sesión iniciada.","Account created and signed in.");
-    } else {
-      $("ownerAuthMessage").textContent=ownerText("Cuenta creada. Revisa tu correo para confirmar la dirección y después inicia sesión.","Account created. Check your email to confirm your address, then sign in.");
+      $("ownerAuthMessage").textContent = ownerText(
+        "¡Cuenta creada y sesión iniciada! Ya puedes completar tu perfil y solicitar acceso a tu negocio.",
+        "Account created and signed in! You can now complete your profile and request access to your business."
+      );
+      $("privateSpace").scrollIntoView({behavior:"smooth",block:"start"});
+      return;
     }
+
+    const identities = result.user && Array.isArray(result.user.identities)
+      ? result.user.identities : null;
+    if (identities && identities.length === 0) {
+      $("ownerAuthMessage").textContent = ownerText(
+        "Este correo ya podría estar registrado. Intenta «Ya tengo cuenta · Iniciar sesión» o utiliza otro correo.",
+        "This email may already be registered. Try “I already have an account · Sign in” or use another email."
+      );
+      return;
+    }
+
+    $("ownerAuthMessage").textContent = ownerText(
+      "¡Registro recibido! Supabase requiere confirmar tu correo. Revisa la bandeja de entrada y el correo no deseado de " + email + ". Abre el enlace de confirmación y después vuelve aquí para tocar «Ya tengo cuenta · Iniciar sesión».",
+      "Registration received! Supabase requires email confirmation. Check the inbox and spam folder for " + email + ". Open the confirmation link, then return here and choose “I already have an account · Sign in”."
+    );
+    $("ownerAuthMessage").scrollIntoView({behavior:"smooth",block:"center"});
   } catch(err) {
-    $("ownerAuthMessage").textContent=err.message;
+    $("ownerAuthMessage").textContent = ownerText("No se pudo completar el registro: ","Registration failed: ") + (err?.message || String(err));
+    throw err;
   }
 }
 async function loadOwnerClaims() {
