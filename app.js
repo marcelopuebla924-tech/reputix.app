@@ -23,18 +23,14 @@ const $ = id => document.getElementById(id);
    módulos secundarios para que un error ajeno no deje botones sin respuesta. */
 document.addEventListener("click", async event => {
   const button = event.target?.closest?.(
-    "#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut,#ownerSignIn,#ownerSignUp"
+    "#privateProfileAction,#privateBusinessAction,#privateMessagesAction,#privateComplaintsAction,#privateReviewsAction,#ownerSignOut"
   );
   if (!button) return;
   event.preventDefault();
   event.stopImmediatePropagation();
   const message = document.getElementById("ownerAuthMessage");
   try {
-    if (button.id === "ownerSignIn" || button.id === "ownerSignUp") {
-      const password = document.getElementById("ownerPassword");
-      if (password) password.setAttribute("autocomplete",button.id === "ownerSignIn" ? "current-password" : "new-password");
-      await handleOwnerAuthAction(button.id === "ownerSignIn" ? "signin" : "signup");
-    } else if (button.id === "privateProfileAction") {
+    if (button.id === "privateProfileAction") {
       if (!ownerSession?.user?.id) throw new Error("La sesión no está activa. Vuelve a iniciar sesión.");
       const current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
       const name = window.prompt(ownerText("¿Cómo quieres que aparezca tu nombre?","What name should appear on your profile?"),current?.[0]?.display_name||"");
@@ -2155,16 +2151,12 @@ async function handleOwnerAuthAction(action) {
   }
 }
 
-$("ownerSignUp").addEventListener("click", event => {
-  event.preventDefault();
-  $("ownerPassword").setAttribute("autocomplete","new-password");
-  handleOwnerAuthAction("signup");
-});
-$("ownerSignIn").addEventListener("click", event => {
-  event.preventDefault();
-  $("ownerPassword").setAttribute("autocomplete","current-password");
-  handleOwnerAuthAction("signin");
-});
+/* Entry point exposed for the two HTML auth buttons; avoids event-delegation conflicts. */
+window.reputixOwnerAuthAction = function(action) {
+  const password = $("ownerPassword");
+  if (password) password.setAttribute("autocomplete",action === "signin" ? "current-password" : "new-password");
+  return handleOwnerAuthAction(action);
+};
 $("ownerAuthForm").addEventListener("submit", event => {
   event.preventDefault();
   // Permite enviar con Enter sin provocar una recarga del documento.
