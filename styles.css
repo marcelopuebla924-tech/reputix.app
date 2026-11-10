@@ -2079,3 +2079,28 @@ header:after{
 /* FIX CRÍTICO: el atributo hidden del panel privado debe prevalecer sobre reglas display !important */
 #privateSpace[hidden] { display: none !important; }
 #privateSpace:not([hidden]) { display: block !important; }
+
+
+/* REPUTIX — controles de selección oscuros también en Android */
+html { color-scheme: dark; }
+select, select:focus, select:active {
+  color-scheme: dark !important;
+  background-color: #071a30 !important;
+  color: #eff9ff !important;
+  border: 1px solid #168ed0 !important;
+  accent-color: #00baff;
+}
+select option, select optgroup {
+  background: #071a30 !important;
+  color: #eff9ff !important;
+}
+#ownerArea select, #privateSpace select {
+  min-height: 44px !important;
+  border-radius: 12px !important;
+  box-shadow: inset 0 0 12px rgba(0,145,255,.08), 0 0 10px rgba(0,145,255,.06) !important;
+}
+#ownerArea select:focus, #privateSpace select:focus {
+  outline: 2px solid rgba(0,190,255,.32) !important;
+  outline-offset: 2px !important;
+  border-color: #35d4ff !important;
+}
