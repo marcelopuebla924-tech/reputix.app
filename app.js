@@ -1995,6 +1995,7 @@ async function ownerShowPasswordResetFromLink() {
   const type = hash.get("type") || query.get("type");
   const token = hash.get("access_token") || query.get("access_token");
   const tokenHash = query.get("token_hash") || hash.get("token_hash");
+  const recoveryRequested = type === "recovery" || query.get("recovery") === "1";
   const authError = hash.get("error_description") || hash.get("error") ||
                     query.get("error_description") || query.get("error");
   if (authError) {
@@ -2002,7 +2003,15 @@ async function ownerShowPasswordResetFromLink() {
     return;
   }
 
-  if (type === "recovery" && tokenHash && !ownerRecoveryAccessToken) {
+  if (recoveryRequested && !tokenHash && !token && !ownerRecoveryAccessToken) {
+    $("ownerAuthMessage").textContent = ownerText(
+      "Reputix recibió la página de recuperación, pero el enlace no trajo el código de verificación. No solicites otro correo todavía.",
+      "Reputix opened the recovery page, but the link did not include its verification code. Do not request another email yet."
+    );
+    return;
+  }
+
+  if (recoveryRequested && tokenHash && !ownerRecoveryAccessToken) {
     const message = $("ownerAuthMessage");
     message.textContent = ownerText("Validando el enlace de recuperación…","Validating recovery link…");
     try {
@@ -2014,7 +2023,7 @@ async function ownerShowPasswordResetFromLink() {
       message.textContent = ownerText("No se pudo validar el enlace: ","Could not validate the link: ")+(error?.message||String(error));
       return;
     }
-  } else if (type === "recovery" && token) {
+  } else if (recoveryRequested && token) {
     ownerRecoveryAccessToken = token;
   }
 
