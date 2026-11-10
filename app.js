@@ -360,6 +360,12 @@ function setLanguage(value) {
   $("pill").textContent = t("pill");
   $("headline").innerHTML = t("headline");
   $("intro").textContent = t("intro");
+  $("plansTitle").textContent = lang === "es" ? "Planes Reputix" : "Reputix plans";
+  $("plansIntro").textContent = lang === "es" ? "Herramientas para administrar la reputación de tu negocio y entender mejor a tus clientes." : "Tools to manage your business reputation and better understand your customers.";
+  $("basicPlanDesc").textContent = lang === "es" ? "Gestión esencial de reputación y opiniones de clientes." : "Essential reputation management and customer reviews.";
+  $("proPlanDesc").textContent = lang === "es" ? "Herramientas avanzadas para analizar opiniones y mejorar el rendimiento." : "Advanced tools to analyze reviews and improve performance.";
+  $("basicCheckoutButton").textContent = lang === "es" ? "Elegir Basic · $13/mes" : "Choose Basic · $13/month";
+  $("proCheckoutButton").textContent = lang === "es" ? "Elegir Pro · $25/mes" : "Choose Pro · $25/month";
   $("tagline").textContent = lang === "es"
     ? "Opiniones reales. Soluciones reales."
     : "Real reviews. Real solutions.";
@@ -1919,6 +1925,43 @@ async function ownerAuthRequest(path,payload) {
   return body;
 }
 function ownerText(es,en){return lang==="es"?es:en;}
+
+/* Stripe Checkout: los precios se resuelven exclusivamente en el servidor. */
+document.querySelectorAll("[data-reputix-checkout]").forEach(button => {
+  button.addEventListener("click", async () => {
+    const status = $("checkoutStatus");
+    const plan = button.dataset.reputixCheckout;
+    if (!ownerSession?.access_token) {
+      status.textContent = ownerText("Inicia sesión o crea una cuenta para continuar con el pago.", "Sign in or create an account to continue to checkout.");
+      openOwnerAccess();
+      $("ownerAuthMessage").textContent = status.textContent;
+      return;
+    }
+    const allButtons = [...document.querySelectorAll("[data-reputix-checkout]")];
+    allButtons.forEach(item => item.disabled = true);
+    status.textContent = ownerText("Conectando con Stripe de forma segura…", "Connecting securely to Stripe…");
+    try {
+      const response = await fetch(SUPABASE_URL + "/functions/v1/create-checkout-session", {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization: "Bearer " + ownerSession.access_token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ plan })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || ownerText("No se pudo iniciar el pago.", "Could not start checkout."));
+      if (!result.url) throw new Error(ownerText("Stripe no devolvió un enlace de pago.", "Stripe did not return a checkout URL."));
+      status.textContent = ownerText("Abriendo el pago seguro de Stripe…", "Opening secure Stripe checkout…");
+      window.location.assign(result.url);
+    } catch (error) {
+      status.textContent = (error?.message || String(error));
+      allButtons.forEach(item => item.disabled = false);
+    }
+  });
+});
+
 
 /* Reputix Ads: módulo integrado al panel privado; no modifica autenticación. */
 async function loadReputixAdsBusinesses(){
