@@ -836,14 +836,33 @@ function setupFeatureButtons() {
     target.setAttribute("tabindex","-1");
     window.setTimeout(()=>target.focus({preventScroll:true}),450);
   });
-  if(statsButton)statsButton.addEventListener("click",()=>{
-    const panel=$("advancedStatsDashboard");
-    panel.hidden=false;
-    panel.scrollIntoView({behavior:"smooth",block:"start"});
-    loadAdvancedStats();
-  });
+  if(statsButton)statsButton.addEventListener("click",openAdvancedStats,{capture:true});
+  // Delegación de respaldo: mantiene el acceso aunque otro módulo vuelva a registrar botones.
+  document.addEventListener("click",event=>{
+    const trigger=event.target && event.target.closest ? event.target.closest("#featureStats") : null;
+    if(!trigger)return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openAdvancedStats();
+  },true);
   const refresh=$("advancedStatsRefresh");
   if(refresh)refresh.addEventListener("click",loadAdvancedStats);
+}
+
+function openAdvancedStats(){
+  const panel=$("advancedStatsDashboard");
+  if(!panel){
+    console.error("Reputix: no se encontró advancedStatsDashboard");
+    return;
+  }
+  panel.hidden=false;
+  panel.removeAttribute("hidden");
+  panel.scrollIntoView({behavior:"smooth",block:"start"});
+  loadAdvancedStats().catch(err=>{
+    console.error("Reputix advanced stats:",err);
+    const status=$("advancedStatsStatus");
+    if(status)status.textContent=(lang==="es"?"No se pudieron cargar las estadísticas: ":"Could not load statistics: ")+(err?.message||String(err));
+  });
 }
 
 async function loadAdvancedStats(){
