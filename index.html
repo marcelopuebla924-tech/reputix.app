@@ -332,7 +332,24 @@ body.owner-auth-in-view .reputix-ai-fab{display:flex!important;pointer-events:au
       <p class="owner-copy" id="claimIntro">Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada.</p>
       <form id="ownerClaimForm">
         <div class="owner-grid">
-          <label class="owner-field full"><span>Negocio</span><select id="claimBusiness" required><option value="">Selecciona un negocio</option></select></label>
+          <label class="owner-field full"><span>Negocio</span>
+            <select id="claimBusiness" required aria-hidden="true" tabindex="-1" style="position:absolute!important;opacity:0!important;width:1px!important;height:1px!important;pointer-events:none!important">
+              <option value="">Selecciona un negocio</option>
+              <option value="764e1139-38b2-494e-9b22-f81e8540c6bc">Carolina Fashion Boutique · Los Angeles</option>
+              <option value="69e31935-830c-4efe-9b42-e1565e481de1">McDonald · Los Angeles</option>
+              <option value="a2861806-7e33-4eff-907f-f6206535fb7c">Quick Cleaning Services · Los Angeles</option>
+              <option value="b2a18a5d-2fca-44f2-aa62-038b972d1a2b">Tamos Chelo Smoke Shop · Los Angeles</option>
+              <option value="82d23337-58b0-437e-8a80-ddb568d584b9">Los primos · Los Angeles</option>
+            </select>
+            <button type="button" id="claimBusinessOpen" class="claim-business-picker-trigger">Selecciona un negocio</button>
+          </label>
+          <div id="claimBusinessModal" class="claim-business-picker-overlay" hidden>
+            <section class="claim-business-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="claimBusinessModalTitle">
+              <div class="claim-business-picker-head"><div><small>REPUTIX · NEGOCIOS</small><h3 id="claimBusinessModalTitle">Selecciona un negocio</h3></div><button type="button" id="claimBusinessClose" class="claim-business-picker-close" aria-label="Cerrar">×</button></div>
+              <div class="claim-business-picker-search"><input id="claimBusinessSearch" type="search" autocomplete="off" placeholder="Buscar negocio…"></div>
+              <div id="claimBusinessOptions" class="claim-business-picker-list" role="listbox"></div>
+            </section>
+          </div>
           <label class="owner-field full"><span>¿Qué relación tienes con este negocio?</span>
             <select id="claimRelationship" required>
               <option value="owner">Soy propietario/a</option>
@@ -420,7 +437,50 @@ body.owner-auth-in-view .reputix-ai-fab{display:flex!important;pointer-events:au
 
 <!-- Owner authentication is handled once by app.js to avoid competing click handlers. -->
 
-  <script src="./app.js?v=claim-picker-hotfix-20261109-2" defer></script>
+  
+<script>
+/* Selector de negocios independiente del resto de app.js */
+(function(){
+ const select=document.getElementById("claimBusiness"),open=document.getElementById("claimBusinessOpen"),
+ modal=document.getElementById("claimBusinessModal"),close=document.getElementById("claimBusinessClose"),
+ list=document.getElementById("claimBusinessOptions"),search=document.getElementById("claimBusinessSearch");
+ if(!select||!open||!modal||!list||!search)return;
+ const key="sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC",base="https://udvsrmfgjfinwbgvhchs.supabase.co";
+ const seeded=[
+ ["764e1139-38b2-494e-9b22-f81e8540c6bc","Carolina Fashion Boutique","Los Angeles"],
+ ["69e31935-830c-4efe-9b42-e1565e481de1","McDonald","Los Angeles"],
+ ["a2861806-7e33-4eff-907f-f6206535fb7c","Quick Cleaning Services","Los Angeles"],
+ ["b2a18a5d-2fca-44f2-aa62-038b972d1a2b","Tamos Chelo Smoke Shop","Los Angeles"],
+ ["82d23337-58b0-437e-8a80-ddb568d584b9","Los primos","Los Angeles"]
+ ];
+ let businesses=seeded.map(([id,name,city])=>({id,name,city}));
+ const sync=()=>{const o=select.selectedOptions[0];open.textContent=o&&o.value?o.textContent:"Selecciona un negocio";open.classList.toggle("has-selection",!!(o&&o.value));};
+ function draw(){
+  const q=search.value.trim().toLocaleLowerCase();list.replaceChildren();
+  const rows=businesses.filter(b=>(b.name+" "+(b.city||"")+" "+(b.address||"")).toLocaleLowerCase().includes(q));
+  if(!rows.length){const p=document.createElement("p");p.className="claim-business-picker-empty";p.textContent="No se encontraron negocios aprobados.";list.append(p);return;}
+  rows.forEach(b=>{const btn=document.createElement("button");btn.type="button";btn.className="claim-business-picker-option";const name=document.createElement("strong");name.textContent=b.name;const sub=document.createElement("small");sub.textContent=[b.city,b.address].filter(Boolean).join(" · ")||"Negocio aprobado";btn.append(name,sub);btn.addEventListener("click",()=>{if(![...select.options].some(o=>o.value===b.id))select.add(new Option(b.name+" · "+(b.city||b.address||""),b.id));select.value=b.id;select.dispatchEvent(new Event("change",{bubbles:true}));sync();modal.hidden=true;});list.append(btn);});
+ }
+ async function refresh(){
+  try{
+   const res=await fetch(base+"/rest/v1/businesses?select=id,name,city,address,status&status=eq.approved&order=name.asc&limit=1000",{headers:{apikey:key,Accept:"application/json"}});
+   if(!res.ok)throw new Error("HTTP "+res.status);
+   const rows=await res.json();if(Array.isArray(rows)){const map=new Map(businesses.map(b=>[b.id,b]));rows.forEach(b=>map.set(b.id,b));businesses=[...map.values()].sort((a,b)=>a.name.localeCompare(b.name));}
+  }catch(e){console.warn("Reputix: usando lista local de negocios aprobados",e);}
+  select.replaceChildren(new Option("Selecciona un negocio",""));
+  businesses.forEach(b=>select.add(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+  sync();draw();
+ }
+ open.addEventListener("click",async()=>{modal.hidden=false;search.value="";await refresh();draw();search.focus();});
+ close.addEventListener("click",()=>modal.hidden=true);
+ modal.addEventListener("click",e=>{if(e.target===modal)modal.hidden=true;});
+ search.addEventListener("input",draw);
+ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden)modal.hidden=true;});
+ select.addEventListener("change",sync);
+ refresh();
+})();
+</script>
+<script src="./app.js?v=claim-picker-hotfix-20261109-2" defer></script>
 
 </body>
 </html>
