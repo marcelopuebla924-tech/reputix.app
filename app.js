@@ -1619,7 +1619,10 @@ async function ownerAuthRequest(path,payload) {
     body:JSON.stringify(payload)
   });
   const body = await response.json().catch(()=>({}));
-  if (!response.ok) throw new Error(body.msg || body.message || body.error_description || body.error || "No se pudo completar la solicitud.");
+  if (!response.ok) {
+    const detail = body.msg || body.message || body.error_description || body.error;
+    throw new Error(detail || ("Error de autenticación (" + response.status + ")."));
+  }
   return body;
 }
 function ownerText(es,en){return lang==="es"?es:en;}
@@ -1699,10 +1702,13 @@ async function ownerSignUp() {
   const email = $("ownerEmail").value.trim();
   $("ownerAuthMessage").textContent = ownerText("Enviando registro…","Submitting registration…");
   try {
-    const result = await ownerAuthRequest("signup",{
-      email,
-      password:$("ownerPassword").value
-    });
+    // La confirmación del correo comercial debe regresar al panel de propietarios,
+    // no al inicio de la página. El correo personal no se modifica.
+    const returnTo = window.location.origin + window.location.pathname + "#ownerArea";
+    const result = await ownerAuthRequest(
+      "signup?redirect_to=" + encodeURIComponent(returnTo),
+      { email, password:$("ownerPassword").value }
+    );
 
     if (result.access_token && result.user) {
       ownerSetSession(result);
@@ -2034,10 +2040,12 @@ async function handleOwnerAuthAction(action) {
 
 $("ownerSignUp").addEventListener("click", event => {
   event.preventDefault();
+  $("ownerPassword").setAttribute("autocomplete","new-password");
   handleOwnerAuthAction("signup");
 });
 $("ownerSignIn").addEventListener("click", event => {
   event.preventDefault();
+  $("ownerPassword").setAttribute("autocomplete","current-password");
   handleOwnerAuthAction("signin");
 });
 $("ownerAuthForm").addEventListener("submit", event => {
