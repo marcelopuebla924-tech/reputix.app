@@ -19,6 +19,21 @@ const SUPABASE_KEY = "sb_publishable_qtc_Cm-4Iz7z5EM7dZdjAw_eHFKEDAC";
 
 const $ = id => document.getElementById(id);
 
+/* Captura temprana del envío de reclamaciones: evita navegación nativa y delega
+   en el controlador cuando el resto de app.js ya terminó de inicializarse. */
+document.addEventListener("submit", event => {
+  if (event.target?.id !== "ownerClaimForm") return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const handler = window.reputixHandleOwnerClaimSubmit;
+  if (typeof handler === "function") {
+    handler(event);
+  } else {
+    const status = document.getElementById("ownerClaimMessage");
+    if (status) status.textContent = "El formulario todavía está cargando. Tus datos siguen aquí; no vuelvas a enviarlo todavía.";
+  }
+}, true);
+
 /* Recuperación de contraseña: captura temprana y compatible con toque móvil. */
 document.addEventListener("click", event => {
   const button = event.target?.closest?.("#ownerForgotPassword");
@@ -2866,9 +2881,9 @@ $("ownerSignOut").addEventListener("click",()=>{
   ownerSetSession(null);
   $("ownerAuthMessage").textContent=ownerText("Sesión cerrada.","Signed out.");
 });
-/* Envío protegido de reclamaciones: intercepta el submit antes de cualquier otro
-   listener y evita recargas/navegaciones que puedan aparentar un cierre de sesión. */
-$("ownerClaimForm").addEventListener("submit", async e => {
+/* El listener delegado se registra al inicio del archivo: incluso si otro módulo falla,
+   el formulario de reclamación nunca debe provocar una recarga nativa que pierda la sesión. */
+window.reputixHandleOwnerClaimSubmit = async e => {
   e.preventDefault();
   e.stopImmediatePropagation();
   const message = $("ownerClaimMessage");
@@ -2877,7 +2892,7 @@ $("ownerClaimForm").addEventListener("submit", async e => {
   const businessId = $("claimBusiness").value;
   const evidence = $("claimEvidence").value.trim();
   const linksText = $("claimEvidenceLinks").value.trim();
-  const evidenceLinks = linksText ? linksText.split(/[\\n,]+/).map(x => x.trim()).filter(Boolean) : [];
+  const evidenceLinks = linksText ? linksText.split(/[\n,]+/).map(x => x.trim()).filter(Boolean) : [];
   const relationshipType = $("claimRelationship").value;
   const verificationLevel = $("claimLevel").value;
   const evidenceType = $("claimEvidenceType").value || "written_statement";
@@ -2930,7 +2945,7 @@ $("ownerClaimForm").addEventListener("submit", async e => {
   } finally {
     submit.disabled = false;
   }
-}, true);
+};
 if(ownerSession?.access_token) ownerSetSession(ownerSession);
 
 async function loadApprovedBusinesses() {
