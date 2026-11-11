@@ -2876,7 +2876,7 @@ $("ownerAuthForm").addEventListener("submit", event => {
   event.preventDefault();
   handleOwnerAuthAction("signin");
 });
-$("ownerSubscriptionPlans")?.addEventListener("click",()=>document.getElementById("plans")?.scrollIntoView({behavior:"smooth",block:"start"}));
+$("ownerSubscriptionPlans")?.addEventListener("click",()=>document.getElementById("reputixPlans")?.scrollIntoView({behavior:"smooth",block:"start"}));
 $("ownerSignOut").addEventListener("click",()=>{
   ownerSetSession(null);
   $("ownerAuthMessage").textContent=ownerText("Sesión cerrada.","Signed out.");
