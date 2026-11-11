@@ -19,7 +19,7 @@ const { chromium } = require("playwright");
 
   try {
     await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => typeof window.reputixStartCheckout === "function", { timeout: 15000 });
+    await page.waitForFunction(() => typeof window.reputixStartCheckout === "function", null, { timeout: 15000 });
 
     await check("Homepage loads without duplicate HTML IDs", async () => {
       const data = await page.locator("[id]").evaluateAll(nodes => {
@@ -69,6 +69,7 @@ const { chromium } = require("playwright");
     });
 
     await check("Owner plans button scrolls to the existing plans section", async () => {
+      await page.locator("#privateSpace").evaluate(el => { el.hidden = false; });
       await page.locator("#ownerSubscriptionCard").evaluate(el => { el.hidden = false; });
       await page.locator("#ownerSubscriptionPlans").click();
       await page.waitForFunction(() => {
@@ -78,7 +79,7 @@ const { chromium } = require("playwright");
     });
 
     await page.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => !!window.L && !!document.querySelector("#map"), { timeout: 15000 });
+    await page.waitForFunction(() => !!window.L && !!document.querySelector("#map"), null, { timeout: 15000 });
 
     await check("Map category filters and reset control respond", async () => {
       const smoke = page.locator('#filters [data-category="smoke"]');
