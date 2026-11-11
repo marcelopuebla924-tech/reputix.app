@@ -30,6 +30,16 @@ const { chromium } = require("playwright");
       if (!(await page.locator("#searchForm").count())) throw new Error("Search form missing");
     });
 
+    await check("Business search handles a query and restores its button", async () => {
+      await page.locator("#business").fill("reputix-smoke-test-no-match-2026");
+      await page.locator("#searchButton").click();
+      await page.waitForFunction(() => {
+        const button = document.querySelector("#searchButton");
+        const notice = document.querySelector("#notice");
+        return !!button && !button.disabled && !!notice && !/buscando|searching/i.test(notice.textContent || "");
+      }, null, { timeout: 20000 });
+    });
+
     await check("Public Reputix AI opens and closes", async () => {
       await page.locator("#reputixAiFab").click();
       await page.locator("#reputixAiModal").waitFor({ state: "visible" });
@@ -53,12 +63,18 @@ const { chromium } = require("playwright");
 
     await check("Basic checkout sends logged-out users to account access", async () => {
       await page.locator("#basicCheckoutButton").click();
-      await page.waitForFunction(() => /inicia sesión|sign in/i.test(document.querySelector("#basicCheckoutStatus")?.textContent || ""), { timeout: 8000 });
+      await page.waitForFunction(() => /inicia sesión|sign in/i.test(document.querySelector("#basicCheckoutStatus")?.textContent || ""), null, { timeout: 8000 });
+      await page.locator("#proCheckoutButton").click();
+      await page.waitForFunction(() => /inicia sesión|sign in/i.test(document.querySelector("#proCheckoutStatus")?.textContent || ""), null, { timeout: 8000 });
     });
 
-    await check("Owner plans button points to an existing plans section", async () => {
-      const exists = await page.locator("#reputixPlans").count();
-      if (!exists) throw new Error("#reputixPlans anchor missing");
+    await check("Owner plans button scrolls to the existing plans section", async () => {
+      await page.locator("#ownerSubscriptionCard").evaluate(el => { el.hidden = false; });
+      await page.locator("#ownerSubscriptionPlans").click();
+      await page.waitForFunction(() => {
+        const target = document.querySelector("#reputixPlans");
+        return !!target && Math.abs(target.getBoundingClientRect().top) < window.innerHeight;
+      });
     });
 
     await page.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
