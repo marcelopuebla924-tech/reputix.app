@@ -1,13 +1,35 @@
-
-name: Reputix Check
+name: Reputix Browser QA
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-  check:
+  browser-smoke:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Confirm workflow
-        run: echo "Reputix workflow is running"
-        
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Start local site
+        run: |
+          python3 -m http.server 4173 > /tmp/reputix-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/reputix-http.log
+          exit 1
+      - name: Run browser smoke tests
+        run: node tests/smoke.spec.cjs
