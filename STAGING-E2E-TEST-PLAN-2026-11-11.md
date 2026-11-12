@@ -111,3 +111,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Named check count remains 28; two additional assertions were added inside an existing scenario.
 - Commit: `8825afc4f939a2a9c9f08981e278dab1c9e76dbe`.
 - Latest combined commit status returned no entries. Do not mark the new assertions as passed until an independent CI result is available.
+
+
+## Update — 2026-11-11 18:09 PST
+
+- Extended the existing customer/verified-owner workspace test for the owner business shortcut (scroll to claim form) and the private reviews refresh action (must issue a user-scoped reviews read).
+- Test suite remains at 28 named checks.
+- Commit: `a8550aae0186ebd037498c6383f93f0ee2fa33b4`.
+- GitHub Actions Browser QA run #136 is running for this exact commit; wait for its final conclusion before marking the new assertions passed.
+- This remains mocked browser QA, not live Supabase/Auth/RLS verification.
