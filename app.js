@@ -978,23 +978,58 @@ function photoPathUrl(path) {
   return path.split("/").map(encodeURIComponent).join("/");
 }
 
-async function uploadBusinessPhoto(file,businessId) {
-  if (!file) return;
+async function optimizeBusinessPhoto(file) {
+  if (!file) throw new Error(lang === "es" ? "Selecciona una foto." : "Choose a photo.");
   const allowed = ["image/jpeg","image/png","image/webp"];
   if (!allowed.includes(file.type)) throw new Error(lang === "es" ? "Usa JPG, PNG o WebP." : "Use JPG, PNG or WebP.");
-  if (file.size > 5 * 1024 * 1024) throw new Error(lang === "es" ? "La foto debe pesar 5 MB o menos." : "Photo must be 5 MB or less.");
+  // Avoid loading unexpectedly huge originals into mobile memory.
+  if (file.size > 25 * 1024 * 1024) throw new Error(lang === "es" ? "La foto original supera 25 MB. Elige una más pequeña." : "Original photo exceeds 25 MB. Choose a smaller one.");
+  if (typeof createImageBitmap !== "function") {
+    if (file.size <= 5 * 1024 * 1024) return file;
+    throw new Error(lang === "es" ? "Este navegador no permite optimizar esta foto. Prueba con Chrome actualizado." : "This browser cannot optimize this photo. Try an updated Chrome.");
+  }
+  let bitmap;
+  try { bitmap = await createImageBitmap(file, { imageOrientation:"from-image" }); }
+  catch (_) { bitmap = await createImageBitmap(file); }
+  try {
+    const maxEdge = 1920;
+    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext("2d", { alpha:false });
+    if (!ctx) throw new Error("Canvas unavailable");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+    const toBlob = (type,quality) => new Promise(resolve => canvas.toBlob(resolve,type,quality));
+    let blob = await toBlob("image/webp",0.84);
+    if (!blob || blob.type !== "image/webp") blob = await toBlob("image/jpeg",0.84);
+    for (const quality of [0.76,0.68,0.60]) {
+      if (blob && blob.size <= 4.5 * 1024 * 1024) break;
+      blob = await toBlob(blob?.type || "image/jpeg",quality);
+    }
+    if (!blob || blob.size > 5 * 1024 * 1024) throw new Error(lang === "es" ? "No se pudo reducir la foto a menos de 5 MB." : "Could not reduce the photo below 5 MB.");
+    const ext = blob.type === "image/webp" ? "webp" : "jpg";
+    return new File([blob],(file.name.replace(/\.[^.]+$/,"") || "business-photo") + "-optimized." + ext,{type:blob.type,lastModified:Date.now()});
+  } finally {
+    bitmap.close?.();
+  }
+}
 
-  const ext = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+async function uploadBusinessPhoto(file,businessId) {
+  const optimized = await optimizeBusinessPhoto(file);
+  const ext = optimized.type === "image/webp" ? "webp" : "jpg";
   const path = "proposals/" + businessId + "/" + createPhotoUUID() + "." + ext;
   const response = await fetch(SUPABASE_URL + "/storage/v1/object/business-photos/" + photoPathUrl(path), {
     method:"POST",
     headers:{
       apikey:SUPABASE_KEY,
       Authorization:"Bearer " + SUPABASE_KEY,
-      "Content-Type":file.type,
+      "Content-Type":optimized.type,
       "x-upsert":"false"
     },
-    body:file
+    body:optimized
   });
   if (!response.ok) throw new Error("Storage (" + response.status + "): " + (await response.text()).slice(0,300));
 
@@ -1006,8 +1041,8 @@ async function uploadBusinessPhoto(file,businessId) {
         business_id:String(businessId),
         storage_path:path,
         original_filename:file.name,
-        content_type:file.type,
-        file_size:file.size,
+        content_type:optimized.type,
+        file_size:optimized.size,
         status:"pending"
       })
     });
@@ -1129,7 +1164,7 @@ function makeBusinessCover(business) {
 function makeBusinessPhotoForm(business) {
   const f = node("form","form");
   f.append(node("h3","",lang === "es" ? "Agregar una foto" : "Add a photo"));
-  const label = node("label","field",lang === "es" ? "Foto (JPG, PNG o WebP; máximo 5 MB)" : "Photo (JPG, PNG or WebP; 5 MB max)");
+  const label = node("label","field",lang === "es" ? "Foto (JPG, PNG o WebP). Se optimiza automáticamente para celulares." : "Photo (JPG, PNG or WebP). Automatically optimized for phones.");
   const input = node("input");
   input.type = "file";
   input.name = "photo";
@@ -1144,7 +1179,7 @@ function makeBusinessPhotoForm(business) {
     e.preventDefault();
     if (!input.files || !input.files[0]) return;
     submit.disabled = true;
-    msg.textContent = lang === "es" ? "Subiendo foto…" : "Uploading photo…";
+    msg.textContent = lang === "es" ? "Optimizando la foto para todos los teléfonos y subiendo…" : "Optimizing photo for phones and uploading…";
     try {
       await uploadBusinessPhoto(input.files[0],business.id);
       f.reset();
