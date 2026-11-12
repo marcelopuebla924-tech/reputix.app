@@ -338,3 +338,11 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Commit: `3614ae73a5a3764bb95b287d227fd1d14d6175e4`.
 - All 40 static homepage button IDs now have at least one reference in the Playwright test source. This is not a substitute for passing CI.
 - The 32-check suite remains pending independent verification; no real claim was submitted.
+
+
+## Update — 2026-11-11 18:36 PST
+
+- Browser QA run #231 passed all 32 named checks with zero failures/page errors.
+- Admin advertising lifecycle passed activate, pause, finish, and reject transitions using mocked API responses and confirmation dialogs.
+- Passing commit: `f17a33b14429655795eddfba6b02428d49989463`.
+- No production campaign or billing action was executed.
