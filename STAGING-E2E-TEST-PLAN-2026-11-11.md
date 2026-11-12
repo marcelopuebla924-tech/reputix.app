@@ -301,3 +301,13 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Claim picker test now searches for and selects an approved synthetic business without submitting a claim (commit `25bc0b647720b06b87d9411d3730dd1746ead72d`).
 - The latest proposal form submit-button test (`807609bab3d09fb3a84a55f00a1ee1aa572a33b5`) remains pending independent push-run verification.
 - No production campaign, proposal, or billing action occurred.
+
+
+## Update — 2026-11-11 18:33 PST
+
+- Browser QA run #198 passed the 31-check suite, zero page errors.
+- Claim picker now tests searching and selecting a synthetic approved business.
+- Admin ad campaign QA now tests the dynamic Activate, Pause, and Finish controls and verifies mocked status transitions.
+- Commits: `25bc0b647720b06b87d9411d3730dd1746ead72d`, `f527464afceaf277fdbd42ef82fba8c73be71ac3`.
+- Browser QA run #219 is running for these latest dynamic controls.
+- No real campaigns, claims, or billing operations occurred.
