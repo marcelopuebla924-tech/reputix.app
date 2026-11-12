@@ -1,6 +1,6 @@
 # Reputix — Client Delivery Readiness
 
-Last reviewed: 2026-11-11 (America/Los_Angeles)
+Last reviewed: 2026-11-12 (America/Los_Angeles)
 
 This is the internal source of truth for what Reputix can currently deliver, what a customer should receive, and what must be verified before launch. It is intentionally conservative: do not promise a capability merely because a button or code path exists.
 
@@ -78,23 +78,26 @@ Do not collect or store a customer's password. The customer should create and re
 6. A secure Stripe Billing Portal or an explicitly documented manual cancellation process.
 7. Privacy Policy, Terms of Service, review guidelines, contact/support information, and clear data-retention disclosures. These were not found in the current repository tree at this review.
 8. Protected public ad delivery/tracking and advertiser billing, before selling advertising campaigns.
-9. Accessibility and responsive review across supported mobile and desktop browsers.
+9. Complete responsive/accessibility review across supported mobile and desktop browsers, beyond automated accessible-name checks.
+
+**Isolation constraint:** no dedicated staging Supabase project is currently available. Supabase branching was not available on the current plan, and the repository does not contain a complete schema snapshot for safe local reconstruction. Do not point tests at production, create production test accounts, or upgrade/create paid infrastructure without separate approval.
 
 ## Browser QA completed
 
-The automated Playwright smoke suite passed 17 checks on 2026-11-11, including:
-- Homepage and unique DOM IDs.
-- Spanish/English language switching.
-- Business search and button recovery.
-- An approved business card's Profile and Reviews actions, including review form fields.
-- Public AI modal open/close.
-- Empty sign-in/sign-up and password recovery validation.
-- Logged-out Basic/Pro checkout behavior.
-- Owner plan navigation.
-- Business/professional proposal forms.
-- Reviews/statistics feature navigation.
-- Business claim picker open/close and a mocked claim submission that confirms the request while preserving the session (no real claim or database write).
-- Map filters and reset.
-- Mobile touch interactions for AI, account access, and map filters.
+The latest recorded Playwright smoke run for the current `main` test suite passed **40 named checks** (run `43285107229`), with all **9 Node unit tests** passing and `pageErrors: []`. Coverage includes:
+- Homepage unique IDs and accessible names/form labels; standalone map accessible names/form labels.
+- Bilingual search labels on all five generated approved-business profile routes.
+- Spanish/English language switching and the psychology/mental-health category and privacy guidance.
+- Business search, profile/review actions, public deep links, share behavior, SEO metadata, and rejection of missing/unapproved profiles.
+- Public review submission as `pending`, five rating fields, translation toggle, and advisory-only AI moderation behavior.
+- Business photo upload validation and mocked Storage metadata submission.
+- Owner claim submission with session preservation; customer/verified-owner workspace separation and private-data scoping.
+- Owner sign-up/sign-in/session restoration, recovery-link single-use handling, password update, local-only sign-out, and visible auth errors using synthetic identities and mocked Auth endpoints.
+- Basic/Pro checkout guards and safe session refresh; owner plan navigation.
+- Business/professional proposal validation and client-side honeypot behavior.
+- Customer/verified-owner messaging, complaint response, read-receipt restrictions, and blank-message blocking with mocked API responses.
+- Reviews/statistics navigation and refresh; admin moderation and advertising lifecycle controls with mocked data.
+- Standalone map filters, search, marker synchronization, reset, and safe rendering of untrusted business names.
+- Mobile AI/account/map interactions and compact desktop AI shortcut behavior.
 
-These tests do not replace authenticated account, live payment, admin, or real data-flow tests.
+**Interpretation:** these are automated browser/unit checks against a local static server, synthetic identities, and mocked Supabase/Storage/Auth responses. They demonstrate UI/request behavior, not live Auth email delivery, real RLS enforcement, actual Storage policy behavior, Stripe transactions/webhooks, or public ad delivery. Do not describe Reputix as production-certified on the basis of this suite.
