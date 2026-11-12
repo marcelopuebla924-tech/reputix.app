@@ -2692,7 +2692,7 @@ async function loadOwnerClaims() {
   $("ownerClaimMessage").textContent="";
   $("ownerDashboard").hidden=true;
   try {
-    const claims=await api("business_owner_claims?select=id,business_id,status,evidence_note,relationship_type,verification_level,evidence_type,evidence_links,created_at&order=created_at.desc");
+    const claims=await api("business_owner_claims?select=id,business_id,status,evidence_note,relationship_type,verification_level,evidence_type,evidence_links,created_at&user_id=eq."+encodeURIComponent(ownerSession.user.id)+"&order=created_at.desc");
     const pending=(claims||[]).filter(c=>c.status==="pending");
     if(pending.length) $("ownerClaimMessage").textContent=ownerText("Tu solicitud está pendiente de verificación.","Your ownership request is pending verification.");
     await loadOwnerDashboard();
@@ -2857,7 +2857,7 @@ async function loadMessageCenter() {
   }
   const list=$("messageConversationList");list.replaceChildren();
   try {
-    const conversations=await api("business_conversations?select=id,business_id,customer_id,subject,status,updated_at&order=updated_at.desc&limit=50");
+    const conversations=await api("business_conversations?select=id,business_id,customer_id,subject,status,updated_at&customer_id=eq."+encodeURIComponent(ownerSession.user.id)+"&order=updated_at.desc&limit=50");
     if(!conversations?.length) list.append(node("small","",ownerText("Todavía no tienes conversaciones.","You have no conversations yet.")));
     for(const conv of conversations||[]) {
       const business=lastBusinesses.find(b=>String(b.id)===String(conv.business_id));
@@ -3036,7 +3036,7 @@ async function loadPrivateSpace() {
   const email=ownerSession.user.email || "";
   const [profile,posts,ownReviews,ownComplaints,claims] = await Promise.allSettled([
     api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(userId)),
-    api("user_publications?select=id,body,status,created_at&order=created_at.desc&limit=30"),
+    api("user_publications?select=id,body,status,created_at&user_id=eq."+encodeURIComponent(userId)+"&order=created_at.desc&limit=30"),
     api("reviews?select=id,business_id,comment,status,created_at&user_id=eq."+encodeURIComponent(userId)+"&order=created_at.desc&limit=30"),
     api("complaints?select=id,business_id,complaint,status,business_response,created_at&user_id=eq."+encodeURIComponent(userId)+"&order=created_at.desc&limit=30"),
     api("business_owner_claims?select=id,business_id,status&user_id=eq."+encodeURIComponent(userId)+"&status=eq.verified")
