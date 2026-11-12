@@ -417,7 +417,7 @@ es: {
   proposalDuplicate:"Ya existe una propuesta igual para ese negocio y ciudad. No necesitas enviarla otra vez.",
   chooseCategory:"Elige una categoría",
   businessCategories:["Restaurante o cafetería","Tienda o supermercado","Smoke shop","Ropa y accesorios","Uber / transporte por aplicación","Otro comercio"],
-  proCategories:["Plomero","Electricista","Mecánico","Construcción","Pintor","Contratista","Limpieza","Conductor/a de Uber","Otro servicio"],
+  proCategories:["Plomero","Electricista","Mecánico","Construcción","Pintor","Contratista","Limpieza","Psicólogo/a o centro de salud mental","Conductor/a de Uber","Otro servicio"],
   proposalRequired:"Completa el nombre, la categoría y la ciudad.",
   proposalNotice:"Tu propuesta será revisada y el negocio aparecerá cuando sea aprobado."
 },
@@ -477,7 +477,7 @@ en: {
   proposalDuplicate:"A matching proposal already exists for this business and city. You do not need to submit it again.",
   chooseCategory:"Choose a category",
   businessCategories:["Restaurant or cafe","Store or supermarket","Smoke shop","Clothing and accessories","Uber / rideshare transportation","Other business"],
-  proCategories:["Plumber","Electrician","Mechanic","Construction","Painter","Contractor","Cleaning","Uber driver","Other service"],
+  proCategories:["Plumber","Electrician","Mechanic","Construction","Painter","Contractor","Cleaning","Psychologist / mental health center","Uber driver","Other service"],
   proposalRequired:"Enter the name, category, and city.",
   proposalNotice:"Businesses are published when submitted; please make sure the details are accurate."
 }
@@ -1471,7 +1471,13 @@ async function loadReviews(business,list,status,stats,ratingRow) {
 function makeReviewForm(business) {
   const f = node("form","form");
   f.append(node("h3","",t("share")),node("p","empty",t("pending")));
-  if (/uber|rideshare|transporte por aplicaci|conductor/i.test(String(business.category || "") + " " + String(business.name || ""))) {
+  const businessType = String(business.category || "") + " " + String(business.name || "");
+  if (/psycholog|psicolog|salud mental|mental health|therap/i.test(businessType)) {
+    f.append(node("p","empty review-safety-note",lang === "es"
+      ? "Privacidad en psicología: comparte solo tu experiencia general sobre el trato, la comunicación, la puntualidad y la organización. No publiques diagnósticos, tratamientos, medicamentos, nombres de pacientes, datos de contacto ni detalles que permitan identificar a alguien. No solicites ni publiques resultados clínicos. Reputix no sustituye la atención profesional ni los servicios de emergencia."
+      : "Psychology privacy: share only your general experience with respect, communication, punctuality, and organization. Do not post diagnoses, treatments, medications, patient names, contact details, or information that could identify anyone. Do not request or publish clinical outcomes. Reputix does not replace professional care or emergency services."));
+  }
+  if (/uber|rideshare|transporte por aplicaci|conductor/i.test(businessType)) {
     f.append(node("p","empty review-safety-note",lang === "es"
       ? "Protección para viajes: describe tu experiencia real sin publicar teléfonos, direcciones particulares, datos de cuenta, placas completas ni información que identifique a terceros. Si existe un peligro inmediato, contacta a emergencias; Reputix no sustituye los canales de seguridad de Uber."
       : "Ride safety: describe your real experience without posting phone numbers, private addresses, account details, full license plates, or information identifying third parties. For immediate danger, contact emergency services; Reputix does not replace Uber safety channels."));
