@@ -68,7 +68,9 @@ BEGIN
 
   IF p_apply_subscription THEN
     IF p_user_id IS NULL
+       OR p_plan_code IS NULL
        OR p_plan_code NOT IN ('basic', 'pro')
+       OR p_subscription_status IS NULL
        OR p_subscription_status NOT IN ('trialing', 'active', 'past_due', 'canceled', 'incomplete', 'unpaid', 'paused')
        OR p_provider_subscription_id IS NULL
        OR pg_catalog.length(pg_catalog.btrim(p_provider_subscription_id)) = 0 THEN
@@ -97,7 +99,7 @@ BEGIN
       p_provider_subscription_id,
       p_current_period_start,
       p_current_period_end,
-      pg_catalog.coalesce(p_cancel_at_period_end, false),
+      COALESCE(p_cancel_at_period_end, false),
       p_event_created_at,
       pg_catalog.now()
     )
