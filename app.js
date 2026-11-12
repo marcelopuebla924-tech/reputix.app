@@ -447,6 +447,7 @@ function setLanguage(value) {
     customerModulesIntro:["Tu perfil, conversaciones y actividad en Reputix.","Your profile, conversations, and Reputix activity."],
     privateOwnReviewsTitle:["Mis opiniones","My reviews"],
     privateOwnReviewsDesc:["Consulta el estado de las opiniones que has enviado.","Check the status of reviews you have submitted."],
+    privateOwnReviewsAction:["Actualizar opiniones","Refresh reviews"],
     ownerModulesTitle:["Gestión de negocio","Business management"],
     ownerModulesIntro:["Herramientas de propietarios y representantes verificados.","Tools for verified owners and representatives."]
   };
