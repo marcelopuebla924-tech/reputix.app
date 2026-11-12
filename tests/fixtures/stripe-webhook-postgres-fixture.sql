@@ -23,7 +23,7 @@ CREATE TABLE public.user_subscriptions (
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   plan_code text NOT NULL REFERENCES public.monetization_plans(code),
   status text NOT NULL DEFAULT 'incomplete'
-    CHECK (status IN ('trialing','active','past_due','canceled','incomplete','unpaid','paused')),
+    CHECK (status IN ('trialing','active','past_due','canceled','incomplete','incomplete_expired','unpaid','paused')),
   provider text NOT NULL DEFAULT 'stripe' CHECK (provider = 'stripe'),
   provider_customer_id text NULL,
   provider_subscription_id text NOT NULL UNIQUE,
