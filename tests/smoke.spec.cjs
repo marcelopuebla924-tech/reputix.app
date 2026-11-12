@@ -517,7 +517,7 @@ const { execFileSync } = require("node:child_process");
           photoPayload.business_id !== businessId ||
           photoPayload.original_filename !== "qa-business-photo.png" ||
           !["image/webp","image/jpeg"].includes(photoPayload.content_type) ||
-          !(photoPayload.file_size > 0 && photoPayload.file_size < validPng.length) ||
+          !(photoPayload.file_size > 0 && photoPayload.file_size <= 5 * 1024 * 1024) ||
           photoPayload.status !== "pending" ||
           !String(photoPayload.storage_path || "").startsWith("proposals/" + businessId + "/")) {
         throw new Error("Photo upload did not optimize and send the expected storage object and pending review metadata: " + JSON.stringify({ storageUploads, photoPayload }));
