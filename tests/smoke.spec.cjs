@@ -343,6 +343,71 @@ const { chromium } = require("playwright");
       await adminPage.close();
     });
 
+    await check("Admin owner-claim verification button confirms and updates only the mocked pending claim", async () => {
+      const claimPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      claimPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let claimStatus = "pending";
+      let patchPayload = null;
+      await claimPage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = new URL(request.url());
+        if (url.pathname.endsWith("/business_owner_claims") && request.method() === "PATCH") {
+          patchPayload = request.postDataJSON();
+          claimStatus = patchPayload.status;
+          await route.fulfill({ status: 204, body: "" });
+          return;
+        }
+        if (url.pathname.endsWith("/business_owner_claims") && request.method() === "GET") {
+          await route.fulfill({
+            status: 200, contentType: "application/json",
+            body: JSON.stringify(claimStatus === "pending" ? [{
+              id: "qa-owner-claim-approval",
+              business_id: "00000000-0000-4000-8000-000000000318",
+              user_id: "00000000-0000-4000-8000-000000000319",
+              evidence_note: "Synthetic approval scenario only.",
+              relationship_type: "owner",
+              verification_level: "owner",
+              evidence_type: "business_documents",
+              evidence_links: [],
+              created_at: "2026-11-11T12:00:00Z",
+              status: "pending"
+            }] : [])
+          });
+          return;
+        }
+        if (url.pathname.endsWith("/businesses") && request.method() === "GET") {
+          await route.fulfill({
+            status: 200, contentType: "application/json",
+            body: JSON.stringify([{
+              id: "00000000-0000-4000-8000-000000000318",
+              name: "QA Approval Business", city: "Los Angeles"
+            }])
+          });
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await claimPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await claimPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await claimPage.evaluate(() => window.ownerSetSession({
+        access_token: "qa-admin-claim-token",
+        refresh_token: "qa-admin-claim-refresh",
+        user: {
+          id: "00000000-0000-4000-8000-000000000320",
+          email: "qa-admin-claims@example.invalid",
+          app_metadata: { reputix_role: "admin" }
+        }
+      }));
+      await claimPage.locator("#adminClaimsList .admin-claim").waitFor({ state: "visible", timeout: 10000 });
+      claimPage.once("dialog", dialog => dialog.accept());
+      await claimPage.locator("#adminClaimsList .admin-claim-actions button.primary").click();
+      await claimPage.waitForFunction(() => /no hay solicitudes pendientes/i.test(document.querySelector("#adminClaimsList")?.textContent || ""), null, { timeout: 8000 });
+      if (!patchPayload || patchPayload.status !== "verified" || !patchPayload.reviewed_at) {
+        throw new Error("Admin verification button did not send the expected synthetic approval update");
+      }
+      await claimPage.close();
+    });
+
     await check("Public Reputix AI opens, all eight prompt shortcuts populate the question, and closes", async () => {
       await page.locator("#reputixAiFab").click();
       await page.locator("#reputixAiModal").waitFor({ state: "visible" });
