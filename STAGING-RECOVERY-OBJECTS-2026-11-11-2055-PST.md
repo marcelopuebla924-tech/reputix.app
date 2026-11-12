@@ -8,7 +8,7 @@ Read-only inspection of production PostgreSQL metadata. No schema, row, Auth, St
 
 ## Triggers and sequences
 - `information_schema.triggers` returned no public-schema triggers.
-- `information_schema.sequences` returned no public-schema sequences.
+- `information_schema.sequences` returned no standalone public-schema sequences. A later direct pg_attribute inspection confirmed `ad_clicks.id` and `ad_impressions.id` are GENERATED ALWAYS AS IDENTITY; PostgreSQL manages their internal identity sequences.
 - This is a catalog observation, not proof that no internal platform-managed objects exist outside the public schema.
 
 ## Installed extensions
