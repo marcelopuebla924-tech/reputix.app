@@ -1062,7 +1062,7 @@ const { chromium } = require("playwright");
         throw new Error("Verified owner could not read the customer's message");
       }
       await ownerPage.locator("#ownerMessageReplyBody").fill("Hello from the synthetic verified business owner.");
-      await ownerPage.locator("#ownerMessageReplyForm").evaluate(form => form.requestSubmit());
+      await ownerPage.locator("#ownerMessageReplyButton").click();
       await ownerPage.waitForFunction(() => /respuesta enviada|reply sent/i.test(document.querySelector("#ownerMessageReplyStatus")?.textContent || ""), null, { timeout: 8000 });
       if (messages.length !== 2 || messages[1].sender_id !== ownerId) throw new Error("Owner reply was not saved as the verified synthetic owner");
       await ownerPage.locator("#ownerMessagesRefresh").click();
