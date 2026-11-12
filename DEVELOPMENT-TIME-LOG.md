@@ -593,3 +593,14 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 
 ### Safety
 - No real claim, ad campaign, charge, or production record was created or changed.
+
+
+## Session 029 — 2026-11-11
+
+- Checkpoint: 18:35:01 PST.
+- Compared static homepage button IDs against the Playwright suite and found `claimBusinessClose` lacked an explicit click.
+- Added modal close assertion and reopened the picker before the existing search/select scenario.
+- Commit: `3614ae73a5a3764bb95b287d227fd1d14d6175e4`.
+- All 40 static homepage button IDs now appear in the test source; the latest additions remain pending CI verification.
+- Exact active duration not measured; excluded.
+- Official cumulative tracked time remains 49 minutes 8 seconds (0.819 hours).
