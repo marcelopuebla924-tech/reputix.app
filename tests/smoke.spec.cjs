@@ -229,6 +229,54 @@ const { chromium } = require("playwright");
       await page.waitForFunction(() => /correo|email/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""));
     });
 
+    await check("Checkout refreshes an expired session once before retrying safely", async () => {
+      const checkoutPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      checkoutPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let refreshCalls = 0;
+      let checkoutCalls = 0;
+      let retryAuthorization = "";
+      await checkoutPage.route("**/auth/v1/token?grant_type=refresh_token", async route => {
+        refreshCalls += 1;
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            access_token: "qa-fresh-access-token",
+            refresh_token: "qa-rotated-refresh-token",
+            user: { id: "00000000-0000-4000-8000-000000000008", email: "checkout-qa@example.invalid" }
+          })
+        });
+      });
+      await checkoutPage.route("**/functions/v1/create-checkout-session", async route => {
+        checkoutCalls += 1;
+        retryAuthorization = route.request().headers().authorization || "";
+        if (checkoutCalls === 1) {
+          await route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ error: "JWT expired" }) });
+        } else {
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({ url: "http://127.0.0.1:4173/checkout-test-success" })
+          });
+        }
+      });
+      await checkoutPage.route("**/checkout-test-success", async route => {
+        await route.fulfill({ status: 200, contentType: "text/html", body: "<title>Mock checkout redirect</title><p>QA only</p>" });
+      });
+      await checkoutPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await checkoutPage.evaluate(() => sessionStorage.setItem("reputix_owner_session", JSON.stringify({
+        access_token: "qa-expired-access-token",
+        refresh_token: "qa-refresh-token",
+        user: { id: "00000000-0000-4000-8000-000000000008", email: "checkout-qa@example.invalid" }
+      })));
+      await checkoutPage.locator("#basicCheckoutButton").click();
+      await checkoutPage.waitForURL("**/checkout-test-success", { timeout: 10000 });
+      if (refreshCalls !== 1) throw new Error("Expired session did not trigger exactly one refresh");
+      if (checkoutCalls !== 2) throw new Error("Checkout was not retried exactly once after refresh");
+      if (retryAuthorization !== "Bearer qa-fresh-access-token") throw new Error("Checkout retry did not use the refreshed access token");
+      await checkoutPage.close();
+    });
+
     await check("Basic checkout sends logged-out users to account access", async () => {
       await page.locator("#basicCheckoutButton").click();
       await page.waitForFunction(() => /inicia sesión|sign in/i.test(document.querySelector("#basicCheckoutStatus")?.textContent || ""), null, { timeout: 8000 });
