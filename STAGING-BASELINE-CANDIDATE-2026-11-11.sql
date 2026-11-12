@@ -1,7 +1,8 @@
 -- REPUTIX STAGING-ONLY BASELINE CANDIDATE
 -- Generated from read-only production catalogs on 2026-11-11.
 -- TARGET: isolated staging project lzcyulncvjjxsyyivlty ONLY.
--- DO NOT APPLY TO PRODUCTION. Review companion document before use.
+-- APPLIED TO ISOLATED STAGING ONLY as migration reputix_staging_baseline_20261111 (version 20261112050900).
+-- DO NOT APPLY TO PRODUCTION OR RE-RUN AGAINST STAGING; it is retained as the reviewed source.
 
 BEGIN;
 SET LOCAL search_path = public, extensions;
