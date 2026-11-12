@@ -329,3 +329,21 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Public review form now passes validation without a staff name, confirming the optional-field fix.
 - Photo upload validation and pending metadata test also passed.
 - All service interactions were mocked. No real production records, reviews, or photos were created.
+
+
+## Session 016 — 2026-11-11
+
+- Start: 18:17:36 PST
+- End: 18:18:49 PST
+- Active tracked time: 1 minute 13 seconds (0.020 hours)
+- Cumulative tracked time since baseline: 33 minutes 55 seconds (0.566 hours)
+
+### Work performed
+1. Added a dedicated synthetic test for verified-owner complaint responses through `rpc/owner_respond_to_complaint`.
+2. Asserted exact complaint ID and response payload, then waited for the updated response to reappear after private workspace refresh.
+3. Increased the suite to 31 named checks.
+
+### Verification and safety
+- Browser QA run #157 passed the preceding 30-check suite, zero page errors.
+- Browser QA run #165 was in progress for the new 31-check suite.
+- No real complaint, account, or production record was changed; all backend responses are mocked.
