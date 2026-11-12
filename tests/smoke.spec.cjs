@@ -1274,13 +1274,23 @@ const { chromium } = require("playwright");
       if (statsReads < 2) throw new Error("Statistics refresh did not reload published reviews");
     });
 
-    await check("Business claim picker opens and closes without submitting a claim", async () => {
+    await check("Business claim picker opens, searches and selects an approved business without submitting a claim", async () => {
+      const pickerBusinessId = "00000000-0000-4000-8000-000000000601";
+      await page.route("**/rest/v1/businesses?*", async route => {
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+          id: pickerBusinessId, name: "QA Claim Picker Business", city: "Los Angeles", address: "100 QA Street"
+        }]) });
+      });
       await page.locator("#ownerClaimArea").evaluate(el => { el.hidden = false; });
       await page.locator("#claimBusinessOpen").click();
       await page.locator("#claimBusinessModal").waitFor({ state: "visible" });
-      await page.locator("#claimBusinessSearch").fill("Tamos Chelo");
-      await page.locator("#claimBusinessClose").click();
+      await page.locator("#claimBusinessSearch").fill("QA Claim Picker Business");
+      const option = page.locator("#claimBusinessOptions .claim-business-picker-option").filter({ hasText: "QA Claim Picker Business" });
+      await option.waitFor({ state: "visible", timeout: 8000 });
+      await option.click();
       await page.locator("#claimBusinessModal").waitFor({ state: "hidden" });
+      const selected = await page.locator("#claimBusiness").inputValue();
+      if (selected !== pickerBusinessId) throw new Error("Claim picker did not select the matching approved business ID");
     });
 
     await check("Standalone map loads approved businesses, filters results, and safely renders untrusted names", async () => {
