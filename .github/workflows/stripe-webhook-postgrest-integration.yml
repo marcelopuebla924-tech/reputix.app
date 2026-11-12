@@ -40,6 +40,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
           npm install --no-save stripe@23.1.0
+      - name: Show disposable PostgreSQL version
+        run: psql "$DATABASE_URL" -X -A -t -c "select version()"
       - name: Apply disposable fixture and candidate SQL
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 \
