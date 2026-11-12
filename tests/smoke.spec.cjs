@@ -162,6 +162,63 @@ const { chromium } = require("playwright");
       await workspacePage.close();
     });
 
+    await check("Paid Basic and Pro members receive a spacious working dashboard with live navigation and refresh controls", async () => {
+      for (const plan of ["basic", "pro"]) {
+        const paidPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+        paidPage.on("pageerror", error => failures.push(error.stack || error.message));
+        let refreshProfileCalls = 0;
+        await paidPage.route("**/rest/v1/**", async route => {
+          const url = route.request().url();
+          if (url.includes("/user_subscriptions")) {
+            await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+              plan_code: plan, status: "active", current_period_end: "2027-01-01T00:00:00Z", cancel_at_period_end: false
+            }]) });
+            return;
+          }
+          if (url.includes("/user_profiles") && route.request().method() === "GET") refreshProfileCalls += 1;
+          await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+        });
+        await paidPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+        await paidPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+        await paidPage.evaluate(() => window.ownerSetSession({
+          access_token: "qa-paid-workspace-token",
+          refresh_token: "qa-paid-workspace-refresh",
+          user: { id: "00000000-0000-4000-8000-000000000091", email: "paid-workspace-qa@example.invalid", app_metadata: {} }
+        }));
+        await paidPage.locator("#customerWorkspace").waitFor({ state: "visible", timeout: 10000 });
+        const workspaceFacts = await paidPage.evaluate(() => {
+          const panel = document.querySelector("#customerWorkspace");
+          const links = [...panel.querySelectorAll("nav a")];
+          return {
+            width: panel.getBoundingClientRect().width,
+            reviewLink: links.some(a => a.getAttribute("href") === "#privateOwnReviewsTitle"),
+            profileTarget: !!document.querySelector("#privateProfileTitle"),
+            messagesTarget: !!document.querySelector("#privateMessagesTitle"),
+            complaintsTarget: !!document.querySelector("#privateComplaintsTitle"),
+            postsTarget: !!document.querySelector("#privatePostsTitle"),
+            discoverTarget: !!document.querySelector("#searchForm"),
+            reviewsTarget: !!document.querySelector("#privateOwnReviewsTitle"),
+            refreshButton: !!document.querySelector("#customerWorkspaceRefresh"),
+            planText: document.querySelector("#customerWorkspacePlan")?.textContent || "",
+            aiVisible: !document.querySelector("#customerLinkAI")?.hidden
+          };
+        });
+        if (workspaceFacts.width < 1000) throw new Error("Paid workspace is not using the available desktop width: " + workspaceFacts.width);
+        for (const key of ["reviewLink","profileTarget","messagesTarget","complaintsTarget","postsTarget","discoverTarget","reviewsTarget","refreshButton"]) {
+          if (!workspaceFacts[key]) throw new Error("Paid workspace navigation/control missing: " + key);
+        }
+        if (plan === "pro" && !workspaceFacts.aiVisible) throw new Error("Pro workspace did not show the Reputix AI shortcut");
+        if (plan === "basic" && workspaceFacts.aiVisible) throw new Error("Basic workspace incorrectly exposed the Pro AI shortcut");
+        const before = refreshProfileCalls;
+        await paidPage.locator("#customerWorkspaceRefresh").click();
+        await paidPage.waitForFunction(() => /updated|actualizado/i.test(document.querySelector("#customerWorkspaceStatus")?.textContent || ""), null, { timeout: 8000 });
+        if (refreshProfileCalls <= before) throw new Error("Workspace refresh did not reload the customer profile data");
+        await paidPage.locator("#customerLinkReviews").click();
+        await paidPage.waitForFunction(() => location.hash === "#privateOwnReviewsTitle");
+        await paidPage.close();
+      }
+    });
+
     await check("Admin moderation and advertising controls work with mocked data", async () => {
       const adminPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       adminPage.on("pageerror", error => failures.push(error.stack || error.message));
