@@ -537,6 +537,22 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
         <div class="private-module-grid owner-module-grid">
           <article class="private-tile"><span class="private-icon">▣</span><h3 id="privateBusinessTitle">Mis negocios</h3><p id="privateBusinessDesc">Administración y estadísticas</p><div id="privateBusinessContent"></div><button class="secondary private-action" type="button" id="privateBusinessAction">Solicitar acceso a un negocio</button></article>
           <article class="private-tile private-wide"><span class="private-icon">☆</span><h3 id="privateReviewsTitle">Opiniones de mis clientes</h3><p id="privateReviewsDesc">Comentarios y calificaciones</p><div id="privateReviewsContent"></div><button class="secondary private-action" type="button" id="privateReviewsAction">Actualizar opiniones</button></article>
+          <article class="private-tile private-wide" id="ownerMessagesModule">
+            <span class="private-icon">✉</span>
+            <h3 id="ownerMessagesTitle">Mensajes de clientes</h3>
+            <p id="ownerMessagesDesc">Lee y responde conversaciones relacionadas con tus negocios verificados.</p>
+            <button class="secondary private-action" type="button" id="ownerMessagesRefresh">Actualizar bandeja</button>
+            <div class="message-inbox" id="ownerMessageList" aria-live="polite"></div>
+            <div class="message-thread" id="ownerMessageThread" hidden>
+              <strong id="ownerMessageThreadTitle">Conversación</strong>
+              <div id="ownerMessageThreadItems"></div>
+              <form id="ownerMessageReplyForm">
+                <label class="owner-field"><span id="ownerMessageReplyLabel">Tu respuesta</span><textarea id="ownerMessageReplyBody" rows="3" maxlength="5000" required></textarea></label>
+                <button class="primary" type="submit" id="ownerMessageReplyButton">Responder</button>
+                <p class="owner-message" id="ownerMessageReplyStatus" role="status" aria-live="polite"></p>
+              </form>
+            </div>
+          </article>
         </div>
       </section>
     </div>
