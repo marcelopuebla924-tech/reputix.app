@@ -130,3 +130,13 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Browser QA run #136 passed for the preceding 28-check suite and quick-action additions.
 - Browser QA run #140 is running against the new review test; await its conclusion before calling the new test verified.
 - No live Supabase records, accounts, or AI calls were used.
+
+
+## Update — 2026-11-11 18:12 PST
+
+- Added mocked browser coverage for business photo uploads: unsupported GIF rejected, synthetic PNG accepted by the mocked Storage endpoint, and photo metadata submitted with `status: pending`.
+- Assertions cover business ID, original filename, content type, byte size, and generated storage path.
+- Suite count: 30 named checks.
+- Commit: `babd87600f8471dc1f1dba69e264e7c28a86eb9d`.
+- Browser QA run #136 passed for the previous 28-check suite. Newer review and photo tests are still awaiting CI completion.
+- No production storage or database writes were performed.
