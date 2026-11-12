@@ -11,6 +11,11 @@ Status: read-only production review; candidate remains unmerged and unapplied.
 - user_subscriptions has UNIQUE(provider_subscription_id), provider CHECK='stripe', plan_code FK to monetization_plans(code), and status CHECK limited to trialing | active | past_due | canceled | incomplete | unpaid | paused.
 - Current monetization_plans rows include active Basic (1300 USD cents), Free (0), and Pro (2500). The candidate allows only basic/pro for Stripe-paid subscriptions, matching the intended paid plans.
 
+## Read-only subscription inventory snapshot
+- On 2026-11-12, production aggregate queries returned 0 rows in public.user_subscriptions and 0 rows in public.payment_events. No user IDs, customer IDs, or subscription identifiers were selected.
+- Therefore, there are currently no production database subscription rows requiring a timestamp backfill for this candidate. This does NOT prove Stripe has no subscriptions outside Reputix's database: Stripe account inventory, Dashboard state, secrets, and API objects were not accessed.
+- Before enabling the RPC, verify the Stripe subscription inventory through an approved test-mode/API workflow and reconcile any Stripe subscriptions not represented in Reputix. Do not assume zero DB rows means zero Stripe-side subscriptions.
+
 ## Deployed webhook v3 source review
 - Retrieved active production Edge Function source read-only. Version 3 is ACTIVE with verify_jwt=false; handler validates Stripe-Signature against the raw request body before business processing.
 - Current flow performs subscription retrieval and user_subscriptions upsert before inserting payment_events. Thus event recording is after side effects; duplicate-ignore on the event insert does not prevent duplicate business processing or out-of-order overwrites.
