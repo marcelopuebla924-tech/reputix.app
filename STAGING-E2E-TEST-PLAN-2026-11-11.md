@@ -120,3 +120,13 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Commit: `a8550aae0186ebd037498c6383f93f0ee2fa33b4`.
 - GitHub Actions Browser QA run #136 is running for this exact commit; wait for its final conclusion before marking the new assertions passed.
 - This remains mocked browser QA, not live Supabase/Auth/RLS verification.
+
+
+## Update — 2026-11-11 18:11 PST
+
+- Added a dedicated mocked Playwright test for public review submission, covering signed-in identity, visit date/time, five ratings, language detection, pending status, and optional AI translation/advisory moderation.
+- Suite count: 29 named checks.
+- Commit: `baeb06b0e0518ddb48b8843eda35964438bb3901`.
+- Browser QA run #136 passed for the preceding 28-check suite and quick-action additions.
+- Browser QA run #140 is running against the new review test; await its conclusion before calling the new test verified.
+- No live Supabase records, accounts, or AI calls were used.
