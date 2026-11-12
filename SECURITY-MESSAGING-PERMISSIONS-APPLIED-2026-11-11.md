@@ -35,3 +35,16 @@ Después se detectó un commit adicional en `main` (`1621dace39da039eece03677724
 
 ## Siguiente paso
 Esperar el resultado de Browser QA #263 y revisar la publicación del último commit. Luego realizar pruebas funcionales con cuentas de prueba autenticadas para confirmar inicio de conversación, lectura, envío y recibos de lectura.
+
+
+## Provenance reconciliation — 2026-11-12
+
+- This file records that explicit owner approval was obtained. A review of the available conversation history could not independently corroborate the exact approval wording or scope for this production grants change. Treat the approval provenance as **unverified pending owner confirmation**; do not rely on this file alone as proof of authorization.
+- Read-only checks performed on 2026-11-12 confirm the current live state:
+  - `anon` has no direct table or column privileges on `business_conversations` or `business_messages`.
+  - `authenticated` has SELECT and scoped INSERT column privileges on both tables.
+  - `authenticated` has UPDATE only on `business_messages.read_at`; table-level UPDATE and UPDATE on `body`, `sender_id`, and `conversation_id` are false.
+  - RLS remains enabled on both tables. Existing SELECT/INSERT/UPDATE policies are still present and unchanged in the inspected state.
+- Supabase migration history currently contains no migration corresponding to these messaging grant changes. The live state is therefore not yet reproducible from the repository's migration history.
+- The current assistant did not execute the production grant change in this turn; it ran read-only privilege, policy, migration-history, and log queries only.
+- Do not roll back or reapply these grants blindly. Keep the safer current privileges in place while the owner confirms the authorization provenance and the change is reconciled into a reviewed, reproducible migration. Authenticated positive/negative integration tests still require isolated staging.
