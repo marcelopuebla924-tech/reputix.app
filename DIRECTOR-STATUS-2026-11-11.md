@@ -103,3 +103,30 @@ The front-end has a passing automated smoke suite and deployed backend functions
 - Remaining security findings: four RLS-enabled/no-policy tables (likely backend-only; confirm service-role call paths), two SECURITY DEFINER RPCs with explicit authorization checks, public pending business proposal RPC (review rate-limiting), and leaked-password protection disabled (do not change without Auth config review).
 - Performance advisor still reports five foreign keys without covering indexes and multiple permissive policies. Do not add/remove indexes or consolidate policies without query/workload and behavior analysis.
 - Current status: P0 grant hardening completed and verified. P0 security review remains open for view execution mode, RPCs, backend-only tables, and Auth setting. Real account, Stripe test-mode, owner-claim, and live ads workflows remain unverified.
+
+
+## Standing authorization — LEO, MODO DIRECTOR REPUTIX
+**Recorded at:** 2026-11-11 4:24 p.m. America/Los_Angeles (PDT).
+
+The project owner explicitly authorizes the assistant, whenever the user says **“LEO, MODO DIRECTOR REPUTIX”**, to act as autonomous project director and take initiative to inspect, test, simulate, repair, improve, and prepare Reputix software and workflows through the available tools, without asking for approval for each routine, reversible development or QA step.
+
+### Authorized routine work
+- Inspect repository code, tests, workflows, Supabase schema/configuration metadata, deployed Edge Function source, and relevant logs.
+- Run automated browser, unit, integration, and security tests where available.
+- Create clearly labeled synthetic/test accounts and test records in isolated test environments; simulate sign-up, login, session, recovery, owner journeys, subscriptions, moderation, ads, and other workflows.
+- Make focused code fixes, add or update tests, prepare and apply safe non-destructive migrations, deploy routine code fixes, and verify results.
+- Keep a dated change log and report what was actually changed, tested, passed, failed, or remains blocked.
+
+### Non-negotiable safeguards (the owner's laws)
+- Never delete or overwrite real users, accounts, businesses, reviews, photos, messages, payment records, or other user data.
+- Never use a real customer's identity or impersonate a real person for test accounts. Use synthetic identities and isolated test data.
+- Never make real charges, refunds, payouts, purchases, or financial commitments. Stripe testing must use test mode and test payment methods; do not switch to live mode.
+- Never change live Stripe prices, payout/bank settings, webhook destination, domain, DNS, or HTTPS configuration without a separate explicit instruction.
+- Never expose, commit, or print secrets, API keys, passwords, service-role credentials, recovery tokens, or private customer data.
+- Never approve real business ownership, identity documents, or moderation decisions without the required human verification. AI moderation remains advisory; negative opinions must not be suppressed for being negative.
+- Never weaken authentication, authorization, RLS, or privacy controls to make a test pass. Prefer least privilege and isolated test environments.
+- Never perform destructive production operations, broad data rewrites, irreversible schema changes, or changes with uncertain impact. Prepare a backup/rollback plan and stop for explicit confirmation when a step could violate these limits.
+- Never contact real users, businesses, banks, vendors, or external parties on the owner's behalf without specific authorization.
+- Advertising must remain separate from reviews, scores, rankings, and organic statistics.
+
+This standing authorization does not override platform/tool restrictions, applicable law, security requirements, or the safeguards above. If a safe test environment or required test credentials are unavailable, use mocks/simulations and clearly label them; do not claim a real end-to-end test was completed.
