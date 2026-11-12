@@ -235,3 +235,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Owner claim submission now clicks the actual submit button.
 - Test commits: `815268ccb5c4daff7975eb2581c3d7a1ed57da9b`, `2f41253d693f35af0482bc74199f9f09c7595158`.
 - Browser QA run #186 is pending for the latest button-level coverage.
+
+
+## Update — 2026-11-11 18:26 PST
+
+- Browser QA run #186 passed the 31-check suite with zero page errors.
+- Added Pro AI assistant coverage: the Pro plan must send a prompt through the mocked assistant endpoint; Basic must not expose the Pro-only assistant panel.
+- Test commit: `fb5056416de0551e0db085fb44f95a093c6d5ece`.
+- Browser QA run #190 is pending for the Pro AI assistant assertions.
+- All AI and database interactions remain mocked.
