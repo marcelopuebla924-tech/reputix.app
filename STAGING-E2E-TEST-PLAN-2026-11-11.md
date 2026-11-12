@@ -281,3 +281,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Static interactive-control scan found every actual static control ID covered by at least one test; remaining unmatched IDs are non-interactive containers/rails/text.
 - Passing commit: `c097b2ae2c485f0a95fe3e63ab839778dcb93181`.
 - Campaign/checkout/charge behavior remains mocked; no production ad or billing action was executed.
+
+
+## Update — 2026-11-11 18:31 PST
+
+- Extended the public business/professional proposal scenario to click the actual submit button for all three paths: honeypot rejection, valid proposal, and duplicate proposal handling.
+- Commit: `807609bab3d09fb3a84a55f00a1ee1aa572a33b5`.
+- The suite remains at 31 named checks; these are additional button-level assertions in an existing scenario.
+- Push-triggered CI result is not independently retrievable through the currently available workflow-run connector. Keep the new assertions marked pending.
+- Synthetic/mocked only; no production proposal or record was created.
