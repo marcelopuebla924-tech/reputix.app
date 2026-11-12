@@ -161,3 +161,29 @@ Allow customers to open and share a direct public link to an approved business p
 2. Submit `https://www.reputixapp.com/sitemap.xml` in Google Search Console and monitor indexing; do not promise immediate indexing.
 3. On each scheduled candidate update, inspect the generated branch and create a review PR; prioritize removals for any newly unapproved business.
 4. Continue broader regression and accessibility checks without changing protected production settings.
+
+## Director checkpoint — 12 Nov 2026, 10:52:50 a.m. PST
+
+### PR #20 — public-control accessibility audit and search-field fix
+- PR #20 (https://github.com/marcelopuebla924-tech/reputix.app/pull/20) merged successfully by squash.
+- Merge commit: `bdcfa05ae9724b7b4d54aa5756713786c7199560`.
+- Added two browser checks auditing accessible names and form labels on visible controls in the homepage and standalone map.
+- The new audit identified the homepage business-search input as missing an explicit accessible name. Added a Spanish `aria-label` in the HTML and language-aware Spanish/English updates in `app.js`.
+- Extended the language-selector regression test to assert both accessible-name variants.
+- Initial CI correctly failed on the missing label; after the fix, workflow run `43283910347` passed.
+- Final browser results: 39 Playwright checks passed, 0 failed, and `pageErrors: []`.
+- Node safeguards: all 9 tests passed, 0 failed.
+- The map accessible-name audit passed on the first run; the homepage search accessible-name audit passed after the fix.
+- Change is limited to accessibility metadata and test coverage. No search behavior, production data, user accounts, reviews, photos, Supabase schema/policies, Stripe settings, custom domain, or DNS settings changed.
+
+### Approved-profile candidate branch review
+- Compared `automation/approved-public-profiles` with the newly updated `main` after PR #20.
+- The branch is currently diverged and behind main by 3 commits; its diff includes the old generated profile snapshot.
+- Do not merge that stale candidate snapshot. Wait for the next scheduled publishing workflow to rebuild the candidate from current main, then inspect the diff before creating a review PR.
+- The scheduled workflow's six-hour cadence remains unchanged. Actions PR creation permissions were not changed.
+
+### Remaining release cautions
+- The successful PR-triggered browser QA is confirmed; a separate main-branch Pages deployment after PR #20 was not independently confirmed in this checkpoint.
+- Direct public HTTP response and social preview cache for the custom domain remain unverified from this environment.
+- Continue to preserve all protected production settings and data.
+
