@@ -1791,6 +1791,124 @@ function makeComplaintSection(business) {
   return section;
 }
 
+/* Public business profiles: stable, shareable deep links + per-profile metadata. */
+function publicBusinessUrl(b) {
+  const url = new URL(window.location.pathname, window.location.origin);
+  url.searchParams.set("business", String(b.id));
+  return url.toString();
+}
+
+function updatePublicBusinessMetadata(b) {
+  const clean = value => String(value || "").replace(/\\s+/g," ").trim();
+  const title = clean(b.name) + " | Reputix";
+  const description = clean(b.description) ||
+    [b.category, b.address, b.city].filter(Boolean).join(" · ") ||
+    (lang === "es" ? "Consulta opiniones y descubre este negocio en Reputix." : "Read reviews and discover this business on Reputix.");
+  const url = publicBusinessUrl(b);
+  document.title = title;
+  const setMeta = (selector, attribute, value, create) => {
+    let element = document.head.querySelector(selector);
+    if (!element && create) {
+      element = document.createElement(create.tag);
+      if (create.key) element.setAttribute(create.key, create.value);
+      document.head.append(element);
+    }
+    if (element) element.setAttribute(attribute,value);
+  };
+  setMeta('meta[name="description"]',"content",description.slice(0,300),{tag:"meta",key:"name",value:"description"});
+  setMeta('meta[property="og:title"]',"content",title,{tag:"meta",key:"property",value:"og:title"});
+  setMeta('meta[property="og:description"]',"content",description.slice(0,300),{tag:"meta",key:"property",value:"og:description"});
+  setMeta('meta[property="og:url"]',"content",url,{tag:"meta",key:"property",value:"og:url"});
+  setMeta('link[rel="canonical"]',"href",url,{tag:"link",key:"rel",value:"canonical"});
+  setMeta('meta[name="twitter:title"]',"content",title,{tag:"meta",key:"name",value:"twitter:title"});
+  setMeta('meta[name="twitter:description"]',"content",description.slice(0,300),{tag:"meta",key:"name",value:"twitter:description"});
+  let structured = document.getElementById("reputix-business-structured-data");
+  if (!structured) {
+    structured = document.createElement("script");
+    structured.type = "application/ld+json";
+    structured.id = "reputix-business-structured-data";
+    document.head.append(structured);
+  }
+  const postalAddress = {
+    "@type":"PostalAddress",
+    ...(b.address ? {streetAddress:b.address} : {}),
+    ...(b.city ? {addressLocality:b.city} : {}),
+    ...(b.zip ? {postalCode:b.zip} : {}),
+    ...(b.state ? {addressRegion:b.state} : {}),
+    ...(b.country ? {addressCountry:b.country} : {"addressCountry":"US"})
+  };
+  structured.textContent = JSON.stringify({
+    "@context":"https://schema.org",
+    "@type":"LocalBusiness",
+    "name":clean(b.name),
+    "url":url,
+    ...(description ? {description:description.slice(0,300)} : {}),
+    ...(b.phone ? {telephone:b.phone} : {}),
+    ...(b.address || b.city ? {address:postalAddress} : {})
+  });
+}
+
+async function sharePublicBusiness(b, status) {
+  const url = publicBusinessUrl(b);
+  const title = String(b.name || "Reputix");
+  const text = lang === "es"
+    ? "Consulta la ficha y las opiniones de " + title + " en Reputix."
+    : "View " + title + "'s profile and reviews on Reputix.";
+  try {
+    if (typeof navigator.share === "function") {
+      await navigator.share({title:title + " | Reputix",text,url});
+      if (status) status.textContent = lang === "es" ? "Enlace compartido." : "Link shared.";
+      return;
+    }
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      await navigator.clipboard.writeText(url);
+      if (status) status.textContent = lang === "es" ? "Enlace copiado. Ya puedes compartirlo." : "Link copied. You can share it now.";
+      return;
+    }
+    window.prompt(lang === "es" ? "Copia el enlace del negocio:" : "Copy the business link:",url);
+  } catch (error) {
+    if (error && error.name === "AbortError") return;
+    if (status) status.textContent = lang === "es" ? "No se pudo compartir. Intenta copiar el enlace." : "Could not share. Try copying the link.";
+  }
+}
+
+async function loadPublicBusinessFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const businessId = params.get("business");
+  if (!businessId) return;
+  resultsBox.hidden = false;
+  resultsBox.replaceChildren();
+  notice.textContent = lang === "es" ? "Cargando ficha del negocio…" : "Loading business profile…";
+  try {
+    const query = new URLSearchParams({
+      select:"*",
+      id:"eq." + businessId,
+      status:"eq.approved",
+      limit:"1"
+    });
+    const rows = await api("businesses?" + query.toString());
+    const business = Array.isArray(rows) ? rows[0] : null;
+    if (!business || !business.id || !business.name) {
+      notice.textContent = lang === "es"
+        ? "Esta ficha no está disponible públicamente."
+        : "This profile is not publicly available.";
+      const robots = document.querySelector('meta[name="robots"]');
+      if (robots) robots.content = "noindex,nofollow";
+      return;
+    }
+    lastBusinesses = [business];
+    updatePublicBusinessMetadata(business);
+    resultsBox.replaceChildren(renderBusiness(business));
+    notice.textContent = lang === "es" ? "Ficha pública del negocio" : "Public business profile";
+    resultsBox.scrollIntoView({behavior:"smooth",block:"start"});
+  } catch (error) {
+    console.error("Reputix public business profile:",error);
+    notice.textContent = lang === "es"
+      ? "No pudimos cargar esta ficha. Intenta nuevamente más tarde."
+      : "We could not load this profile. Please try again later.";
+  }
+}
+
 /* Perfil de negocio */
 function renderBusiness(b) {
   const card = node("article","business-card");
@@ -1863,10 +1981,15 @@ function renderBusiness(b) {
   const actions = node("div","actions");
   const profile = node("button","primary",t("profile"));
   const reviewsBtn = node("button","secondary",t("reviews"));
+  const shareBtn = node("button","secondary",lang === "es" ? "Compartir" : "Share");
+  const shareStatus = node("p","form-message","");
+  shareStatus.setAttribute("aria-live","polite");
   profile.type = "button";
   reviewsBtn.type = "button";
-  actions.append(profile,reviewsBtn);
-  card.append(actions);
+  shareBtn.type = "button";
+  shareBtn.addEventListener("click",() => sharePublicBusiness(b,shareStatus));
+  actions.append(profile,reviewsBtn,shareBtn);
+  card.append(actions,shareStatus);
 
   const details = node("section","details");
   details.hidden = true;
@@ -2142,6 +2265,7 @@ form.addEventListener("submit",async e => {
 
 setLanguage("es");
 loadApprovedBusinesses();
+loadPublicBusinessFromUrl();
 loadWeeklyRankings();
 loadReviewTicker();
 
