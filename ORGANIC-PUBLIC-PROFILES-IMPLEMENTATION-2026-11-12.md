@@ -100,3 +100,26 @@ Allow customers to open and share a direct public link to an approved business p
 2. Verify the live homepage and a real approved business profile link without exposing unapproved records.
 3. Plan static pre-rendering and an approved-only profile sitemap so crawlers receive business-specific HTML.
 4. Continue regression QA for the rest of the user-facing flows; preserve existing data and the protected production settings.
+
+
+---
+
+## Director checkpoint — 12 November 2026, 10:11:31 a.m. PST (America/Los_Angeles)
+
+### Verified integration and deployment
+- PR #15 (https://github.com/marcelopuebla924-tech/reputix.app/pull/15) was merged via squash into main. Merge commit: `5ee6ea60c3cc8f1e5fc3fc3ecff5dedbf3daca0f`.
+- Fixed public business profile metadata whitespace normalization from a literal backslash regex to `/\\s+/g`, with a browser regression assertion for repeated spaces.
+- PR Browser QA run #377 (ID `43276040845`) passed, including the new regression.
+- Main branch Browser QA run #378 (ID `43276375970`) completed successfully. The browser-smoke job and all steps passed; log output reports `pageErrors: []`. Mocked account, owner, moderation, business-profile, and map checks are not proof of live production backend behavior.
+- GitHub Pages run #610 (ID `43276375716`) successfully completed build and deployment jobs for commit `5ee6ea60c3cc8f1e5fc3fc3ecff5dedbf3daca0f`.
+- The custom domain in CNAME remains `www.reputixapp.com`. The actual public domain and a real approved business profile have not yet been independently browser-verified in this session.
+
+### Search indexing architecture and constraints
+- The current deployment uses GitHub Pages with Jekyll build; `sitemap.xml` lists the homepage only.
+- Current `/?business=<id>` business pages are rendered client-side. The initial HTML does not include business-specific metadata; this limits social previews and crawling.
+- Do not put pending/rejected businesses or private owner/patient/review information in a static build or sitemap. A generated approved-only sitemap needs a verified public-data source, schema and publication policy, safe escaping, and a repeatable build process before deployment.
+- No automated database export or privileged key should be added to public GitHub Actions without a separately reviewed security design.
+
+### Safety and next actions
+- No production Supabase schema/data/policies, accounts, reviews, businesses, photos, secrets, Stripe, DNS or custom-domain settings changed.
+- Next: verify public homepage and approved profile externally, then design and test an approved-only static profile publishing pipeline before exposing any live records in generated HTML.
