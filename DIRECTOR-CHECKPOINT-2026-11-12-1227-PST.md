@@ -145,3 +145,16 @@ Read the deployed Edge Function source in production and staging, and compared b
 ### Current release gate
 - Keep production AI v22 and owner RPC unchanged. Do not merge PR #33 or #34. No migrations, deployments, payment operations, Auth/Storage changes, domain/DNS changes, or production data writes were performed.
 - Next: obtain an approved staging HTTP test path and synthetic test identities; run hosted AI and owner authorization integration tests; then add durable server-side AI/proposal throttling and test them before launch.
+
+
+## Checkpoint — user authorized continued safe integration testing — 12:36 p.m. PST, Nov 12 2026
+
+- User explicitly authorized proceeding with the necessary tests. Scope remains staging/test-only; production, customer data, domain/DNS, Auth settings, Stripe live configuration and payments remain protected.
+- Created branch `test/staging-integration-gates-20261112` from main.
+- Added `tests/reputix-ai-staging-cors.integration.mjs`, an opt-in read-only test requiring the exact staging endpoint `https://lzcyulncvjjxsyyivlty.supabase.co/functions/v1/reputix-ai`. It checks OPTIONS preflight for three approved origins and one disallowed origin, denies wildcard CORS, checks Vary: Origin and POST method allowance. It skips unless the environment variable is explicitly supplied; it refuses any endpoint other than the exact staging URL. No credentials, POST, OpenAI calls, or writes.
+- Verified file via GitHub fetch: blob SHA `aa48c0f7b767c9e4b91bf3c266792beaa6c78435`, four origin cases, exact endpoint guard, and opt-in skip guard.
+- Opened draft PR #36: https://github.com/marcelopuebla924-tech/reputix.app/pull/36. Head commit `373da82c57bdbcd75c6c5e8060cad473c6184730`; base main at `f96460852a87bd7b5f96e30c773e2158ad959f38`. PR remains draft/open/unmerged. No CI/live execution is claimed.
+- Existing validation confirmed: 9/9 Reputix AI source-contract assertions PASS; owner RPC isolated PostgreSQL 17 workflow #5 SUCCESS and browser QA #439 SUCCESS on PR #34 head; Stripe PR #33 exact-head workflows #29 handler contract, #43 PostgreSQL atomicity, #14 local PostgREST integration, and #489 Browser QA all SUCCESS. These are isolated/local tests, not hosted Supabase or real Stripe tests.
+- Production `reputix-ai` remains ACTIVE v22; staging remains ACTIVE v1 with `verify_jwt=true`. Production owner RPC still lacks approved-business predicate. No deployment, migration, live payment, Auth/Storage change, or user data write.
+- Remaining blockers: execute guarded OPTIONS test through an HTTP-capable runner; hosted AI auth/Pro/moderation integration tests need controlled synthetic identities and cost-bounded staging budget; hosted owner RPC tests need controlled Owner A/Owner B/unverified/unapproved identities; durable AI and public proposal rate limiting need implementation and staging tests. Connected tools currently expose no Edge Function invoke action, and no GitHub workflow-dispatch action was available.
+- User authorization applies to safe tests and staging work; it does not waive production safety gates or authorize real charges/customer-data changes.
