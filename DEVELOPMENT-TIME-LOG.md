@@ -1,13 +1,13 @@
 # Reputix — Official Development Time Log
 
-Time zone: America/Los_Angeles (PST/PDT as applicable)
-Tracking baseline: 2026-11-11 17:24:00 PDT
+Time zone: America/Los_Angeles (PST/PST as applicable)
+Tracking baseline: 2026-11-11 17:24:00 PST
 Historical development before this baseline is not included because session-level hours were not recorded reliably.
 
 ## Session 001 — 2026-11-11
 
-- Start: 17:24:00 PDT
-- End: 17:32:28 PDT
+- Start: 17:24:00 PST
+- End: 17:32:28 PST
 - Active tracked time: 8 minutes 28 seconds (0.141 hours; rounded display: 8 minutes)
 - Cumulative tracked time since baseline: 8 minutes 28 seconds (0.141 hours)
 
@@ -36,8 +36,8 @@ Historical development before this baseline is not included because session-leve
 
 ## Session 002 — 2026-11-11
 
-- Start: 17:32:28 PDT
-- End: 17:39:57 PDT
+- Start: 17:32:28 PST
+- End: 17:39:57 PST
 - Active tracked time: 7 minutes 29 seconds (0.125 hours)
 - Cumulative tracked time since baseline: 15 minutes 57 seconds (0.266 hours)
 
@@ -84,8 +84,8 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 
 ## Session 003 — 2026-11-11
 
-- Start: 17:55:18 PDT
-- End: 17:55:49 PDT
+- Start: 17:55:18 PST
+- End: 17:55:49 PST
 - Active tracked time: 31 seconds (0.009 hours)
 - Cumulative tracked time since baseline: 16 minutes 28 seconds (0.274 hours)
 
@@ -99,3 +99,26 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - No application code, Supabase production configuration, database schema/data, RLS/grants, Auth settings, Stripe settings, domain, or DNS changed in this session.
 - No real accounts, messages, reviews, payments, or production writes were created.
 - The staging plan is documentation, not proof that a staging environment currently exists.
+
+
+## Session 004 — 2026-11-11
+
+- Start: 18:01:50 PST
+- End: 18:02:07 PST
+- Active tracked time: 17 seconds (0.005 hours)
+- Cumulative tracked time since baseline: 16 minutes 45 seconds (0.279 hours)
+- Accounting note: only this precisely measured interval is added; earlier unmeasured activity in this continuation is excluded.
+
+### Work performed
+1. Attempted to provision the isolated Supabase staging branch after the owner authorized the quoted $0.01344/hour cost. Supabase rejected branch creation because the organization is not on the Pro plan or above.
+2. Confirmed no branch was created and no production project settings or data were changed. Decided not to upgrade the plan for staging.
+3. Added explicit current-user filters to private publication, owner-claim, and customer-conversation reads in `app.js`.
+4. Added a Playwright regression test that checks private profile, publication, review, complaint, owner-claim, and customer-conversation requests are scoped to the signed-in synthetic user.
+5. Updated the safe staging plan with the Supabase plan limitation and the new regression test.
+
+### Verification and safety
+- Commits: `943e94eaab9d548326230842bdcedcf7f82b3bfd`, `0b2c33035b063423ff2c3ff0f67c34d17487acb1`, `e3cbb678337de0ef37c7ca5a6bad9e90e3b2533a`.
+- The new browser regression test is committed, but its GitHub Actions result has not yet been independently verified.
+- No Supabase production schema/data, grants, RLS, Auth settings, Stripe settings, payment records, domain, or DNS were changed.
+- No real users, messages, reviews, charges, or production writes were created.
+- No staging branch compute was started; no branch hourly compute charge was incurred.
