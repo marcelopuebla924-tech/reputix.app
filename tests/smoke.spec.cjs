@@ -649,6 +649,12 @@ const { chromium } = require("playwright");
         throw new Error("Admin refresh buttons did not reload their respective mocked data: " +
           JSON.stringify({ moderationListCalls, adCampaignReads, moderationBeforeRefresh, campaignsBeforeRefresh }));
       }
+      const adsForm = adminPage.locator("#reputixAdsForm");
+      if (await adsForm.evaluate(form => form.checkValidity())) {
+        throw new Error("A blank admin campaign form should fail required-field validation");
+      }
+      await adminPage.locator("#adsCreateButton").click();
+      if (adPayload !== null) throw new Error("Blank admin campaign reached the mocked REST endpoint");
       await adminPage.locator("#adsBusiness").evaluate(el => {
         const option = document.createElement("option");
         option.value = "00000000-0000-4000-8000-000000000004";
@@ -661,7 +667,13 @@ const { chromium } = require("playwright");
       await adminPage.locator("#adsBudget").fill("75");
       await adminPage.locator("#adsDestination").fill("https://example.invalid/qa-campaign");
       await adminPage.locator("#adsPlacement").selectOption("discovery_feed");
-      await adminPage.locator("#adsStarts").fill("2026-11-12T10:00");
+      await adminPage.locator("#adsStarts").fill("2026-11-20T10:00");
+      await adminPage.locator("#adsEnds").fill("2026-11-12T10:00");
+      await adminPage.locator("#adsCreateButton").click();
+      await adminPage.waitForFunction(() => /fecha final debe ser posterior a la inicial/i.test(
+        document.querySelector("#adsAdminMessage")?.textContent || ""
+      ), null, { timeout: 3000 });
+      if (adPayload !== null) throw new Error("Campaign with an end date before its start reached the mocked REST endpoint");
       await adminPage.locator("#adsEnds").fill("2026-11-20T10:00");
       const adPost = adminPage.waitForResponse(response =>
         response.url().includes("/rest/v1/ad_campaigns") && response.request().method() === "POST"
