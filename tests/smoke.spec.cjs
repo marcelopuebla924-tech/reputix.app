@@ -511,15 +511,22 @@ const { chromium } = require("playwright");
       const adminPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       adminPage.on("pageerror", error => failures.push(error.stack || error.message));
       let adPayload = null;
+      let adCampaignReads = 0;
+      let moderationListCalls = 0;
       await adminPage.route("**/rest/v1/**", async route => {
-        if (route.request().method() === "POST" && route.request().url().includes("/ad_campaigns")) {
-          adPayload = route.request().postDataJSON();
+        const request = route.request();
+        const url = new URL(request.url());
+        if (request.method() === "GET" && url.pathname.endsWith("/ad_campaigns")) adCampaignReads += 1;
+        if (request.method() === "POST" && url.pathname.endsWith("/ad_campaigns")) {
+          adPayload = request.postDataJSON();
           await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
         } else {
           await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
         }
       });
       await adminPage.route("**/functions/v1/reputix-ai", async route => {
+        const body = route.request().postDataJSON();
+        if (body?.mode === "admin_moderation_list") moderationListCalls += 1;
         await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [], count: 0 }) });
       });
       await adminPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
@@ -535,8 +542,27 @@ const { chromium } = require("playwright");
       }));
       await adminPage.locator("#adminAdsPanel").waitFor({ state: "visible" });
       await adminPage.locator("#adminReviewModerationPanel").waitFor({ state: "visible" });
+      for (let attempt = 0; attempt < 40 && (moderationListCalls < 1 || adCampaignReads < 1); attempt++) {
+        await adminPage.waitForTimeout(50);
+      }
+      if (moderationListCalls < 1 || adCampaignReads < 1) {
+        throw new Error("Admin panels did not perform their initial mocked data loads: " +
+          JSON.stringify({ moderationListCalls, adCampaignReads }));
+      }
+      const moderationBeforeRefresh = moderationListCalls;
+      const campaignsBeforeRefresh = adCampaignReads;
       await adminPage.locator("#adminReviewModerationRefresh").click();
+      for (let attempt = 0; attempt < 40 && moderationListCalls === moderationBeforeRefresh; attempt++) {
+        await adminPage.waitForTimeout(50);
+      }
       await adminPage.locator("#adsRefreshButton").click();
+      for (let attempt = 0; attempt < 40 && adCampaignReads === campaignsBeforeRefresh; attempt++) {
+        await adminPage.waitForTimeout(50);
+      }
+      if (moderationListCalls <= moderationBeforeRefresh || adCampaignReads <= campaignsBeforeRefresh) {
+        throw new Error("Admin refresh buttons did not reload their respective mocked data: " +
+          JSON.stringify({ moderationListCalls, adCampaignReads, moderationBeforeRefresh, campaignsBeforeRefresh }));
+      }
       await adminPage.locator("#adsBusiness").evaluate(el => {
         const option = document.createElement("option");
         option.value = "00000000-0000-4000-8000-000000000004";
