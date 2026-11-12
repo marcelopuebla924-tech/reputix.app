@@ -119,7 +119,17 @@ const { chromium } = require("playwright");
       }
       await form.locator('textarea[name="comment"]').fill("Great service at this QA business.");
       await form.locator('button[type="submit"]').click();
-      await reviewPage.waitForFunction(() => /opinión recibida|review received/i.test(document.querySelector("#results .business-card .form-message")?.textContent || ""), null, { timeout: 10000 });
+      try {
+        await reviewPage.waitForFunction(() => {
+          const reviewForm = [...document.querySelectorAll("#results .business-card form")]
+            .find(candidate => candidate.querySelector('textarea[name="comment"]'));
+          return /opinión recibida|review received/i.test(reviewForm?.querySelector(".form-message")?.textContent || "");
+        }, null, { timeout: 10000 });
+      } catch (error) {
+        const formMessage = await form.locator(".form-message").textContent().catch(() => "missing review form message");
+        throw new Error(error.message + "; review form message: " + formMessage +
+          "; submitted payload: " + JSON.stringify(reviewPayload) + "; AI modes: " + aiModes.join(","));
+      }
       if (!reviewPayload ||
           reviewPayload.business_id !== businessId ||
           reviewPayload.user_id !== userId ||
