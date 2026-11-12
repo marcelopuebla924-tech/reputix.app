@@ -1,0 +1,19 @@
+name: Stripe webhook handler contract tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/stripe-webhook/**"
+      - "tests/stripe-webhook-handler.test.mjs"
+      - ".github/workflows/stripe-webhook-handler-tests.yml"
+
+jobs:
+  handler-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run isolated webhook handler contract tests
+        run: node --test tests/stripe-webhook-handler.test.mjs
