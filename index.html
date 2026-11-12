@@ -146,6 +146,22 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 @media(max-width:380px){.customer-workspace-grid{grid-template-columns:1fr}}
 </style>
 
+
+<style id="reputix-private-area-separation">
+.private-area-groups{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;margin-top:18px}
+.private-module-group{min-width:0;padding:clamp(14px,2.5vw,22px);border:1px solid #15547d;border-radius:20px;background:linear-gradient(145deg,rgba(7,27,49,.88),rgba(3,12,25,.96));box-shadow:inset 0 0 24px rgba(0,145,220,.045)}
+.customer-module-group{border-color:#146b9d}
+.owner-module-group{border-color:#8b6a25;background:linear-gradient(145deg,rgba(37,29,12,.25),rgba(3,12,25,.97))}
+.private-module-heading{margin:0 0 15px;padding:0 0 13px;border-bottom:1px solid rgba(83,166,210,.22)}
+.private-module-heading>span{font-size:10px;font-weight:900;letter-spacing:1.4px;color:#4ed3ff}
+.owner-module-group .private-module-heading>span{color:#e7c36c}
+.private-module-heading h3{margin:6px 0 4px;color:#f4faff;font-size:clamp(18px,3vw,23px)}
+.private-module-heading p{margin:0;color:#a9c2d8;font-size:12px;line-height:1.45}
+.private-module-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.private-module-grid>.private-wide{grid-column:1/-1}
+.owner-module-grid .private-tile{border-color:#765d2a}
+@media(max-width:620px){.private-module-grid{grid-template-columns:1fr}.private-module-grid>.private-wide{grid-column:auto}}
+</style>
 </head>
 
 <body id="pageTop">
@@ -410,28 +426,13 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       </div>
       <p class="customer-workspace-foot" id="customerWorkspaceFoot">Las funciones se habilitan según tu suscripción activa. El acceso a negocios y estadísticas privadas requiere verificación de propiedad.</p>
     </section>
-    <div class="private-grid">
+    <div class="private-grid private-area-groups">
+      <section class="private-module-group customer-module-group" aria-labelledby="customerModulesTitle">
+        <div class="private-module-heading"><span>REPUTIX · CUSTOMER</span><h3 id="customerModulesTitle">Espacio de cliente</h3><p id="customerModulesIntro">Tu perfil, conversaciones y actividad en Reputix.</p></div>
+        <div class="private-module-grid">
         <article class="private-tile"><span class="private-icon">◉</span><h3 id="privateProfileTitle">Mi perfil</h3><p id="privateProfileDesc">Datos y configuración</p><div id="privateProfileContent"></div><button class="secondary private-action" type="button" id="privateProfileAction">Editar perfil</button></article>
         <article class="private-tile"><span class="private-icon">▣</span><h3 id="privateBusinessTitle">Mis negocios</h3><p id="privateBusinessDesc">Administración y estadísticas</p><div id="privateBusinessContent"></div><button class="secondary private-action" type="button" id="privateBusinessAction">Solicitar acceso a un negocio</button></article>
-        <article class="private-tile"><span class="private-icon">◌</span><h3 id="privateMessagesTitle">Mensajes</h3><p id="privateMessagesDesc">Comunicación con clientes</p><div id="privateMessagesContent">
-          <div class="message-compose">
-            <strong>Contactar un negocio</strong>
-            <label class="owner-field"><span>Negocio</span><select id="messageBusiness"><option value="">Selecciona un negocio aprobado</option></select></label>
-            <label class="owner-field"><span>Asunto</span><input id="messageSubject" maxlength="160" placeholder="Consulta sobre un producto o servicio"></label>
-            <label class="owner-field"><span>Mensaje</span><textarea id="messageFirstBody" rows="3" maxlength="5000" placeholder="Escribe tu mensaje..." ></textarea></label>
-            <button class="primary" type="button" id="messageStartButton">Enviar mensaje</button>
-            <p class="owner-message" id="messageStatus" aria-live="polite"></p>
-          </div>
-          <div class="message-inbox"><strong>Bandeja de entrada</strong><div id="messageConversationList"></div></div>
-          <div class="message-thread" id="messageThread" hidden>
-            <strong id="messageThreadTitle">Conversación</strong>
-            <div id="messageThreadItems"></div>
-            <form id="messageReplyForm">
-              <label class="owner-field"><span>Tu respuesta</span><textarea id="messageReplyBody" rows="3" maxlength="5000" required></textarea></label>
-              <button class="primary" type="submit" id="messageReplyButton">Responder</button>
-            </form>
-          </div>
-        </div><button class="secondary private-action" type="button" id="privateMessagesAction">Abrir mensajes</button></article>
+        
         <article class="private-tile"><span class="private-icon">▤</span><h3 id="privateComplaintsTitle">Reclamos</h3><p id="privateComplaintsDesc">Seguimiento y respuestas</p><div id="privateComplaintsContent"></div><button class="secondary private-action" type="button" id="privateComplaintsAction">Ver mis reclamos</button></article>
         <article class="private-tile private-wide"><span class="private-icon">☆</span><h3 id="privateReviewsTitle">Opiniones de mis clientes</h3><p id="privateReviewsDesc">Comentarios y calificaciones</p><div id="privateReviewsContent"></div><button class="secondary private-action" type="button" id="privateReviewsAction">Actualizar opiniones</button></article>
         <article class="private-tile private-wide"><h3 id="privatePostsTitle">Mis publicaciones</h3><form id="privatePostForm"><label class="owner-field"><span id="privatePostLabel">Comparte algo con la comunidad</span><textarea id="privatePostBody" rows="3" maxlength="5000" required></textarea></label><button class="primary" type="submit" id="privatePostSubmit">Publicar</button><p class="owner-message" id="privatePostMessage" aria-live="polite"></p></form><div id="privatePostsList"></div></article>
@@ -450,8 +451,34 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
           <p class="owner-message" id="reputixAiStatus" aria-live="polite"></p>
           <div class="ai-assistant-answer" id="reputixAiAnswer" hidden></div>
         </article>
-      </div>
-    </section>
+        </div>
+      </section>
+      <section class="private-module-group owner-module-group" aria-labelledby="ownerModulesTitle">
+        <div class="private-module-heading"><span>REPUTIX · BUSINESS OWNER</span><h3 id="ownerModulesTitle">Gestión de negocio</h3><p id="ownerModulesIntro">Herramientas de propietarios y representantes verificados.</p></div>
+        <div class="private-module-grid owner-module-grid">
+          <article class="private-tile"><span class="private-icon">◌</span><h3 id="privateMessagesTitle">Mensajes</h3><p id="privateMessagesDesc">Comunicación con clientes</p><div id="privateMessagesContent">
+          <div class="message-compose">
+            <strong>Contactar un negocio</strong>
+            <label class="owner-field"><span>Negocio</span><select id="messageBusiness"><option value="">Selecciona un negocio aprobado</option></select></label>
+            <label class="owner-field"><span>Asunto</span><input id="messageSubject" maxlength="160" placeholder="Consulta sobre un producto o servicio"></label>
+            <label class="owner-field"><span>Mensaje</span><textarea id="messageFirstBody" rows="3" maxlength="5000" placeholder="Escribe tu mensaje..." ></textarea></label>
+            <button class="primary" type="button" id="messageStartButton">Enviar mensaje</button>
+            <p class="owner-message" id="messageStatus" aria-live="polite"></p>
+          </div>
+          <div class="message-inbox"><strong>Bandeja de entrada</strong><div id="messageConversationList"></div></div>
+          <div class="message-thread" id="messageThread" hidden>
+            <strong id="messageThreadTitle">Conversación</strong>
+            <div id="messageThreadItems"></div>
+            <form id="messageReplyForm">
+              <label class="owner-field"><span>Tu respuesta</span><textarea id="messageReplyBody" rows="3" maxlength="5000" required></textarea></label>
+              <button class="primary" type="submit" id="messageReplyButton">Responder</button>
+            </form>
+          </div>
+        </div><button class="secondary private-action" type="button" id="privateMessagesAction">Abrir mensajes</button></article>
+          
+        </div>
+      </section>
+    </div>
     <div id="ownerClaimArea" hidden>
       <div class="divider"></div>
       <h3 id="claimTitle">Solicitar acceso al negocio</h3>
