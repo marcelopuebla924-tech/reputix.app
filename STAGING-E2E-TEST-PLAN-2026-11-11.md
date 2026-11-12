@@ -207,3 +207,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Commit: `c5415ad9da7b6b0cfd87e21a6ad95dfc2a404d0b`.
 - Browser QA run #172 is running for the expanded admin decision test.
 - No real claims or production data were changed.
+
+
+## Update — 2026-11-11 18:22 PST
+
+- Browser QA run #172 passed the expanded admin owner-claim approve/reject test.
+- Messaging regression coverage now clicks both the customer's reply button and the verified owner's reply button.
+- Test commits: `89034e835576fcb585ef1d85265e41d4a58a0770`, `f8374dfdc89aec2556525bf73988b8364407a3ec`.
+- Suite remains at 31 named checks. Run #177 is pending completion for these button-level interactions.
+- All records remain synthetic/mocked.
