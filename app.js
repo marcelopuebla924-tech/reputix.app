@@ -463,7 +463,7 @@ function setLanguage(value) {
   input.placeholder = t("placeholder");
   searchButton.textContent = t("search");
 
-  ["f1","fd1","f2","fd2","f3","fd3",
+  ["f2","fd2","f3","fd3",
    "communityTitle","communityIntro",
    "addBusinessTitle","addBusinessDesc","addProTitle","addProDesc"
   ].forEach(id => $(id).textContent = t(id));
