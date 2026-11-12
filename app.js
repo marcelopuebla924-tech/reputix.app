@@ -1805,7 +1805,7 @@ function publicBusinessUrl(b) {
 }
 
 function updatePublicBusinessMetadata(b) {
-  const clean = value => String(value || "").replace(/\\s+/g," ").trim();
+  const clean = value => String(value || "").replace(/\s+/g," ").trim();
   const title = clean(b.name) + " | Reputix";
   const description = clean(b.description) ||
     [b.category, b.address, b.city].filter(Boolean).join(" · ") ||
