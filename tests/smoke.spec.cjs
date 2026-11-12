@@ -135,7 +135,7 @@ const { chromium } = require("playwright");
       const reviewForm = card.locator(".details form").first();
       if (await reviewForm.locator('select[name="cleanliness"]').count() !== 1) throw new Error("Review criteria form missing");
       if (await reviewForm.locator('input[name="visit_date"]').count() !== 1) throw new Error("Visit date field missing");
-      await card.locator(".actions button.secondary").click();
+      await card.getByRole("button", { name: "Opiniones", exact: true }).click();
       await card.locator("section.details").first().waitFor({ state: "visible" });
     });
 
@@ -170,7 +170,7 @@ const { chromium } = require("playwright");
       await translationPage.locator("#searchButton").click();
       const card = translationPage.locator("#results .business-card").filter({ hasText: "QA Translation Business" }).first();
       await card.waitFor({ state: "visible", timeout: 10000 });
-      await card.locator(".actions button.secondary").click();
+      await card.getByRole("button", { name: "Opiniones", exact: true }).click();
       const review = card.locator(".details article.review").first();
       await review.waitFor({ state: "visible", timeout: 10000 });
       const translated = review.locator("p").filter({ hasText: translatedText });
