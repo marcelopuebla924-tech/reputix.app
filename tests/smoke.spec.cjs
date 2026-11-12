@@ -106,6 +106,8 @@ const { execFileSync } = require("node:child_process");
           JSON.stringify(audit.missing.slice(0, 12)));
       }
       if (!audit.checked) throw new Error("No visible map controls were audited");
+      await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await page.waitForFunction(() => typeof window.reputixStartCheckout === "function", null, { timeout: 15000 });
     });
 
     await check("Spanish and English language selector works without runtime errors", async () => {
