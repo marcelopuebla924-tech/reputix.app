@@ -166,7 +166,7 @@ const { execFileSync } = require("node:child_process");
       const staticCard = profilePage.locator("#results .business-card").filter({ hasText: businessName }).first();
       await staticCard.waitFor({ state: "visible", timeout: 10000 });
       const staticCanonical = await profilePage.locator('link[rel="canonical"]').getAttribute("href");
-      if (staticCanonical !== "https://www.reputixapp.com/business/" + businessId + "/") {
+      if (staticCanonical !== "http://127.0.0.1:4173/business/" + businessId + "/") {
         throw new Error("Pre-rendered profile canonical URL was not preserved after the app loaded");
       }
       if (!(await profilePage.title()).includes(businessName)) {
