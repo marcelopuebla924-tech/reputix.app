@@ -1029,7 +1029,7 @@ async function loadApprovedBusinessPhotos(businessId,card) {
     if (!Array.isArray(rows) || !rows.length) return;
     const cover = card.querySelector(".business-cover");
     const gallery = node("div","business-photo-gallery");
-    let firstPhoto = true;
+    let firstPhoto = !cover?.classList.contains("has-photo");
     for (const row of rows) {
       const response = await fetch(SUPABASE_URL + "/storage/v1/object/sign/business-photos/" + photoPathUrl(row.storage_path),{
         method:"POST",
@@ -1095,6 +1095,16 @@ function makeBusinessCover(business) {
   else if (/clothing|ropa|fashion|apparel/.test(category)) { theme = "fashion"; symbol = "✦"; }
   else if (/market|supermarket|grocery|tienda/.test(category)) { theme = "market"; symbol = "🛒"; }
   cover.classList.add("cover-" + theme);
+  const coverUrl = safeUrl(business.cover_image_url);
+  if (coverUrl) {
+    const image = node("img","business-cover-image");
+    image.src = coverUrl;
+    image.alt = (business.name || "Business") + " storefront";
+    image.loading = "lazy";
+    image.onerror = () => { image.remove(); cover.classList.remove("has-photo"); };
+    cover.append(image);
+    cover.classList.add("has-photo");
+  }
   const art = node("div","business-cover-art",symbol);
   const caption = node("div","business-cover-caption");
   caption.append(node("strong","",business.name || (lang === "es" ? "Negocio" : "Business")));
@@ -2717,7 +2727,7 @@ function ownerSetSession(session) {
     loadPrivateSpace();
     loadMessageCenter();
     $("privateSpace").scrollIntoView({behavior:"smooth",block:"start"});
-    if(isAdmin) { loadAdminClaims(); loadAdminReviewModeration(); }
+    if(isAdmin) { loadAdminClaims(); loadAdminReviewModeration(); loadAdminBusinessModeration(); }
   } else {
     ownerSubscription=null;ownerSubscriptionLoaded=false;
     $("customerWorkspace").hidden=true;
@@ -2914,6 +2924,63 @@ async function loadAdminReviewModeration() {
 }
 
 document.getElementById("adminReviewModerationRefresh")?.addEventListener("click", loadAdminReviewModeration);
+
+async function loadAdminBusinessModeration() {
+  const list=$("adminBusinessModerationList"), status=$("adminBusinessModerationStatus");
+  if(!list||!status||ownerSession?.user?.app_metadata?.reputix_role!=="admin")return;
+  list.replaceChildren();
+  status.textContent=ownerText("Cargando negocios pendientes…","Loading pending businesses…");
+  try{
+    const call=async(mode,business_id)=>{
+      let response=await fetch(SUPABASE_URL+"/functions/v1/reputix-business-moderation",{
+        method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+ownerSession.access_token,"Content-Type":"application/json"},
+        body:JSON.stringify({mode,business_id})
+      });
+      if(response.status===401&&ownerSession.refresh_token){
+        const refreshed=await ownerAuthRequest("token?grant_type=refresh_token",{refresh_token:ownerSession.refresh_token});
+        if(refreshed?.access_token&&refreshed?.user?.id){
+          ownerSetSession(refreshed);
+          response=await fetch(SUPABASE_URL+"/functions/v1/reputix-business-moderation",{
+            method:"POST",headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+refreshed.access_token,"Content-Type":"application/json"},
+            body:JSON.stringify({mode,business_id})
+          });
+        }
+      }
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok)throw new Error(data.error||("HTTP "+response.status));
+      return data;
+    };
+    const data=await call("list");
+    const items=Array.isArray(data.items)?data.items:[];
+    if(!items.length){status.textContent=ownerText("No hay negocios pendientes. La cola está al día.","No pending businesses. The queue is clear.");return;}
+    status.textContent=ownerText(items.length+" negocio(s) pendientes. La IA ofrece recomendaciones; la aprobación sigue siendo humana.",items.length+" pending business(es). AI provides recommendations; approval remains human.");
+    for(const business of items){
+      const card=node("article","admin-claim");
+      card.append(node("div","admin-claim-title",business.name||"Business"));
+      card.append(node("div","admin-claim-meta",[business.category,business.address,business.city,business.zip].filter(Boolean).join(" · ")));
+      if(business.description)card.append(node("p","admin-claim-evidence",business.description));
+      const prior=Array.isArray(business.business_ai_moderation)?business.business_ai_moderation[0]:null;
+      if(prior){
+        const title=prior.outcome==="clear"?ownerText("IA: sin alertas detectadas","AI: no flags detected"):prior.outcome==="high_risk"?ownerText("IA: riesgo alto; revisar primero","AI: high risk; review first"):ownerText("IA: requiere revisión humana","AI: needs human review");
+        card.append(node("div","admin-claim-meta",title));
+        if(Array.isArray(prior.reasons)&&prior.reasons.length)card.append(node("div","admin-claim-meta",ownerText("Motivos: ","Reasons: ")+prior.reasons.join(", ")));
+        if(prior.confidence!==null&&prior.confidence!==undefined)card.append(node("div","admin-claim-meta",ownerText("Confianza: ","Confidence: ")+Math.round(Number(prior.confidence)*100)+"%"));
+      }else card.append(node("div","admin-claim-meta",ownerText("Todavía no tiene evaluación de IA.","No AI assessment yet.")));
+      const assess=node("button","secondary",ownerText("Analizar con IA","Assess with AI"));
+      assess.type="button";
+      assess.addEventListener("click",async()=>{
+        assess.disabled=true;assess.textContent=ownerText("Analizando…","Assessing…");
+        try{await call("assess",business.id);await loadAdminBusinessModeration();}
+        catch(error){assess.disabled=false;assess.textContent=ownerText("Reintentar análisis","Retry assessment");status.textContent=ownerText("No se pudo analizar: ","Assessment failed: ")+(error?.message||String(error));}
+      });
+      card.append(assess);
+      list.append(card);
+    }
+  }catch(error){
+    status.textContent=ownerText("No se pudo cargar la revisión de negocios: ","Could not load business moderation: ")+(error?.message||String(error));
+  }
+}
+document.getElementById("adminBusinessModerationRefresh")?.addEventListener("click",loadAdminBusinessModeration);
 
 async function loadAdminClaims() {
   const list=$("adminClaimsList");
