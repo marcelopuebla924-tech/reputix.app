@@ -1811,8 +1811,7 @@ function publicBusinessUrl(b) {
 function updatePublicBusinessMetadata(b) {
   const clean = value => String(value || "").replace(/\s+/g," ").trim();
   const title = clean(b.name) + " | Reputix";
-  const description = clean(b.description) ||
-    [b.category, b.address, b.city].filter(Boolean).join(" · ") ||
+  const description = [clean(b.category), clean(b.city)].filter(Boolean).join(" · ") ||
     (lang === "es" ? "Consulta opiniones y descubre este negocio en Reputix." : "Read reviews and discover this business on Reputix.");
   const url = publicBusinessUrl(b);
   document.title = title;
@@ -1852,7 +1851,6 @@ function updatePublicBusinessMetadata(b) {
     "@type":"LocalBusiness",
     "name":clean(b.name),
     "url":url,
-    ...(description ? {description:description.slice(0,300)} : {}),
     ...(b.phone ? {telephone:b.phone} : {}),
     ...(b.address || b.city ? {address:postalAddress} : {})
   });
