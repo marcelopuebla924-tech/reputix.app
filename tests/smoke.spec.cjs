@@ -1401,10 +1401,11 @@ const { chromium } = require("playwright");
       const mapPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       mapPage.on("pageerror", error => failures.push(error.stack || error.message));
       await mapPage.addInitScript(() => {
+        window.__qaMapFitBoundsCalls = 0;
         const map = {
           setView() { return this; },
           flyTo() { return this; },
-          fitBounds() { return this; },
+          fitBounds() { window.__qaMapFitBoundsCalls += 1; return this; },
           invalidateSize() { return this; }
         };
         window.L = {
@@ -1531,7 +1532,9 @@ const { chromium } = require("playwright");
         throw new Error("Business name was not rendered as literal text");
       }
       if (await detail.locator("img").count()) throw new Error("Untrusted business name created an HTML image element");
+      const fitBoundsBeforeReset = await mapPage.evaluate(() => window.__qaMapFitBoundsCalls);
       await mapPage.locator("#resetView").click();
+      await mapPage.waitForFunction(before => window.__qaMapFitBoundsCalls > before, fitBoundsBeforeReset, { timeout: 3000 });
       await mapPage.close();
     });
 
