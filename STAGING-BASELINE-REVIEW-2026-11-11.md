@@ -6,39 +6,33 @@
 **Status:** candidate only; NOT applied.
 
 ## Reconciliation
-- 20 public base tables.
-- 93 validated constraints.
-- 54 total indexes: 29 primary/unique indexes created by constraints and 25 additional indexes.
-- 35 permissive RLS policies across 16 tables.
-- 5 public routines and 5 public views.
+- 20 public base tables; 93 validated constraints; 54 total indexes (29 PK/UNIQUE created by constraints, 25 additional indexes).
+- 35 permissive RLS policies across 16 tables; 5 routines; 5 views.
 - 0 public triggers and 0 public custom enum/domain types.
-- `ad_clicks.id` and `ad_impressions.id` are `bigint GENERATED ALWAYS AS IDENTITY`; their internal identity sequences are managed by PostgreSQL.
-- `business_photos.business_id` remains TEXT with no FK.
-- Both partial/expression indexes are preserved.
-- No production records, Auth identities, Storage objects, Stripe secrets, or cron jobs are copied.
+- `ad_clicks.id` and `ad_impressions.id` are `bigint GENERATED ALWAYS AS IDENTITY`; PostgreSQL manages their identity sequences.
+- `business_photos.business_id` remains TEXT with no FK. Both partial/expression indexes are preserved.
 
-## Intentional staging-only changes
-- All five views are created with `security_invoker=true`; this changes the two flagged owner views from production's default owner context. Preserve the definitions and test with two synthetic owners. Do not widen underlying grants to force tests to pass.
-- Only the `postgres` default privileges in staging are tightened. Supabase-managed `supabase_admin` defaults are untouched.
-- Existing explicit relation grants, column grants, routine EXECUTE grants, and all 35 RLS policies are recreated from production catalog evidence.
-- Messaging grants remain scoped: conversations INSERT limited to selected columns; messages INSERT limited to conversation_id/sender_id/body and UPDATE limited to read_at.
-- Anonymous business proposal RPC remains available per its current ACL; test abuse controls before launch.
+## Staging-only security choices
+- All five views are candidates for `security_invoker=true`. This hardens the two production owner views flagged by Security Advisor. Test the exact views as two synthetic owners; do not widen underlying grants if the invoker model fails.
+- Tighten future default ACLs only for the staging `postgres` migration owner. Supabase-managed `supabase_admin` defaults are untouched.
+- Recreate explicit production relation grants, column grants, routine EXECUTE grants, and all 35 RLS policies. Messaging remains column-scoped.
+- Keep anonymous proposal RPC ACL as cataloged while abuse controls are evaluated; don't revoke it blindly.
 
 ## Excluded
-- Storage buckets/configuration must be created through Supabase Storage APIs. Preserve both private buckets and their exact MIME/size restrictions; verification bucket remains private. Storage object policies are documented in the separate inventory and require a separate staging API/SQL step.
-- Do not install pg_cron or create the production five-minute review publishing job in staging.
-- No Edge Functions, Auth configuration, SMTP, secrets, or Stripe configuration are copied.
-- No missing historical migrations are fabricated.
+- Storage buckets/configuration are a separate Supabase Storage API step. Preserve both private buckets and MIME/size restrictions; verification bucket stays private.
+- Do not install pg_cron or create the five-minute review publication job in staging.
+- No Edge Functions, Auth settings, SMTP, secrets, Stripe configuration, production data, or Auth identities are copied.
+- Do not fabricate missing historical migrations.
 
 ## Mandatory pre-apply checks
-1. Verify exact staging project ID and empty state.
-2. Review generated SQL for all objects and confirm role names exist.
-3. Confirm staging PostgreSQL version supports `security_invoker` and `MAINTAIN`.
-4. Confirm migrations execute as `postgres`; default privilege changes apply only to that owner.
-5. Confirm extensions already present: plpgsql, supabase_vault, pg_stat_statements, pgcrypto, uuid-ossp. Keep pg_cron absent.
-6. Validate ACLs using `has_table_privilege`, `has_column_privilege`, and `has_function_privilege` after applying.
+1. Verify target project ID and empty state.
+2. Review all generated SQL, role names, explicit grants and dependencies.
+3. Confirm PostgreSQL supports `security_invoker` and `MAINTAIN` grants.
+4. Confirm migrations execute as `postgres`; default ACL changes apply to that role only.
+5. Verify staging has plpgsql, supabase_vault, pg_stat_statements, pgcrypto, uuid-ossp; keep pg_cron absent.
+6. Validate effective privileges with `has_table_privilege`, `has_column_privilege`, and `has_function_privilege` after applying.
 7. Apply only to isolated staging after review and rollback/rebuild plan.
-8. Run the full synthetic positive/negative RLS matrix, especially cross-owner dashboard isolation, before any launch-readiness claim.
+8. Run the full synthetic positive/negative RLS matrix, especially cross-owner dashboard isolation.
 
-## Known limitation
-This is a database schema/security baseline candidate, not a full product deployment. Storage setup, Edge Functions, Auth behavior, frontend flows, and Stripe test-mode integration remain separate workstreams.
+## Limits
+This database baseline is not a complete product deployment. Storage API configuration, Edge Functions, Auth flows, frontend QA, and Stripe test-mode behavior remain separate workstreams.
