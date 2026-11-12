@@ -166,8 +166,11 @@ export function createStripeWebhookHandler({
       };
 
       const baseUrl = supabaseUrl.replace(/\/+$/, "");
+      const normalizedRestPath = String(restBasePath).replace(/^\/+|\/+$/g, "");
+      const rpcPath = (normalizedRestPath ? "/" + normalizedRestPath : "") +
+        "/rpc/process_stripe_webhook_event";
       const rpcResponse = await fetchImpl(
-        baseUrl + "/rest/v1/rpc/process_stripe_webhook_event",
+        baseUrl + rpcPath,
         {
           method: "POST",
           headers: {
