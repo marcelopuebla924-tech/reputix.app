@@ -124,3 +124,24 @@ Read the deployed Edge Function source in production and staging, and compared b
 - Still open: AI durable quota implementation and hosted runtime tests; hosted owner-RPC authorization tests; proposal submission gateway/throttling; private verification-document workflow; AI CORS production release gate; Stripe PR #33 release gates.
 - No production deployment, migration, PR merge, Stripe operation, domain/DNS change, sensitive Auth change, or user-data write occurred.
 - Production reputix-ai remains v22 unchanged. Staging reputix-ai remains v1. PR #33 and PR #34 remain draft/unmerged.
+
+
+## Validation pass — 12:32 p.m. PST, Nov 12 2026
+
+### Tests actually executed / verified
+- Re-evaluated the 9 Reputix AI source-contract assertions directly against the exact GitHub main blob `54b4be6602120e021f4436cc64eb0b208e8c0cda`: 9/9 PASS. These are source assertions only, not hosted runtime tests.
+- Retrieved GitHub Actions run for PR #34 exact head `4bb2f75006f1d301cb9e23daa3ded7195f2e9160`: Owner complaint RPC PostgreSQL 17 isolated candidate suite run #5 completed SUCCESS; all steps, including isolated authorization tests, passed. Browser QA run #439 completed SUCCESS; all steps passed.
+- Retrieved GitHub Actions runs for Stripe PR #33 exact head `75a307362c5bfaa0743f19959386f1d05292a260`: handler contract run #29 SUCCESS; atomic RPC PostgreSQL run #43 SUCCESS; local PostgREST integration run #14 SUCCESS; Browser QA run #489 SUCCESS. Every job step completed successfully.
+- Read-only staging catalog check: PostgreSQL 17.11; four protected tables exist. Read-only grants check (previous section) confirms only postgres/service_role grants for these tables.
+- Read-only production owner RPC check: SECURITY DEFINER, empty search_path, anon denied, authenticated allowed, but approved-business predicate is absent. This is a verified production/staging behavior gap; no production change made.
+- Re-read deployed AI Edge Function metadata: production `reputix-ai` ACTIVE v22; staging ACTIVE v1 with `verify_jwt=true`. GitHub main source still matches the staging allowlist candidate.
+
+### Tests not executable through currently connected capabilities
+- AI GitHub Actions source-contract workflow has no PR-triggered run associated with trigger commit `c3ea3ac75ae24f6cfce6daa2bae85dff0b5e5f95`; direct workflow dispatch is not exposed in the connected GitHub actions. Nine source assertions were therefore run directly as above, but Deno type-check workflow result is not confirmed.
+- No Supabase Edge Function invoke action is exposed. No valid synthetic auth session or OpenAI test budget was used. Hosted CORS preflight, disallowed-origin, authentication, Pro gating, moderation, and AI rate-limit behavior remain untested.
+- Hosted Supabase owner authorization with separate real test identities (Owner A, Owner B, unverified, unapproved) remains untested. Isolated PostgreSQL suite success does not prove hosted Auth/RLS/gateway integration.
+- Stripe candidate tests are green only in isolated PostgreSQL/local PostgREST and synthetic Stripe signature tests; no hosted Supabase/real Stripe integration was performed.
+
+### Current release gate
+- Keep production AI v22 and owner RPC unchanged. Do not merge PR #33 or #34. No migrations, deployments, payment operations, Auth/Storage changes, domain/DNS changes, or production data writes were performed.
+- Next: obtain an approved staging HTTP test path and synthetic test identities; run hosted AI and owner authorization integration tests; then add durable server-side AI/proposal throttling and test them before launch.
