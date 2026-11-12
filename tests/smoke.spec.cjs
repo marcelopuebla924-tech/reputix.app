@@ -392,7 +392,7 @@ const { chromium } = require("playwright");
             getLatLng() { return { lat: coords[0], lng: coords[1] }; },
             openPopup() { return this; }
           }),
-          featureGroup: () => ({ getBounds: () => ({}) })
+          featureGroup: () => ({ getBounds: () => ({ pad() { return this; } }) })
         };
       });
       await mapPage.route("**/*", async route => {
