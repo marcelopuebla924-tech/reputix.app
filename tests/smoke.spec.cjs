@@ -104,6 +104,52 @@ const { chromium } = require("playwright");
       await claimPage.close();
     });
 
+    await check("Admin moderation and advertising controls work with mocked data", async () => {
+      const adminPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      adminPage.on("pageerror", error => failures.push(error.stack || error.message));
+      await adminPage.route("**/rest/v1/**", async route => {
+        if (route.request().method() === "POST" && route.request().url().includes("/ad_campaigns")) {
+          await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
+        } else {
+          await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+        }
+      });
+      await adminPage.route("**/functions/v1/reputix-ai", async route => {
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [], count: 0 }) });
+      });
+      await adminPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await adminPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await adminPage.evaluate(() => window.ownerSetSession({
+        access_token: "qa-mocked-admin-token",
+        refresh_token: "qa-mocked-admin-refresh",
+        user: {
+          id: "00000000-0000-4000-8000-000000000003",
+          email: "admin-qa@example.invalid",
+          app_metadata: { reputix_role: "admin" }
+        }
+      }));
+      await adminPage.locator("#adminAdsPanel").waitFor({ state: "visible" });
+      await adminPage.locator("#adminReviewModerationPanel").waitFor({ state: "visible" });
+      await adminPage.locator("#adminReviewModerationRefresh").click();
+      await adminPage.locator("#adsRefreshButton").click();
+      await adminPage.locator("#adsBusiness").evaluate(el => {
+        const option = document.createElement("option");
+        option.value = "00000000-0000-4000-8000-000000000004";
+        option.textContent = "QA Mock Business";
+        el.append(option);
+        el.value = option.value;
+      });
+      await adminPage.locator("#adsTitle").fill("QA Mock Campaign");
+      await adminPage.locator("#adsDescription").fill("Simulated campaign. No real billing.");
+      const adPost = adminPage.waitForResponse(response =>
+        response.url().includes("/rest/v1/ad_campaigns") && response.request().method() === "POST"
+      );
+      await adminPage.locator("#adsCreateButton").click();
+      await adPost;
+      await adminPage.waitForFunction(() => /campaña creada y enviada a revisión/i.test(document.querySelector("#adsAdminMessage")?.textContent || ""), null, { timeout: 8000 });
+      await adminPage.close();
+    });
+
     await check("Public Reputix AI opens and closes", async () => {
       await page.locator("#reputixAiFab").click();
       await page.locator("#reputixAiModal").waitFor({ state: "visible" });
