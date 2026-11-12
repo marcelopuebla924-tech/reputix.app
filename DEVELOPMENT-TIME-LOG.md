@@ -545,3 +545,22 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Latest additional test commit: `25bc0b647720b06b87d9411d3730dd1746ead72d` (approved-business selection in claim picker).
 - Proposal real-submit-button commit `807609bab3d09fb3a84a55f00a1ee1aa572a33b5` still awaits independently verified push-triggered CI.
 - Exact active duration not measured; excluded. Official cumulative tracked time remains 45 minutes 58 seconds (0.766 hours).
+
+
+## Session 026 — 2026-11-11
+
+- Start: 18:30:06 PST
+- End: 18:33:16 PST
+- Active tracked time: 3 minutes 10 seconds (0.053 hours)
+- Cumulative tracked time since baseline: 49 minutes 8 seconds (0.819 hours)
+
+### Verification and work performed
+1. Browser QA run #198 passed all 31 checks, zero page errors, including admin campaign field payload assertions.
+2. Expanded claim picker test to select a synthetic approved business and verify the selected ID.
+3. Expanded admin advertising test to activate, pause, and finish a synthetic campaign, confirming the status transitions through mocked PATCH calls and dialogs.
+
+### Commits and pending verification
+- `25bc0b647720b06b87d9411d3730dd1746ead72d` — claim picker selection.
+- `f527464afceaf277fdbd42ef82fba8c73be71ac3` — ad campaign lifecycle actions.
+- Browser QA run #219 was in progress at log time.
+- All data and API responses are synthetic/mocked; no real ad campaign or owner claim was changed.
