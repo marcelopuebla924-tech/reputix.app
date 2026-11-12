@@ -1137,6 +1137,7 @@ const { execFileSync } = require("node:child_process");
       let signupCalls = 0;
       let signinCalls = 0;
       let signupRedirect = "";
+      await authPage.route("https://ipwho.is/**", route => route.fulfill({status:200,contentType:"application/json",body:JSON.stringify({success:true,country:"Chile",country_code:"CL"})}));
       await authPage.route("**/rest/v1/**", route =>
         route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
       );
@@ -1144,7 +1145,7 @@ const { execFileSync } = require("node:child_process");
         signupCalls += 1;
         signupRedirect = new URL(route.request().url()).searchParams.get("redirect_to") || "";
         const payload = route.request().postDataJSON();
-        if (payload.email !== "new-owner-qa@example.invalid" || payload.password !== "QA-only-password-123") {
+        if (payload.email !== "new-owner-qa@example.invalid" || payload.password !== "QA-only-password-123" || payload.data?.country_name !== "Chile" || payload.data?.country_code !== "CL") {
           return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ msg: "Unexpected synthetic signup payload" }) });
         }
         await route.fulfill({
