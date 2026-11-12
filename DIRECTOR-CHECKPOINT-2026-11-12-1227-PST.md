@@ -38,3 +38,36 @@ These are isolated CI results, not hosted Supabase or real Stripe account valida
 
 ## Next objective
 Return to the Reputix AI test harness and production drift release gates, then complete staging-equivalent tests for owner complaint RPC without weakening the staging foreign keys or verification constraints.
+
+
+## Additional read-only work — 12:27 p.m. PST
+
+### Reputix AI CORS source comparison
+Read the deployed Edge Function source in production and staging, and compared both against the current GitHub `main` source at `supabase/functions/reputix-ai/index.ts`.
+
+- Production deployed function: `reputix-ai` version 22. Its current source still has `Access-Control-Allow-Origin: *` and a wildcard CORS header object.
+- Staging deployed function: `reputix-ai` version 1. Its source uses an explicit allowlist for `https://reputixapp.com`, `https://www.reputixapp.com`, and `https://marcelopuebla924-tech.github.io`, reflects only allowlisted origins, and sets `Vary: Origin`.
+- GitHub `main` source matches the staging allowlist implementation (blob SHA `54b4be6602120e021f4436cc64eb0b208e8c0cda`).
+- Confirmed production/staging/source drift: hardened CORS source is committed and present in staging, but not yet deployed to production.
+- No Edge Function was deployed. Production remains unchanged pending runtime regression checks and a deliberate release step.
+
+### Verification document privacy / call-path review
+- Inspected all four currently deployed production Edge Function sources: `reputix-ai`, `tamos-cover-once`, `create-checkout-session`, and `stripe-webhook`.
+- None references `business_verification_documents` or the `business-verification-private` bucket.
+- `tamos-cover-once` is intentionally closed and returns HTTP 410.
+- GitHub search found no application source reference to the verification-documents table/bucket beyond security/storage documentation and tests. Therefore no active client upload/download path is confirmed in the inspected app/Edge Function sources.
+- Preserve the current private bucket posture and absence of client-facing policies. A controlled owner/admin verification workflow remains to be designed and tested.
+- No table, storage object, policy, user, or business data was changed.
+
+### Verification / limitations
+- Read-only source comparison and repository search only.
+- No production/staging database writes, Auth changes, Storage changes, Stripe calls, or Edge Function deployments.
+- Browser QA and source-contract tests do not substitute for hosted runtime tests.
+- Production AI CORS mismatch is an open release gate; verify preflight and allowed/disallowed origin behavior on staging before any production deployment.
+
+### Next safe execution order
+1. Add/verify focused staging runtime tests for AI CORS preflight, allowed origin, disallowed origin, authentication, Pro gating, and advisory moderation behavior.
+2. If staging runtime checks pass, prepare a controlled production deployment of the exact GitHub `main` AI source and verify its deployed version/hash; do not change secrets.
+3. Design the private owner-verification document workflow (server-side upload, review, and signed access only) without relaxing bucket privacy.
+4. Continue owner complaint RPC hosted authorization tests and Stripe PR #33 review; do not merge/deploy candidates or alter live payment configuration.
+5. Preserve all user data, accounts, reviews, businesses, photos, domain/DNS, and sensitive Auth/payment settings.
