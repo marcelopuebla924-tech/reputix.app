@@ -497,8 +497,6 @@ const { chromium } = require("playwright");
         await paidPage.waitForFunction(() => /updated|actualizado/i.test(document.querySelector("#customerWorkspaceStatus")?.textContent || ""), null, { timeout: 8000 });
         if (refreshProfileCalls <= before) throw new Error("Workspace refresh did not reload the customer profile data");
         if (plan === "basic") {
-          await paidPage.locator("#customerComplaintBusiness").selectOption("00000000-0000-4000-8000-000000000093");
-          await paidPage.locator("#customerComplaintText").fill("QA synthetic complaint about a delayed service.");
           let complaintPayload = null;
           await paidPage.route("**/rest/v1/complaints", async route => {
             if (route.request().method() === "POST") {
@@ -508,6 +506,14 @@ const { chromium } = require("playwright");
               await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
             }
           });
+          const complaintForm = paidPage.locator("#customerComplaintForm");
+          if (await complaintForm.evaluate(form => form.checkValidity())) {
+            throw new Error("A blank customer complaint form should fail native required-field validation");
+          }
+          await paidPage.locator("#customerComplaintSubmit").click();
+          if (complaintPayload !== null) throw new Error("Invalid customer complaint reached the mocked REST endpoint");
+          await paidPage.locator("#customerComplaintBusiness").selectOption("00000000-0000-4000-8000-000000000093");
+          await paidPage.locator("#customerComplaintText").fill("QA synthetic complaint about a delayed service.");
           await paidPage.locator("#customerComplaintSubmit").click();
           await paidPage.waitForFunction(() => /reclamo enviado|complaint submitted/i.test(document.querySelector("#customerComplaintStatus")?.textContent || ""), null, { timeout: 8000 });
           if (!complaintPayload || complaintPayload.status !== "pending" || complaintPayload.user_id !== "00000000-0000-4000-8000-000000000091") {
