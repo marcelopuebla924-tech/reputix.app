@@ -3154,9 +3154,9 @@ $("ownerMessageReplyForm")?.addEventListener("submit",async event=>{
   try{
     await api("business_messages",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({conversation_id:conversationId,sender_id:ownerSession.user.id,body})});
     $("ownerMessageReplyBody").value="";
-    status.textContent=ownerText("Respuesta enviada.","Reply sent.");
     await openOwnerMessageConversation({id:conversationId,subject:$("ownerMessageThreadTitle").textContent});
     await loadOwnerMessageCenter();
+    status.textContent=ownerText("Respuesta enviada.","Reply sent.");
   }catch(error){
     status.textContent=ownerText("No se pudo enviar: ","Could not send: ")+(error?.message||String(error));
   }finally{$("ownerMessageReplyButton").disabled=false;}
