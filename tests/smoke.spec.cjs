@@ -1659,6 +1659,23 @@ const { chromium } = require("playwright");
       await mobile.waitForFunction(() => /correo|email/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""), null, { timeout: 8000 });
     });
 
+    await check("Desktop Reputix AI shortcut stays compact and keeps its accessible label", async () => {
+      const fab = page.locator("#reputixAiFab");
+      const box = await fab.boundingBox();
+      if (!box || box.width > 76 || box.height > 76) {
+        throw new Error("Desktop AI shortcut should stay compact; measured " + JSON.stringify(box));
+      }
+      if (await fab.locator(".reputix-ai-fab-copy").isVisible()) {
+        throw new Error("Desktop AI shortcut text should be collapsed to avoid covering business cards");
+      }
+      if ((await fab.getAttribute("aria-label")) !== "Abrir Reputix AI") {
+        throw new Error("Compact desktop shortcut lost its accessible name");
+      }
+      if (!(await fab.locator(".reputix-ai-fab-orb").isVisible())) {
+        throw new Error("Desktop AI shortcut icon is not visible");
+      }
+    });
+
     await mobile.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
     await mobile.waitForFunction(() => !!window.L && !!document.querySelector("#map"), null, { timeout: 15000 });
     await check("Mobile map filters respond to touch", async () => {
