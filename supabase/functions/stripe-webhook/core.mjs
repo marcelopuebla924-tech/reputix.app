@@ -72,6 +72,7 @@ export function createStripeWebhookHandler({
   supabaseUrl,
   serviceRoleKey,
   expectedLivemode,
+  restBasePath = "/rest/v1",
   fetchImpl = fetch,
 }) {
   return async function handleStripeWebhook(request) {
