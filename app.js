@@ -1670,12 +1670,30 @@ function makeReviewForm(business) {
 
       if (!business.id) throw new Error(t("invalidBusiness"));
 
+      // Vincular la opinión a una cuenta solo cuando el JWT activo confirma
+      // exactamente el mismo usuario. Si no hay sesión válida, enviar como
+      // opinión pública anónima (la política RLS permite user_id IS NULL).
+      let reviewUserId = null;
+      try {
+        const accessToken = String(ownerSession?.access_token || "");
+        const tokenPayload = accessToken.split(".")[1];
+        if (tokenPayload) {
+          const normalizedPayload = tokenPayload.replace(/-/g, "+").replace(/_/g, "/");
+          const claims = JSON.parse(atob(normalizedPayload));
+          if (claims.sub && claims.sub === ownerSession?.user?.id) {
+            reviewUserId = claims.sub;
+          }
+        }
+      } catch (tokenError) {
+        console.warn("No se pudo validar el usuario de la opinión; se enviará sin vincular a una cuenta.", tokenError);
+      }
+
       const insertedReviews = await api("reviews",{
         method:"POST",
         headers:{Prefer:"return=representation"},
         body:JSON.stringify({
           business_id:business.id,
-          user_id:ownerSession?.user?.id || null,
+          user_id:reviewUserId,
           visit_date:fd.get("visit_date"),
           visit_time:fd.get("visit_time") || null,
           staff_name:String(fd.get("staff_name") || "").trim() || null,
