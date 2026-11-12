@@ -561,19 +561,25 @@ const { chromium } = require("playwright");
       let adCampaignReads = 0;
       let moderationListCalls = 0;
       let campaignStatus = null;
+      let rejectCampaignStatus = "pending_review";
       const campaignPatches = [];
       const campaignId = "00000000-0000-4000-8000-000000000701";
+      const rejectCampaignId = "00000000-0000-4000-8000-000000000702";
       const campaignBusinessId = "00000000-0000-4000-8000-000000000004";
       await adminPage.route("**/rest/v1/**", async route => {
         const request = route.request();
         const url = new URL(request.url());
         if (request.method() === "GET" && url.pathname.endsWith("/ad_campaigns")) {
           adCampaignReads += 1;
-          const rows = campaignStatus ? [{
+          const rows = [{
+            id: rejectCampaignId, business_id: campaignBusinessId, title: "QA Reject Campaign",
+            placement: "business_carousel", budget_cents: 2500, status: rejectCampaignStatus
+          }];
+          if (campaignStatus) rows.unshift({
             id: campaignId, business_id: campaignBusinessId, title: "QA Mock Campaign",
             placement: "discovery_feed", budget_cents: 7500, status: campaignStatus,
             destination_url: "https://example.invalid/qa-campaign"
-          }] : [];
+          });
           await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(rows) });
         } else if (request.method() === "POST" && url.pathname.endsWith("/ad_campaigns")) {
           adPayload = request.postDataJSON();
@@ -581,8 +587,11 @@ const { chromium } = require("playwright");
           await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
         } else if (request.method() === "PATCH" && url.pathname.endsWith("/ad_campaigns")) {
           const patch = request.postDataJSON();
-          campaignPatches.push(patch.status);
-          campaignStatus = patch.status;
+          const campaignFilter = url.searchParams.get("id") || "";
+          const id = campaignFilter.replace(/^eq\./, "");
+          campaignPatches.push({ id, status: patch.status });
+          if (id === rejectCampaignId) rejectCampaignStatus = patch.status;
+          else campaignStatus = patch.status;
           await route.fulfill({ status: 204, body: "" });
         } else {
           await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
@@ -669,8 +678,16 @@ const { chromium } = require("playwright");
       adminPage.once("dialog", dialog => dialog.accept());
       await campaignCard.getByRole("button", { name: "Finalizar" }).click();
       await adminPage.waitForFunction(() => /Estado: completed/i.test(document.querySelector("#reputixAdsCampaignList")?.textContent || ""), null, { timeout: 8000 });
-      if (campaignPatches.join(",") !== "active,paused,completed") {
-        throw new Error("Admin campaign state buttons did not submit the expected transitions: " + campaignPatches.join(","));
+      const rejectCard = adminPage.locator("#reputixAdsCampaignList .admin-claim").filter({ hasText: "QA Reject Campaign" });
+      await rejectCard.waitFor({ state: "visible", timeout: 8000 });
+      adminPage.once("dialog", dialog => dialog.accept());
+      await rejectCard.getByRole("button", { name: "Rechazar" }).click();
+      await adminPage.waitForFunction(() => /Estado: rejected/i.test(
+        [...document.querySelectorAll("#reputixAdsCampaignList .admin-claim")].find(card => card.textContent.includes("QA Reject Campaign"))?.textContent || ""
+      ), null, { timeout: 8000 });
+      const expectedTransitions = ["active", "paused", "completed", "rejected"];
+      if (expectedTransitions.some(status => !campaignPatches.some(patch => patch.status === status))) {
+        throw new Error("Admin campaign state buttons did not submit all expected transitions: " + JSON.stringify(campaignPatches));
       }
       await adminPage.close();
     });
