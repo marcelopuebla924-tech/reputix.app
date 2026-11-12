@@ -1,96 +1,63 @@
-# Stripe integration — Reputix
+# Stripe integration — Reputix current status
 
-This file is the single source of truth for the remaining Stripe setup.
+Last reviewed: 2026-11-11 (America/Los_Angeles)
 
-## Values to Replace
+This document separates code that exists from configuration and live payment behavior that still needs independent verification. Never place Stripe secret keys in GitHub, browser code, or chat.
 
-The existing Checkout Session call is already present in the Supabase Edge Function. Its real success URL, cancel URL, recurring subscription mode, and server-side Price ID lookup are preserved.
+## Current Supabase Edge Functions
 
-**Files containing configuration references:**
-- [supabase/functions/create-checkout-session/index.ts](supabase/functions/create-checkout-session/index.ts)
+| Function | Observed status | JWT setting | What the deployed code does |
+|---|---:|---:|---|
+| `create-checkout-session` | ACTIVE, version 8 | Required | Validates the signed-in Supabase user, accepts only `basic` or `pro`, resolves the Price ID server-side from function secrets, and creates a hosted recurring Checkout Session. |
+| `stripe-webhook` | ACTIVE, version 3 | Disabled at gateway; signature checked in code | Verifies the Stripe-Signature header, syncs supported subscription/payment events into Reputix, and records provider events. |
 
-| Field | Current Value | What to Set |
-|-------|--------------|-------------|
-| STRIPE_SECRET_KEY | Missing Supabase Function Secret | Add the Stripe **test-mode** secret key from Stripe Dashboard → Developers / API keys. Never put it in app.js, index.html, or GitHub. |
-| STRIPE_PRICE_PRO | Missing Supabase Function Secret | Add the actual recurring monthly Price ID for Reputix Pro ($25 USD/month), in the form `price_...`. |
+The webhook code handles:
+- `checkout.session.completed`
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `invoice.paid`
+- `invoice.payment_failed`
 
-**Already identified:**
-- `STRIPE_PRICE_BASIC` = `price_1UaHTzD2KjPamMkY2Iyhm3qB` (Reputix Basic, $13 USD/month). Add this exact value as a Supabase Function Secret named `STRIPE_PRICE_BASIC`.
+The webhook upserts subscription state into `user_subscriptions` and writes processed event metadata to `payment_events`. It ignores events without the required Reputix user and plan metadata. It does not grant paid access based only on a browser redirect.
 
-Do not use Product IDs (`prod_...`) in place of Price IDs (`price_...`). Keep Stripe in **Sandbox/Test mode** while testing.
+## Existing plan configuration recorded in this repository
 
-## Configured Parameters
+| Plan | Intended recurring price | Recorded Price ID |
+|---|---:|---|
+| Basic | $13 USD/month | `price_1UaHTzD2KjPamMkY2Iyhm3qB` |
+| Pro | $25 USD/month | `price_1UaHW6D2KjPamMkYKZFz925A` |
 
-These Checkout Studio parameters are already present in the existing Checkout Session creation call.
+These IDs are historical project records, not live verification of the current Stripe catalog or Supabase secrets. Function secret values are not readable through this code review. Confirm both IDs and the key mode in Stripe Dashboard before running a test purchase.
 
-**Files containing these parameters:**
-- [supabase/functions/create-checkout-session/index.ts](supabase/functions/create-checkout-session/index.ts)
+## What is implemented in the browser
 
-| Parameter | Value |
-|-----------|-------|
-| ui_mode | hosted_page |
-| mode | subscription |
-| billing_address_collection | auto |
-| phone_number_collection.enabled | false |
-| automatic_tax.enabled | false |
-| allow_promotion_codes | false |
-| payment_method_collection | always |
-| submit_type | auto |
-| name_collection.individual.enabled | true |
-| name_collection.business.enabled | true |
-| integration_identifier | hosted_mobile_app_0001 |
-| origin_context | mobile_app |
-| success_url | https://reputixapp.com/?checkout=success&session_id={CHECKOUT_SESSION_ID} |
-| cancel_url | https://reputixapp.com/?checkout=cancelled |
-| line_items | One recurring Price ID selected server-side from STRIPE_PRICE_BASIC or STRIPE_PRICE_PRO |
+- Basic and Pro buttons call `POST /functions/v1/create-checkout-session`.
+- The browser sends the selected plan name and signed-in access token; it does not send a Price ID or Stripe secret.
+- A logged-out visitor is sent to the Reputix account area instead of opening Checkout.
+- The server returns a Checkout URL and the browser redirects to Stripe.
 
-The existing `mode`, `success_url`, `cancel_url`, and `line_items` behavior was preserved. No duplicate Checkout endpoint was created and no surrounding application code was refactored.
+## Remaining payment verification — do not mark complete until tested
 
-## Setup and next steps
+1. Confirm the three function secrets exist in the intended Supabase project: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_BASIC`, and `STRIPE_PRICE_PRO`. Do not expose their values.
+2. Confirm whether the secrets currently contain Stripe test-mode or live-mode credentials. Keep testing in test mode.
+3. In Stripe Dashboard, confirm the webhook endpoint points to the active Supabase `stripe-webhook` function and subscribes to every event listed above.
+4. Send a signed test webhook from Stripe and verify that one test subscription is correctly reflected in `user_subscriptions` and `payment_events`.
+5. Test Basic and Pro checkout with a dedicated test account and Stripe test payment method. Verify successful payment, failed payment, renewal, and cancellation behavior.
+6. Confirm that a failed or incomplete payment never unlocks paid features.
+7. Verify the exact return behavior for success and cancellation. The current Edge Function uses the apex host `https://reputixapp.com`; the public site is normally visited at `https://www.reputixapp.com`. Confirm the redirect and session continuity before changing either URL.
+8. Confirm Stripe business verification, payout details, tax treatment, refund policy, and live-mode credentials before accepting real payments.
 
-1. In Stripe, remain in **Sandbox/Test mode**.
-2. Add the Basic Price ID secret: `STRIPE_PRICE_BASIC=price_1UaHTzD2KjPamMkY2Iyhm3qB`.
-3. Open Reputix Pro in Product catalog, confirm its recurring monthly price is **$25.00 USD**, and copy its Price ID (starts with `price_`). Add it in Supabase as `STRIPE_PRICE_PRO`.
-4. Add `STRIPE_SECRET_KEY` in Supabase Function Secrets using the Stripe **test-mode secret key**. Never share it in chat or commit it to GitHub.
-5. In Supabase Dashboard, open Project Settings / Edge Function Secrets (or Edge Functions / Secrets) for project `udvsrmfgjfinwbgvhchs`. Add all three secrets: `STRIPE_SECRET_KEY`, `STRIPE_PRICE_BASIC`, and `STRIPE_PRICE_PRO`.
-6. The existing Edge Function `create-checkout-session` is **ACTIVE** with JWT verification enabled. The repository does not pin a Stripe SDK version. Confirm the resolved Stripe SDK version: SDK 21.0.0 and newer use `ui_mode: "hosted_page"`; older versions use `"hosted"`. Do not guess or change the value until the installed version is confirmed.
-7. Connect the Reputix Basic and Pro plan buttons to invoke `POST /functions/v1/create-checkout-session` with a signed-in user's access token and JSON body `{"plan":"basic"}` or `{"plan":"pro"}`. Redirect the browser to the returned `url`. The browser must never send a Price ID or Stripe secret key.
-8. The endpoint validates the signed-in Supabase user before creating a session. It records the user's Supabase ID and selected plan in Stripe Checkout and Subscription metadata.
-9. After successful test payments, add and verify a Stripe webhook before granting paid plan access. Handle at minimum `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, and `customer.subscription.deleted`. Do not grant or renew access based only on the success-page redirect.
-10. Test both plans with Stripe test cards (for example, `4242 4242 4242 4242`, any future expiry date, any CVC, and any valid ZIP/postal code). Test a declined card such as `4000 0000 0000 0002` as well.
-11. Before going live, replace test-mode keys and Price IDs with live-mode values, complete Stripe business verification, configure the payout bank account, and verify the live webhook endpoint.
+## Known product gaps
 
-## Project structure
+- The owner dashboard plan button now truthfully says “Ver planes / View plans”. It scrolls to the plans section; it does not yet open a Stripe Billing Portal.
+- Customer self-service cancellation, card updates, invoices, and subscription management are not implemented in Reputix.
+- The application does not yet display a dedicated success/cancel confirmation experience after returning from Stripe.
+- A deployed webhook function is not proof that the Stripe Dashboard endpoint is configured or that a real signed event has been received.
+- Do not advertise billing management as included until the Billing Portal is implemented and tested.
 
-- `supabase/functions/create-checkout-session/index.ts` — existing server-side endpoint that creates a hosted recurring Checkout Session.
-- `STRIPE_INTEGRATION_TODO.md` — this setup checklist.
+## Safety rules
 
-## How the integration works
-
-1. A signed-in Reputix user chooses Basic or Pro.
-2. The app calls the Supabase Edge Function with the selected plan name.
-3. The server validates the user's Supabase session and maps the plan to its server-side Stripe Price ID.
-4. Stripe creates a hosted monthly subscription Checkout Session.
-5. The server returns the Checkout URL; the app redirects the user to Stripe.
-6. A verified Stripe webhook must update Reputix's paid entitlement after Stripe confirms payment.
-
-## Current status and limitations
-
-- The existing Checkout Session API call was found in the codebase (Scenario A). Its Checkout Studio parameters already match the requested values, so the call itself was left unchanged.
-- Supabase Edge Function `create-checkout-session` is **ACTIVE** (version 1) with JWT verification enabled.
-- Basic Price ID identified: `price_1UaHTzD2KjPamMkY2Iyhm3qB`; user reports adding it as `STRIPE_PRICE_BASIC` in Supabase Function Secrets.
-- Pro Price ID identified: `price_1UaHW6D2KjPamMkYKZFz925A`; user reports adding it as `STRIPE_PRICE_PRO`. User also reports adding `STRIPE_SECRET_KEY` in Sandbox/Test mode. Secret values are not readable for verification.
-- The repository does not show a pinned Stripe SDK version; verify the version before deciding whether `hosted_page` or `hosted` is required.
-- The public Reputix Basic ($13/month) and Pro ($25/month) plan cards now call this endpoint with the selected plan. The server resolves the Stripe Price ID from Supabase Function Secrets; the browser never receives a Price ID or secret key.
-- No Stripe webhook or paid-plan entitlement handler was added in this minimal Checkout task.
-- No Stripe customer/subscription database table was added because no existing billing persistence pattern was found in the inspected app code.
-
-## Resources
-
-- [Stripe Dashboard — Test mode](https://dashboard.stripe.com/test)
-- [Stripe Products and Prices](https://dashboard.stripe.com/test/products)
-- [Stripe API keys](https://dashboard.stripe.com/test/apikeys)
-- [Supabase Edge Function secrets](https://supabase.com/docs/guides/functions/secrets)
-- [Supabase Edge Functions](https://supabase.com/docs/guides/functions)
-- https://support.stripe.com
-- https://docs.stripe.com/mcp
+- Never put Stripe secrets or service-role keys in `app.js`, `index.html`, `checkout.js`, or public repository files.
+- Do not switch to live mode or change prices, payout accounts, or webhook destinations without explicit approval.
+- Never grant subscription entitlements from query parameters or the success URL alone.
