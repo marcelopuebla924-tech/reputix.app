@@ -112,9 +112,11 @@ const { execFileSync } = require("node:child_process");
 
     await check("Spanish and English language selector works without runtime errors", async () => {
       await page.locator("#language").selectOption("en");
+      if (await page.locator("#business").getAttribute("aria-label") !== "Search businesses, services, or categories") throw new Error("English search accessible name did not update");
       if (!(await page.locator("#plansTitle").textContent()).includes("plans")) throw new Error("English plan title did not update");
       if ((await page.locator("#ownerSubscriptionPlans").textContent()).trim() !== "View plans") throw new Error("English plan button label did not update");
       await page.locator("#language").selectOption("es");
+      if (await page.locator("#business").getAttribute("aria-label") !== "Buscar negocios, servicios o categorías") throw new Error("Spanish search accessible name did not update");
       if (!(await page.locator("#plansTitle").textContent()).includes("Planes")) throw new Error("Spanish plan title did not update");
       if ((await page.locator("#ownerSubscriptionPlans").textContent()).trim() !== "Ver planes") throw new Error("Spanish plan button label did not update");
     });
