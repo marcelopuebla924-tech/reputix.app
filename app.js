@@ -2139,6 +2139,9 @@ loadWeeklyRankings();
 loadReviewTicker();
 
 /* Propietarios: Auth de Supabase y panel privado */
+// Evita verificar dos veces el mismo enlace OTP cuando load/pageshow/hashchange
+// y la inicialización del módulo coinciden durante la restauración móvil.
+let ownerRecoveryVerificationPromise = null;
 async function ownerAuthRequest(path,payload) {
   const response = await fetch(SUPABASE_URL + "/auth/v1/" + path,{
     method:"POST",
@@ -2206,12 +2209,18 @@ async function ownerShowPasswordResetFromLink() {
   if (recoveryRequested && tokenHash && !ownerRecoveryAccessToken) {
     const message = $("ownerAuthMessage");
     message.textContent = ownerText("Validando el enlace de recuperación…","Validating recovery link…");
+    if (!ownerRecoveryVerificationPromise) {
+      ownerRecoveryVerificationPromise = (async () => {
+        const verified = await ownerAuthRequest("verify", {token:tokenHash,type:"recovery"});
+        if (!verified?.access_token) throw new Error(ownerText("Supabase no confirmó el enlace. Solicita uno nuevo.","Supabase did not confirm the link."));
+        ownerRecoveryAccessToken = verified.access_token;
+        history.replaceState(null,"",window.location.pathname+"?recovery=1#ownerArea");
+      })();
+    }
     try {
-      const verified = await ownerAuthRequest("verify", {token:tokenHash,type:"recovery"});
-      if (!verified?.access_token) throw new Error(ownerText("Supabase no confirmó el enlace. Solicita uno nuevo.","Supabase did not confirm the link. Request a new one."));
-      ownerRecoveryAccessToken = verified.access_token;
-      history.replaceState(null,"",window.location.pathname+"?recovery=1#ownerArea");
+      await ownerRecoveryVerificationPromise;
     } catch (error) {
+      ownerRecoveryVerificationPromise = null;
       message.textContent = ownerText("No se pudo validar el enlace: ","Could not validate the link: ")+(error?.message||String(error));
       return;
     }
