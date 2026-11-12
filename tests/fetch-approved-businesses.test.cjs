@@ -45,7 +45,7 @@ test("approved-business fetch uses an allowlisted select and paginates determini
     assert.equal(url.searchParams.get("status"), "eq.approved");
     assert.equal(url.searchParams.get("order"), "id.asc");
     assert.equal(call.options.headers.apikey, key);
-    assert.equal(call.options.headers.Authorization, "Bearer " + key);
+    assert.equal(call.options.headers.Authorization, undefined);
     assert.equal(call.options.cache, "no-store");
   }
   assert.equal(new URL(calls[0].url).searchParams.get("offset"), "0");
