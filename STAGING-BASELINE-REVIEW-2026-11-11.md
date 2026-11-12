@@ -3,7 +3,12 @@
 **Generated:** 2026-11-11 (Los Angeles)  
 **Source:** read-only PostgreSQL catalogs from production `udvsrmfgjfinwbgvhchs`.  
 **Target:** isolated staging `lzcyulncvjjxsyyivlty` only.  
-**Status:** candidate only; NOT applied.
+**Status:** successfully applied to isolated staging; retained as source-of-truth SQL. Do not rerun.
+
+## Application record
+- Applied only to staging as migration `reputix_staging_baseline_20261111` (version `20261112050900`).
+- Post-apply verification: 20 tables, 93 constraints, 54 baseline indexes, 35 RLS policies, 5 routines, 5 views, and RLS enabled on all 20 tables.
+- A first attempt failed because a foreign key preceded its referenced primary key; the failed transaction left staging empty. The constraint order was corrected and the subsequent migration succeeded.
 
 ## Reconciliation
 - 20 public base tables; 93 validated constraints; 54 total indexes (29 PK/UNIQUE created by constraints, 25 additional indexes).
