@@ -16,6 +16,16 @@ ALTER TABLE public.payment_events
 ALTER TABLE public.user_subscriptions
   ADD COLUMN provider_event_created_at timestamptz;
 
+-- Stripe's current Subscription.status enum includes incomplete_expired.
+-- This is terminal and must not grant entitlements; app access gates only
+-- active/trialing. Extend the DB CHECK so the verified Stripe state can be stored.
+ALTER TABLE public.user_subscriptions
+  DROP CONSTRAINT user_subscriptions_status_check;
+
+ALTER TABLE public.user_subscriptions
+  ADD CONSTRAINT user_subscriptions_status_check
+  CHECK (status IN ('trialing', 'active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid', 'paused'));
+
 CREATE OR REPLACE FUNCTION public.process_stripe_webhook_event(
   p_provider_event_id text,
   p_event_type text,
@@ -76,7 +86,7 @@ BEGIN
        OR p_plan_code IS NULL
        OR p_plan_code NOT IN ('basic', 'pro')
        OR p_subscription_status IS NULL
-       OR p_subscription_status NOT IN ('trialing', 'active', 'past_due', 'canceled', 'incomplete', 'unpaid', 'paused')
+       OR p_subscription_status NOT IN ('trialing', 'active', 'past_due', 'canceled', 'incomplete', 'incomplete_expired', 'unpaid', 'paused')
        OR p_provider_subscription_id IS NULL
        OR pg_catalog.length(pg_catalog.btrim(p_provider_subscription_id)) = 0 THEN
       RAISE EXCEPTION 'subscription payload is incomplete or invalid';
