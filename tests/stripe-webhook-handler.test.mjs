@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import Stripe from "stripe";
 import { createStripeWebhookHandler } from "../supabase/functions/stripe-webhook/core.mjs";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
@@ -111,6 +112,38 @@ test("passes the exact raw body and signature to Stripe verification", async () 
   assert.equal(verifiedArgs[2], BASE_CONFIG.webhookSecret);
   assert.equal(verifiedArgs[4], BASE_CONFIG.cryptoProvider);
   assert.equal(calls.length, 1);
+});
+
+test("verifies a real Stripe HMAC signature with the pinned SDK", async () => {
+  const secret = "whsec_real_hmac_fixture";
+  const payloadEvent = event({
+    id: "evt_real_hmac",
+    type: "customer.created",
+    data: { object: { id: "cus_hmac_fixture" } },
+  });
+  const rawBody = JSON.stringify(payloadEvent);
+  const stripe = new Stripe("sk_test_reputix_fixture");
+  const cryptoProvider = Stripe.createSubtleCryptoProvider();
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signature = stripe.webhooks.generateTestHeaderString({
+    payload: rawBody,
+    secret,
+    timestamp,
+  });
+  const calls = [];
+  const handler = createStripeWebhookHandler({
+    ...BASE_CONFIG,
+    stripe,
+    cryptoProvider,
+    webhookSecret: secret,
+    fetchImpl: makeFetch("ignored", calls),
+  });
+  const response = await handler(request(rawBody, signature));
+  assert.equal(response.status, 200);
+  assert.equal(calls.length, 1);
+  const args = JSON.parse(calls[0].options.body);
+  assert.equal(args.p_provider_event_id, "evt_real_hmac");
+  assert.equal(args.p_apply_subscription, false);
 });
 
 test("rejects invalid signatures and performs no database request", async () => {
