@@ -262,3 +262,13 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Test commit: `c097b2ae2c485f0a95fe3e63ab839778dcb93181`.
 - Browser QA run #198 is running for the expanded campaign payload assertions.
 - No actual campaign or billing operation occurred.
+
+
+## Update — 2026-11-11 18:29 PST
+
+- Reconfirmed the suite contains 31 named checks.
+- Extended the paid member workspace test to click the real profile editor **Save changes** button instead of submitting the form programmatically.
+- Added a real **Cancel** button click and verified that the editor closes without submission.
+- Commits: `8c7503f6095ccd5bc8b6a63f353653859b7fbfe7`, `3aab841f2d7015098a9633434e37928510c2787e`.
+- New assertions are pending independent CI verification. Do not mark as passed until the exact push-triggered Browser QA run is confirmed.
+- Synthetic identities and mocked REST responses only; no production profile was read or modified.
