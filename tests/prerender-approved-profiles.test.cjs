@@ -64,6 +64,7 @@ test("only approved records produce profile HTML and sitemap URLs; private field
   assert.match(html, /A public description with &lt;\/script&gt;&lt;script&gt;alert\(2\)&lt;\/script&gt; content\./);
   assert.doesNotMatch(html, /private@example\.com|NEVER PUBLISH INTERNAL NOTES|cus_private|Pending Secret Business|Rejected Secret Business/);
   assert.doesNotMatch(html, /<script>alert\(1\)<\/script>|<script>alert\(2\)<\/script>/);
+  assert.match(html, /id="reputix-business-structured-data"/);
   assert.match(html, /\\u003c\/script\\u003e/);
   assert.match(sitemap, new RegExp("https://www\\.reputixapp\\.com/business/" + approvedId + "/"));
   assert.doesNotMatch(sitemap, /pending|rejected|552|553/i);
