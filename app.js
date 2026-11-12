@@ -321,6 +321,7 @@ es: {
   sendProposal:"Enviar para revisión",
   proposalPending:"Propuesta recibida. Quedó pendiente de revisión.",
   proposalFailed:"No se pudo enviar la propuesta.",
+  proposalDuplicate:"Ya existe una propuesta igual para ese negocio y ciudad. No necesitas enviarla otra vez.",
   chooseCategory:"Elige una categoría",
   businessCategories:["Restaurante o cafetería","Tienda o supermercado","Smoke shop","Ropa y accesorios","Otro comercio"],
   proCategories:["Plomero","Electricista","Mecánico","Construcción","Pintor","Contratista","Limpieza","Otro servicio"],
@@ -380,6 +381,7 @@ en: {
   sendProposal:"Submit for review",
   proposalPending:"Suggestion received. It is pending moderation.",
   proposalFailed:"The suggestion could not be submitted.",
+  proposalDuplicate:"A matching proposal already exists for this business and city. You do not need to submit it again.",
   chooseCategory:"Choose a category",
   businessCategories:["Restaurant or cafe","Store or supermarket","Smoke shop","Clothing and accessories","Other business"],
   proCategories:["Plumber","Electrician","Mechanic","Construction","Painter","Contractor","Cleaning","Other service"],
@@ -1401,6 +1403,17 @@ function makeReviewForm(business) {
   submit.style.width = "100%";
   submit.style.marginTop = "12px";
 
+  const honeypotWrap = node("div","proposal-honeypot");
+  honeypotWrap.setAttribute("aria-hidden","true");
+  honeypotWrap.style.cssText = "position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;";
+  const honeypot = node("input");
+  honeypot.type = "text";
+  honeypot.name = "company_website";
+  honeypot.autocomplete = "off";
+  honeypot.tabIndex = -1;
+  honeypotWrap.append(honeypot);
+  f.append(honeypotWrap);
+
   const msg = node("p","form-message","");
   msg.setAttribute("aria-live","polite");
   f.append(submit,msg);
@@ -1887,6 +1900,11 @@ function renderCommunityForm(type) {
     if (!f.reportValidity()) return;
 
     const fd = new FormData(f);
+    if (String(fd.get("company_website") || "").trim()) {
+      f.reset();
+      msg.textContent = lang === "es" ? "Propuesta recibida. Quedó pendiente de revisión." : "Suggestion received. It is pending review.";
+      return;
+    }
     const name = String(fd.get("name") || "").trim();
     const category = String(fd.get("category") || "").trim();
     const city = String(fd.get("city") || "").trim();
@@ -1940,7 +1958,10 @@ function renderCommunityForm(type) {
         : "Proposal received! The business will appear once approved." + photoMessage;
     } catch (err) {
       console.error("Error al proponer negocio:",err);
-      msg.textContent = t("proposalFailed") + " " + (err.message || "");
+      const errorText = String(err.message || "");
+      msg.textContent = errorText.toLowerCase().includes("matching business proposal already exists")
+        ? t("proposalDuplicate")
+        : t("proposalFailed") + " " + errorText;
     } finally {
       submit.disabled = false;
     }
