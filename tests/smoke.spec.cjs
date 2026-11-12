@@ -167,8 +167,14 @@ const { chromium } = require("playwright");
         const paidPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
         paidPage.on("pageerror", error => failures.push(error.stack || error.message));
         let refreshProfileCalls = 0;
+        let profileSavePayload = null;
         await paidPage.route("**/rest/v1/**", async route => {
           const url = route.request().url();
+          if (url.includes("/user_profiles") && route.request().method() === "POST") {
+            profileSavePayload = route.request().postDataJSON();
+            await route.fulfill({ status: 204, body: "" });
+            return;
+          }
           if (url.includes("/user_subscriptions")) {
             await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
               plan_code: plan, status: "active", current_period_end: "2027-01-01T00:00:00Z", cancel_at_period_end: false
@@ -192,6 +198,19 @@ const { chromium } = require("playwright");
           user: { id: "00000000-0000-4000-8000-000000000091", email: "paid-workspace-qa@example.invalid", app_metadata: {} }
         }));
         await paidPage.locator("#customerWorkspace").waitFor({ state: "visible", timeout: 10000 });
+        await paidPage.locator("#privateProfileAction").click();
+        await paidPage.locator("#privateProfileName").fill("QA Member Profile");
+        await paidPage.locator("#privateProfileBio").fill("Synthetic profile editor validation only.");
+        await paidPage.locator("#privateProfileEditor").evaluate(form => form.requestSubmit());
+        await paidPage.waitForFunction(() => {
+          const editor = document.querySelector("#privateProfileEditor");
+          return !editor && document.querySelector("#privateProfileContent")?.textContent.includes("QA Member Profile");
+        }, null, { timeout: 8000 });
+        if (!profileSavePayload || profileSavePayload.user_id !== "00000000-0000-4000-8000-000000000091" ||
+            profileSavePayload.display_name !== "QA Member Profile" ||
+            profileSavePayload.bio !== "Synthetic profile editor validation only.") {
+          throw new Error("Inline profile editor did not save the expected synthetic member payload");
+        }
         const workspaceFacts = await paidPage.evaluate(() => {
           const panel = document.querySelector("#customerWorkspace");
           const links = [...panel.querySelectorAll("nav a")];
