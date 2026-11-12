@@ -1,5 +1,5 @@
 # Reputix — Launch Readiness Checklist
-Date: 2026-11-11
+Date: 2026-11-12
 Repository: `marcelopuebla924-tech/reputix.app`
 Branch: `main`
 Production site: `https://www.reputixapp.com`
@@ -11,7 +11,7 @@ Supabase project: `udvsrmfgjfinwbgvhchs`
 
 ## Verified
 
-- Browser Playwright suite: **32/32 checks passed** in run #270 for commit `3b0dc208f3366222341174232e676879b4e2dbe5`, with zero failures and zero page errors. This includes blank review/complaint/message blocking, read-receipt payload restrictions, and admin campaign blank-form/date validation.
+- Browser Playwright suite: **40/40 checks passed** in PR QA run #409 (GitHub run ID `43286015566`) for the documentation branch head, with zero failures and zero page errors. All **9 Node unit tests** also passed. The expanded suite covers public static profiles, bilingual accessibility, auth/recovery mocks, reviews, photo-upload mocks, owner workflows, messaging, ads/admin mocks, map behavior, and mobile interactions.
 - Static homepage buttons: all 40 button IDs have an actual click represented in the test source.
 - Public Reputix AI: all eight shortcut prompts, close behavior, and sign-in gate covered with mocks.
 - Reviews: valid submission payload, pending moderation status, advisory AI behavior, translation toggle, and invalid blank-form blocking covered.
@@ -63,7 +63,7 @@ Earlier inspection found broad table-level grants. A separate applied-change rec
 
 ## Next safe work
 
-1. Continue browser tests for remaining validation/error states and verify the current 32-check suite after each change.
+1. Continue browser tests for remaining validation/error states and verify the current 40-check suite after each change.
 2. Keep the messaging least-privilege proposal as a launch blocker; do not apply it to production without isolated testing and explicit authorization.
 3. Prepare a complete isolated Supabase schema snapshot only when the source migrations and configuration are available, or obtain approval for a separate staging environment.
 4. Complete test-mode Stripe and real Auth/Storage integration tests only in isolated environments.
@@ -79,3 +79,13 @@ All recent browser tests use synthetic identities and mocked API responses. No p
 - Run #270 passed all 32 checks, zero failures and zero page errors. The admin campaign test now checks blank required fields, rejects an end date equal to/before the start, then submits only after the end date is later.
 - Runs #268 and #269 failed because the test fixture changed the invalid end date to exactly the same timestamp as the start date, so the supposedly corrected form remained invalid. The fixture was corrected to the following day in commit `3b0dc208f3366222341174232e676879b4e2dbe5`; run #270 passed.
 - This was a test-data error, not a production application regression. All admin campaign interactions remained mocked.
+
+
+## Latest validation — 2026-11-12 (Director QA)
+
+- GitHub Actions PR QA run #409 (run ID `43286015566`) completed successfully.
+- Node unit tests: **9 passed, 0 failed**.
+- Playwright browser checks: **40 passed, 0 failed**.
+- Browser runtime errors: `pageErrors: []`.
+- This run was executed against the local static site with synthetic fixtures and mocked Supabase/Auth/Storage responses. It does not certify real production Auth, RLS, Storage, Stripe, or advertising integrations.
+- No production data, account, review, photo, payment, Supabase setting, domain, or DNS configuration was changed.
