@@ -9,12 +9,13 @@ psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$ROOT/tests/fixtures/stripe-webhook-
 
 call_rpc() {
   local event_id="$1" event_time="$2" status="$3" sub_id="$4"
+  local event_type="${5:-customer.subscription.updated}" apply_subscription="${6:-true}"
   psql "$DATABASE_URL" -X -A -t -v ON_ERROR_STOP=1 -c "
     SELECT public.process_stripe_webhook_event(
       '$event_id',
-      'customer.subscription.updated',
+      '$event_type',
       '$event_time'::timestamptz,
-      true,
+      $apply_subscription,
       '11111111-1111-4111-8111-111111111111'::uuid,
       'basic',
       '$status',
@@ -51,6 +52,28 @@ event_count="$(psql "$DATABASE_URL" -X -A -t -c "select count(*) from public.pay
 final_status="$(psql "$DATABASE_URL" -X -A -t -c "select status from public.user_subscriptions where provider_subscription_id='sub_order_test'")"
 [[ "$final_status" == "canceled" ]] || { echo "Stale event regressed subscription to $final_status"; exit 1; }
 
+# A subscription.deleted event must not be undone by a later-delivered stale update.
+[[ "$(call_rpc evt_deleted 2026-11-12T21:00:00Z canceled sub_deleted_test customer.subscription.deleted)" == "processed" ]]
+[[ "$(call_rpc evt_stale_after_delete 2026-11-12T20:00:00Z active sub_deleted_test customer.subscription.updated)" == "ignored" ]]
+delete_status="$(psql "$DATABASE_URL" -X -A -t -c "select status from public.user_subscriptions where provider_subscription_id='sub_deleted_test'")"
+[[ "$delete_status" == "canceled" ]] || { echo "Stale update reactivated deleted subscription: $delete_status"; exit 1; }
+
+# Unknown event types are logged once as ignored, without a subscription write.
+[[ "$(call_rpc evt_unknown 2026-11-12T22:00:00Z active sub_unused customer.unknown false)" == "ignored" ]]
+unknown_status="$(psql "$DATABASE_URL" -X -A -t -c "select processing_status from public.payment_events where provider_event_id='evt_unknown'")"
+[[ "$unknown_status" == "ignored" ]] || { echo "Unknown event was not recorded as ignored: $unknown_status"; exit 1; }
+
+# Legacy rows with NULL event timestamps are quarantined until reconciled from Stripe.
+psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -c "
+  INSERT INTO public.user_subscriptions (
+    user_id, plan_code, status, provider, provider_subscription_id, provider_event_created_at
+  ) VALUES (
+    '11111111-1111-4111-8111-111111111111', 'basic', 'active', 'stripe', 'sub_legacy_null', NULL
+  );"
+[[ "$(call_rpc evt_legacy_old 2026-11-12T17:00:00Z canceled sub_legacy_null)" == "ignored" ]]
+legacy_status="$(psql "$DATABASE_URL" -X -A -t -c "select status from public.user_subscriptions where provider_subscription_id='sub_legacy_null'")"
+[[ "$legacy_status" == "active" ]] || { echo "Unreconciled legacy subscription was overwritten: $legacy_status"; exit 1; }
+
 # Equal-second timestamps are deliberately not ordered and do not overwrite.
 [[ "$(call_rpc evt_equal 2026-11-12T19:00:00Z active sub_order_test)" == "ignored" ]]
 final_status="$(psql "$DATABASE_URL" -X -A -t -c "select status from public.user_subscriptions where provider_subscription_id='sub_order_test'")"
@@ -66,4 +89,4 @@ rollback_count="$(psql "$DATABASE_URL" -X -A -t -c "select count(*) from public.
 
 # Sequential redelivery returns duplicate and does not create another event.
 [[ "$(call_rpc evt_parallel_claim 2026-11-12T18:00:00Z active sub_parallel)" == "duplicate" ]]
-echo "PASS: independent-session duplicate claim, stale/equal ordering, rollback/retry safety."
+echo "PASS: concurrent claims, stale/deleted/equal ordering, unknown events, legacy quarantine, rollback/retry safety."
