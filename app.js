@@ -445,12 +445,25 @@ function setLanguage(value) {
   const privateAreaCopy = {
     customerModulesTitle:["Espacio de cliente","Customer workspace"],
     customerModulesIntro:["Tu perfil, conversaciones y actividad en Reputix.","Your profile, conversations, and Reputix activity."],
+    privateOwnReviewsTitle:["Mis opiniones","My reviews"],
+    privateOwnReviewsDesc:["Consulta el estado de las opiniones que has enviado.","Check the status of reviews you have submitted."],
     ownerModulesTitle:["Gestión de negocio","Business management"],
     ownerModulesIntro:["Herramientas de propietarios y representantes verificados.","Tools for verified owners and representatives."]
   };
   Object.entries(privateAreaCopy).forEach(([id,values])=>{const el=$(id);if(el)el.textContent=lang==="es"?values[0]:values[1];});
   const customerCopy = {
     customerWorkspaceTitle:["Tu escritorio Reputix","Your Reputix workspace"],
+    customerWorkspaceActionsTitle:["Accesos rápidos","Quick access"],
+    customerWorkspaceRefreshLabel:["Actualizar escritorio","Refresh workspace"],
+    customerPlanSummaryLabel:["TU MEMBRESÍA","YOUR MEMBERSHIP"],
+    customerStatReviewsLabel:["Mis opiniones","My reviews"],
+    customerStatReviewsNote:["Opiniones enviadas","Reviews submitted"],
+    customerStatPostsLabel:["Publicaciones","Posts"],
+    customerStatPostsNote:["Actividad comunitaria","Community activity"],
+    customerStatComplaintsLabel:["Mis reclamos","My complaints"],
+    customerStatComplaintsNote:["Solicitudes enviadas","Requests submitted"],
+    customerLinkReviews:["Mis opiniones","My reviews"],
+    customerLinkReviewsNote:["Consulta tus reseñas","Check your reviews"],
     customerLinkProfile:["Mi perfil","My profile"],
     customerLinkProfileNote:["Datos y preferencias","Details and preferences"],
     customerLinkMessages:["Mensajes","Messages"],
@@ -2331,33 +2344,83 @@ let ownerSubscription = null;
 let ownerSubscriptionLoaded = false;
 async function loadOwnerSubscription() {
   const card=$("ownerSubscriptionCard"),details=$("ownerSubscriptionDetails"),aiPanel=document.querySelector(".ai-assistant-panel");
-  if(!ownerSession?.access_token||!ownerSession?.user?.id){ownerSubscription=null;ownerSubscriptionLoaded=true;if(card)card.hidden=true;if(aiPanel)aiPanel.hidden=true;$("ownerDashboard").hidden=true;return null;}
+  const customerWorkspace=$("customerWorkspace");
+  ownerSubscription=null;
+  if(customerWorkspace)customerWorkspace.hidden=true;
+  if(aiPanel)aiPanel.hidden=true;
+  if(!ownerSession?.access_token||!ownerSession?.user?.id){ownerSubscriptionLoaded=true;if(card)card.hidden=true;$("ownerDashboard").hidden=true;return null;}
   if(details)details.textContent=ownerText("Consultando tu suscripción…","Checking your subscription…");
   try{
     const rows=await api("user_subscriptions?select=plan_code,status,current_period_end,cancel_at_period_end&user_id=eq."+encodeURIComponent(ownerSession.user.id)+"&order=updated_at.desc&limit=1");
-    const row=Array.isArray(rows)?rows[0]:null,end=row?.current_period_end?new Date(row.current_period_end):null;
-    const valid=!!row&&["active","trialing"].includes(String(row.status).toLowerCase())&&(!end||end.getTime()>Date.now());
-    ownerSubscription=valid?{plan:row.plan_code,status:row.status,end,cancelAtPeriodEnd:!!row.cancel_at_period_end}:null;ownerSubscriptionLoaded=true;
+    const row=Array.isArray(rows)?rows[0]:null;
+    const plan=String(row?.plan_code||"").toLowerCase();
+    const end=row?.current_period_end?new Date(row.current_period_end):null;
+    const validPlan=["basic","pro"].includes(plan);
+    const validStatus=["active","trialing"].includes(String(row?.status||"").toLowerCase());
+    const validPeriod=!row?.current_period_end||(end&&Number.isFinite(end.getTime())&&end.getTime()>Date.now());
+    const valid=!!row&&validPlan&&validStatus&&validPeriod;
+    ownerSubscription=valid?{plan,status:row.status,end,cancelAtPeriodEnd:!!row.cancel_at_period_end}:null;
+    ownerSubscriptionLoaded=true;
     if(card)card.hidden=false;
-    if(details)details.textContent=ownerSubscription?((ownerSubscription.plan==="pro"?"Reputix Pro":"Reputix Basic")+" · "+ownerText("Suscripción activa","Active subscription")+(end?" · "+ownerText("Próxima renovación","Next renewal")+": "+end.toLocaleDateString(lang==="es"?"es-US":"en-US"):"")+(ownerSubscription.cancelAtPeriodEnd?" · "+ownerText("Cancelación al final del período","Cancels at period end"):"")):ownerText("No hay una suscripción activa. Basic activa herramientas esenciales; Pro añade estadísticas avanzadas y Reputix AI.","No active subscription. Basic unlocks essential tools; Pro adds advanced analytics and Reputix AI.");
+    if(details)details.textContent=ownerSubscription?((plan==="pro"?"Reputix Pro":"Reputix Basic")+" · "+ownerText("Suscripción activa","Active subscription")+(end?" · "+ownerText("Próxima renovación","Next renewal")+": "+end.toLocaleDateString(lang==="es"?"es-US":"en-US"):"")+(ownerSubscription.cancelAtPeriodEnd?" · "+ownerText("Cancelación al final del período","Cancels at period end"):"")):ownerText("No hay una suscripción Basic o Pro activa. Puedes revisar los planes disponibles.","There is no active Basic or Pro subscription. You can review the available plans.");
     if(aiPanel)aiPanel.hidden=ownerSubscription?.plan!=="pro";
-    const customerWorkspace=$("customerWorkspace");
     if(customerWorkspace)customerWorkspace.hidden=!ownerSubscription;
     const customerPlan=$("customerWorkspacePlan");
-    if(customerPlan)customerPlan.textContent=ownerSubscription?.plan==="pro"?"REPUTIX PRO · $25 / MES":ownerSubscription?.plan==="basic"?"REPUTIX BASIC · $13 / MES":"";
+    if(customerPlan)customerPlan.textContent=plan==="pro"&&ownerSubscription?"REPUTIX PRO · $25 / MES":plan==="basic"&&ownerSubscription?"REPUTIX BASIC · $13 / MES":"";
+    const planDetail=$("customerWorkspacePlanDetail");
+    if(planDetail)planDetail.textContent=ownerSubscription?(plan==="pro"?"Reputix Pro · "+ownerText("Acceso activo","Active access"):"Reputix Basic · "+ownerText("Acceso activo","Active access")):ownerText("Sin suscripción activa","No active subscription");
+    const renewal=$("customerWorkspaceRenewal");
+    if(renewal)renewal.textContent=ownerSubscription?(end?(ownerSubscription.cancelAtPeriodEnd?ownerText("Acceso disponible hasta: ","Access available until: "):ownerText("Próxima renovación: ","Next renewal: ")+end.toLocaleDateString(lang==="es"?"es-US":"en-US")):ownerText("Tu suscripción está activa.","Your subscription is active.")):ownerText("Contrata un plan para habilitar tu escritorio de miembro.","Choose a plan to unlock your member workspace.");
     const customerIntro=$("customerWorkspaceIntro");
-    if(customerIntro)customerIntro.textContent=ownerSubscription?.plan==="pro"
-      ?ownerText("Tu espacio Pro: herramientas de comunidad y acceso al asistente Reputix AI.","Your Pro space: community tools and access to Reputix AI.")
-      :ownerText("Tu espacio Basic: organiza tu actividad, conversaciones y herramientas de comunidad.","Your Basic space: organize your activity, conversations, and community tools.");
+    if(customerIntro)customerIntro.textContent=plan==="pro"&&ownerSubscription
+      ?ownerText("Tu centro Pro: actividad, conversaciones, opiniones y acceso a Reputix AI.","Your Pro center: activity, conversations, reviews, and Reputix AI access.")
+      :ownerText("Tu centro Basic: administra tu perfil, opiniones, conversaciones y actividad comunitaria.","Your Basic center: manage your profile, reviews, conversations, and community activity.");
     const aiShortcut=$("customerLinkAI");
-    if(aiShortcut)aiShortcut.hidden=ownerSubscription?.plan!=="pro";
+    if(aiShortcut)aiShortcut.hidden=plan!=="pro"||!ownerSubscription;
     if(ownerSubscription?.plan==="pro")$("ownerDashboardNote").textContent=ownerText("Plan Pro: estadísticas y patrones por horario con opiniones publicadas.","Pro plan: analytics and time-of-day patterns using published reviews.");
     else if(ownerSubscription?.plan==="basic")$("ownerDashboardNote").textContent=ownerText("Plan Basic: estadísticas esenciales. Las tendencias y comparaciones por horario están incluidas en Pro.","Basic plan: essential analytics. Trends and time comparisons are included with Pro.");
     return ownerSubscription;
-  }catch(error){ownerSubscriptionLoaded=false;if(details)details.textContent=ownerText("No pudimos verificar tu suscripción. Vuelve a intentarlo.","We couldn't verify your subscription. Please try again.");if(aiPanel)aiPanel.hidden=true;const customerWorkspace=$("customerWorkspace");if(customerWorkspace)customerWorkspace.hidden=true;console.error("Reputix subscription lookup:",error);return null;}
+  }catch(error){
+    ownerSubscription=null;ownerSubscriptionLoaded=false;
+    if(details)details.textContent=ownerText("No pudimos verificar tu suscripción. Vuelve a intentarlo.","We couldn't verify your subscription. Please try again.");
+    if(aiPanel)aiPanel.hidden=true;
+    if(customerWorkspace)customerWorkspace.hidden=true;
+    console.error("Reputix subscription lookup:",error);
+    return null;
+  }
 }
 
+function setupCustomerWorkspaceActions(){
+  const refresh=$("customerWorkspaceRefresh");
+  if(refresh&&refresh.dataset.bound!=="1"){
+    refresh.dataset.bound="1";
+    refresh.addEventListener("click",async()=>{
+      if(!ownerSession?.access_token)return;
+      refresh.disabled=true;
+      const status=$("customerWorkspaceStatus");
+      if(status)status.textContent=ownerText("Actualizando…","Refreshing…");
+      try{
+        await loadOwnerSubscription();
+        await Promise.allSettled([loadPrivateSpace(),loadMessageCenter()]);
+        await loadOwnerDashboard();
+        if(status)status.textContent=ownerSubscription?ownerText("Actualizado ","Updated ")+new Date().toLocaleTimeString(lang==="es"?"es-US":"en-US",{hour:"2-digit",minute:"2-digit"}):ownerText("No hay un plan activo.","No active plan.");
+      }catch(error){
+        if(status)status.textContent=ownerText("No se pudo actualizar.","Refresh failed.");
+      }finally{refresh.disabled=false;}
+    });
+  }
+  const reviewsButton=$("privateOwnReviewsAction");
+  if(reviewsButton&&reviewsButton.dataset.bound!=="1"){
+    reviewsButton.dataset.bound="1";
+    reviewsButton.addEventListener("click",async()=>{
+      reviewsButton.disabled=true;
+      try{await loadPrivateSpace();$("privateOwnReviewsTitle")?.scrollIntoView({behavior:"smooth",block:"center"});}
+      finally{reviewsButton.disabled=false;}
+    });
+  }
+}
 function ownerSetSession(session) {
+  setupCustomerWorkspaceActions();
   ownerSession=session;
   if(session) sessionStorage.setItem("reputix_owner_session",JSON.stringify(session));
   else sessionStorage.removeItem("reputix_owner_session");
@@ -2382,6 +2445,12 @@ function ownerSetSession(session) {
     if(isAdmin) { loadAdminClaims(); loadAdminReviewModeration(); }
   } else {
     ownerSubscription=null;ownerSubscriptionLoaded=false;
+    $("customerWorkspace").hidden=true;
+    $("customerWorkspaceStatus").textContent="";
+    $("customerStatReviews").textContent="—";
+    $("customerStatPosts").textContent="—";
+    $("customerStatComplaints").textContent="—";
+    $("privateOwnReviewsContent").replaceChildren();
     $("adminClaimsList").replaceChildren();
     $("privatePostsList").replaceChildren();
     $("privateReviewsContent").replaceChildren();
@@ -2741,6 +2810,24 @@ async function loadPrivateSpace() {
     (posts.value||[]).forEach(p=>{const item=node("div","private-entry");item.append(node("p","",p.body),node("small","",new Date(p.created_at).toLocaleString()));postList.append(item);});
     if(!postList.childElementCount) postList.append(node("small","",ownerText("Todavía no tienes publicaciones.","You have no posts yet.")));
   } else postList.append(node("small","",ownerText("No se pudieron cargar tus publicaciones.","Could not load your posts.")));
+
+  const ownReviewList=$("privateOwnReviewsContent");
+  if(ownReviewList){
+    ownReviewList.replaceChildren();
+    if(ownReviews.status==="fulfilled"){
+      const businessNamesForReviews=new Map(lastBusinesses.map(b=>[String(b.id),b.name]));
+      (ownReviews.value||[]).forEach(review=>{
+        const item=node("article","private-entry");
+        item.append(node("strong","",businessNamesForReviews.get(String(review.business_id))||ownerText("Opinión enviada","Submitted review")));
+        if(review.comment)item.append(node("p","",review.comment));
+        const status=String(review.status||"pending").toLowerCase();
+        const statusLabel=status==="published"?ownerText("Publicada","Published"):status==="rejected"?ownerText("No publicada","Not published"):ownerText("En revisión","Under review");
+        item.append(node("small","",statusLabel+" · "+(review.created_at?new Date(review.created_at).toLocaleString():"")));
+        ownReviewList.append(item);
+      });
+      if(!ownReviewList.childElementCount)ownReviewList.append(node("small","",ownerText("Todavía no has enviado opiniones.","You have not submitted any reviews yet.")));
+    }else ownReviewList.append(node("small","",ownerText("No se pudieron cargar tus opiniones.","Could not load your reviews.")));
+  }
   const businessIds=claims.status==="fulfilled"?(claims.value||[]).map(x=>x.business_id).filter(Boolean):[];
   const ownerTools=$("ownerToolsSection");
   if(ownerTools)ownerTools.hidden=claims.status!=="fulfilled"||businessIds.length===0;
@@ -2767,6 +2854,12 @@ async function loadPrivateSpace() {
       if(!reviewList.childElementCount) reviewList.append(node("small","",ownerText("Tus negocios todavía no tienen opiniones publicadas.","Your businesses have no published reviews yet.")));
     } catch(err) {reviewList.append(node("small","",ownerText("No se pudieron cargar las opiniones de tus negocios.","Could not load reviews for your businesses.")));}
   } else reviewList.append(node("small","",ownerText("Las opiniones de clientes aparecerán cuando tengas un negocio verificado.","Customer reviews will appear once you have a verified business.")));
+  const reviewCount=$("customerStatReviews");
+  const postCount=$("customerStatPosts");
+  const complaintCount=$("customerStatComplaints");
+  if(reviewCount)reviewCount.textContent=ownReviews.status==="fulfilled"?String((ownReviews.value||[]).length):"—";
+  if(postCount)postCount.textContent=posts.status==="fulfilled"?String((posts.value||[]).length):"—";
+  if(complaintCount)complaintCount.textContent=ownComplaints.status==="fulfilled"?String((ownComplaints.value||[]).length):"—";
   const complaintList=$("privateComplaintsContent");complaintList.replaceChildren();
   if(ownComplaints.status==="fulfilled") {
     (ownComplaints.value||[]).forEach(x=>{
