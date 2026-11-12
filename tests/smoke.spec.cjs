@@ -66,6 +66,34 @@ const { chromium } = require("playwright");
       await card.locator("section.details").first().waitFor({ state: "visible" });
     });
 
+    await check("Owner claim submission preserves the session and confirms the request", async () => {
+      const claimPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      claimPage.on("pageerror", error => failures.push(error.stack || error.message));
+      await claimPage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = request.url();
+        if (request.method() === "POST" && url.includes("/business_owner_claims")) {
+          await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify([{ id: "qa-claim-id" }]) });
+        } else {
+          await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+        }
+      });
+      await claimPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await claimPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await claimPage.evaluate(() => window.ownerSetSession({
+        access_token: "qa-mocked-access-token",
+        refresh_token: "qa-mocked-refresh-token",
+        user: { id: "00000000-0000-4000-8000-000000000001", email: "qa@example.invalid", app_metadata: {} }
+      }));
+      await claimPage.locator("#claimBusiness").evaluate(el => { el.value = "00000000-0000-4000-8000-000000000002"; });
+      await claimPage.locator("#claimEvidence").fill("QA simulation only. I am authorized to manage this test business.");
+      await claimPage.locator("#ownerClaimForm").evaluate(form => form.requestSubmit());
+      await claimPage.waitForFunction(() => /solicitud recibida|request received/i.test(document.querySelector("#ownerClaimMessage")?.textContent || ""), null, { timeout: 8000 });
+      const session = await claimPage.evaluate(() => JSON.parse(sessionStorage.getItem("reputix_owner_session") || "null"));
+      if (session?.access_token !== "qa-mocked-access-token") throw new Error("Owner session was not preserved");
+      await claimPage.close();
+    });
+
     await check("Public Reputix AI opens and closes", async () => {
       await page.locator("#reputixAiFab").click();
       await page.locator("#reputixAiModal").waitFor({ state: "visible" });
