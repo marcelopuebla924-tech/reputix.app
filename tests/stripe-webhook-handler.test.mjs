@@ -101,7 +101,7 @@ test("passes the exact raw body and signature to Stripe verification", async () 
   const calls = [];
   const handler = createStripeWebhookHandler({
     ...BASE_CONFIG,
-    stripe: makeStripe(event(), null, (...args) => { verifiedArgs = args; }),
+    stripe: makeStripe(event({ type: "customer.created", data: { object: { id: "cus_fixture_1" } } }), null, (...args) => { verifiedArgs = args; }),
     fetchImpl: makeFetch("ignored", calls),
   });
   const response = await handler(request(rawBody, "sig-raw"));
