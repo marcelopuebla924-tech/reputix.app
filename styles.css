@@ -2311,3 +2311,55 @@ select option, select optgroup {
     margin:18px auto 8px !important;
   }
 }
+
+/* REPUTIX CUSTOMER WORKSPACE — desktop width and messaging layout correction.
+   Keep the customer/owner groups in one full-width column; older #privateSpace
+   grid rules must not split the two groups and leave half the screen empty. */
+@media (min-width: 681px) {
+  #privateSpace .private-area-groups {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    width:100% !important;
+    max-width:none !important;
+  }
+  #privateSpace .private-area-groups > .private-module-group {
+    grid-column:1 / -1 !important;
+    width:100% !important;
+    min-width:0 !important;
+  }
+  #privateSpace .customer-module-group .private-module-grid > article:nth-child(2) {
+    grid-column:1 / -1 !important;
+  }
+  #privateSpace #privateMessagesContent {
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    align-items:start !important;
+    gap:16px !important;
+    width:100% !important;
+  }
+  #privateSpace #privateMessagesContent > .message-compose,
+  #privateSpace #privateMessagesContent > .message-inbox {
+    min-width:0 !important;
+    width:100% !important;
+  }
+  #privateSpace #privateMessagesContent > .message-thread {
+    grid-column:1 / -1 !important;
+    min-width:0 !important;
+    width:100% !important;
+  }
+}
+@media (max-width:680px) {
+  #privateSpace .private-area-groups {
+    grid-template-columns:minmax(0,1fr) !important;
+  }
+  #privateSpace #privateMessagesContent {
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    gap:12px !important;
+  }
+  #privateSpace #privateMessagesContent > * {
+    grid-column:1 !important;
+    min-width:0 !important;
+    width:100% !important;
+  }
+}
