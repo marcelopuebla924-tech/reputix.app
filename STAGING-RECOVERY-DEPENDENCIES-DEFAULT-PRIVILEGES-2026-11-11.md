@@ -7,7 +7,7 @@ Read-only catalog inspection of production project `udvsrmfgjfinwbgvhchs` and st
 ## Trigger, sequence, and custom type inventory
 Production public schema:
 - User-defined table triggers reported by `information_schema.triggers`: 0
-- Sequences reported by `information_schema.sequences`: 0
+- Standalone sequences reported by `information_schema.sequences`: 0; however, `ad_clicks.id` and `ad_impressions.id` are `bigint GENERATED ALWAYS AS IDENTITY`, with PostgreSQL-managed internal identity sequences.
 - Public enum/domain types: 0
 - RLS policies: 35 across 16 tables
 
@@ -35,7 +35,7 @@ These are global defaults for future objects created under those owners; they ar
 - Avoid setting blanket default grants that accidentally expose future backend-only tables, functions, or sequences.
 
 ## Dependency and ordering notes
-- No public triggers or public sequences need to be recreated based on this inventory.
+- No public triggers or standalone sequences need to be recreated based on this inventory. Preserve the two identity columns exactly as `GENERATED ALWAYS AS IDENTITY`.
 - The 20 table constraints include foreign keys to `auth.users`; staging Auth must remain a managed Supabase Auth schema. Do not create or alter `auth.users` manually.
 - Public view dependencies and definitions are documented in `STAGING-RECOVERY-OBJECTS-2026-11-11-2055-PST.md`. Create the five views only after all referenced tables and routines exist.
 - Routines and RLS policies reference `auth.uid()`, `auth.jwt()`, and `public.is_reputix_admin()`; ensure functions and base tables exist before creating policies that call helper routines.
