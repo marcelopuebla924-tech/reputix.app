@@ -383,7 +383,7 @@ const { chromium } = require("playwright");
         await paidPage.locator("#privateProfileAction").click();
         await paidPage.locator("#privateProfileName").fill("QA Member Profile");
         await paidPage.locator("#privateProfileBio").fill("Synthetic profile editor validation only.");
-        await paidPage.locator("#privateProfileEditor button[type="submit"]").click();
+        await paidPage.locator('#privateProfileEditor button[type="submit"]').click();
         await paidPage.waitForFunction(() => {
           const editor = document.querySelector("#privateProfileEditor");
           return !editor && document.querySelector("#privateProfileContent")?.textContent.includes("QA Member Profile");
