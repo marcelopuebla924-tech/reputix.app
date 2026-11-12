@@ -203,7 +203,7 @@ const { chromium } = require("playwright");
             aiVisible: !document.querySelector("#customerLinkAI")?.hidden
           };
         });
-        if (workspaceFacts.width < 1000) throw new Error("Paid workspace is not using the available desktop width: " + workspaceFacts.width);
+        if (workspaceFacts.width < 1200) throw new Error("Paid workspace is not using the available desktop width: " + workspaceFacts.width);
         for (const key of ["reviewLink","profileTarget","messagesTarget","complaintsTarget","postsTarget","discoverTarget","reviewsTarget","refreshButton"]) {
           if (!workspaceFacts[key]) throw new Error("Paid workspace navigation/control missing: " + key);
         }
@@ -215,8 +215,43 @@ const { chromium } = require("playwright");
         if (refreshProfileCalls <= before) throw new Error("Workspace refresh did not reload the customer profile data");
         await paidPage.locator("#customerLinkReviews").click();
         await paidPage.waitForFunction(() => location.hash === "#privateOwnReviewsTitle");
+        await paidPage.setViewportSize({ width: 390, height: 844 });
+        const mobileFacts = await paidPage.evaluate(() => {
+          const panel = document.querySelector("#customerWorkspace");
+          const grid = document.querySelector(".customer-workspace-grid");
+          return {
+            columns: getComputedStyle(grid).gridTemplateColumns.split(" ").length,
+            panelFits: panel.scrollWidth <= panel.clientWidth + 1,
+            refreshVisible: document.querySelector("#customerWorkspaceRefresh").getBoundingClientRect().width > 0
+          };
+        });
+        if (mobileFacts.columns > 2 || !mobileFacts.panelFits || !mobileFacts.refreshVisible) {
+          throw new Error("Paid mobile workspace layout failed: " + JSON.stringify(mobileFacts));
+        }
         await paidPage.close();
       }
+
+      const freePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      await freePage.route("**/rest/v1/**", async route => {
+        if (route.request().url().includes("/user_subscriptions")) {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+            plan_code: "free", status: "active", current_period_end: null, cancel_at_period_end: false
+          }]) });
+        } else {
+          await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+        }
+      });
+      await freePage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await freePage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await freePage.evaluate(() => window.ownerSetSession({
+        access_token: "qa-free-workspace-token",
+        refresh_token: "qa-free-workspace-refresh",
+        user: { id: "00000000-0000-4000-8000-000000000092", email: "free-workspace-qa@example.invalid", app_metadata: {} }
+      }));
+      await freePage.waitForTimeout(300);
+      if (!(await freePage.locator("#customerWorkspace").isHidden())) throw new Error("Free plan incorrectly unlocked the paid workspace");
+      if (!(await freePage.locator("#customerLinkAI").isHidden())) throw new Error("Free plan incorrectly unlocked the Pro AI shortcut");
+      await freePage.close();
     });
 
     await check("Admin moderation and advertising controls work with mocked data", async () => {
