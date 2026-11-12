@@ -2721,6 +2721,8 @@ async function loadPrivateSpace() {
     if(!postList.childElementCount) postList.append(node("small","",ownerText("Todavía no tienes publicaciones.","You have no posts yet.")));
   } else postList.append(node("small","",ownerText("No se pudieron cargar tus publicaciones.","Could not load your posts.")));
   const businessIds=claims.status==="fulfilled"?(claims.value||[]).map(x=>x.business_id).filter(Boolean):[];
+  const ownerTools=$("ownerToolsSection");
+  if(ownerTools)ownerTools.hidden=claims.status!=="fulfilled"||businessIds.length===0;
   const businessNames=new Map(lastBusinesses.map(b=>[String(b.id),b.name]));
   $("privateBusinessContent").replaceChildren();
   if(businessIds.length) {
