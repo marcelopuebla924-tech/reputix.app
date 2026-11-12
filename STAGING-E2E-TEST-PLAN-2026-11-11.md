@@ -158,3 +158,14 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Updated the test to target the review form by its comment textarea and include the exact form message, request payload, and mocked AI call trace on failure.
 - Diagnostic commit: `4ef760b8c089c1a705b43e3cbdb4f7bf1276fad5`.
 - Browser QA run #152 is in progress.
+
+
+## Update — 2026-11-11 18:16 PST
+
+- The diagnostic review test confirmed native browser validation blocked submission: the form message remained blank, no review POST payload was sent, and AI calls were not attempted.
+- Root cause: the field labeled "Who served you? (optional)" was accidentally marked required by the shared review form helper.
+- Fixed the app helper to support configurable requiredness and explicitly made `staff_name` optional.
+- Added a regression assertion that the form is valid without staff name.
+- App commit: `b05aba7c7ce3074f8f34471ef18f4ca0b8e297f5`.
+- Test commit: `007861f0b49008bee6f7a9d1f3d25a3e0adb6a01`.
+- Browser QA runs #156 and #157 are running. No production data or settings were changed.
