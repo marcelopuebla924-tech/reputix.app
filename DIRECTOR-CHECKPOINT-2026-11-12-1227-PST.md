@@ -71,3 +71,18 @@ Read the deployed Edge Function source in production and staging, and compared b
 3. Design the private owner-verification document workflow (server-side upload, review, and signed access only) without relaxing bucket privacy.
 4. Continue owner complaint RPC hosted authorization tests and Stripe PR #33 review; do not merge/deploy candidates or alter live payment configuration.
 5. Preserve all user data, accounts, reviews, businesses, photos, domain/DNS, and sensitive Auth/payment settings.
+
+
+## Follow-up investigation — 12:29 p.m. PST
+
+### AI runtime evidence check
+- Queried staging unified function logs for `reputix-ai` from Nov 11 12:30 p.m. through Nov 12 12:30 p.m. Pacific.
+- The filtered query returned zero matching records. This is not a runtime test and does not prove the function is healthy; it means no matching invocation evidence was available in that log query.
+- The connected Supabase actions expose source retrieval and deployment, but no dedicated Edge Function invoke/test action. No unauthenticated or synthetic request was sent to the endpoint.
+- Consequently, allowed/disallowed-origin preflight, session validation, Pro gating, and moderation behavior remain unverified at hosted runtime.
+- Source review also confirms no visible per-user/IP rate limit or usage quota in the current AI function. This is a launch cost-abuse risk to address with a server-side limit before broad public launch; no behavior changed.
+
+### Current decision
+- Keep production `reputix-ai` v22 unchanged.
+- Keep staging v1 and GitHub `main` allowlist source as the candidate reference.
+- Do not call this a passing runtime test. The next step requires an approved staging request path with a valid synthetic test identity and a controlled OpenAI test budget, or a dedicated automated integration harness.
