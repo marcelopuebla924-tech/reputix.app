@@ -152,6 +152,17 @@ const { chromium } = require("playwright");
         };
       });
       if (Object.values(separation).some(value => !value)) throw new Error("Customer/owner module separation failed: " + JSON.stringify(separation));
+      await workspacePage.locator("#privateBusinessAction").click();
+      await workspacePage.waitForFunction(() => {
+        const target = document.querySelector("#ownerClaimForm");
+        return !!target && target.getBoundingClientRect().top < window.innerHeight && target.getBoundingClientRect().bottom > 0;
+      }, null, { timeout: 8000 });
+      const privateReviewsResponse = workspacePage.waitForResponse(response =>
+        response.url().includes("/rest/v1/reviews?") &&
+        response.url().includes("user_id=eq.00000000-0000-4000-8000-000000000006")
+      );
+      await workspacePage.locator("#privateReviewsAction").click();
+      await privateReviewsResponse;
       verified = false;
       await workspacePage.evaluate(session => window.ownerSetSession(null), testSession);
       await workspacePage.evaluate(session => window.ownerSetSession(session), testSession);
