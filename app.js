@@ -1472,7 +1472,7 @@ function makeReviewForm(business) {
   const f = node("form","form");
   f.append(node("h3","",t("share")),node("p","empty",t("pending")));
   const businessType = String(business.category || "") + " " + String(business.name || "");
-  if (/psycholog|psicolog|salud mental|mental health|therap/i.test(businessType)) {
+  if (/psycholog|psic[oó]log|salud mental|mental health|therap/i.test(businessType)) {
     f.append(node("p","empty review-safety-note",lang === "es"
       ? "Privacidad en psicología: comparte solo tu experiencia general sobre el trato, la comunicación, la puntualidad y la organización. No publiques diagnósticos, tratamientos, medicamentos, nombres de pacientes, datos de contacto ni detalles que permitan identificar a alguien. No solicites ni publiques resultados clínicos. Reputix no sustituye la atención profesional ni los servicios de emergencia."
       : "Psychology privacy: share only your general experience with respect, communication, punctuality, and organization. Do not post diagnoses, treatments, medications, patient names, contact details, or information that could identify anyone. Do not request or publish clinical outcomes. Reputix does not replace professional care or emergency services."));
