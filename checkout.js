@@ -33,11 +33,25 @@
       }
       buttons.forEach(b=>b.disabled=true);
       say(plan,"Abriendo conexión segura con Stripe…");
-      const response=await fetch(SUPABASE_URL+"/functions/v1/create-checkout-session",{
+      const checkoutRequest=()=>fetch(SUPABASE_URL+"/functions/v1/create-checkout-session",{
         method:"POST",
         headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},
         body:JSON.stringify({plan})
       });
+      let response=await checkoutRequest();
+      if(response.status===401&&session.refresh_token){
+        const refreshResponse=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{
+          method:"POST",
+          headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},
+          body:JSON.stringify({refresh_token:session.refresh_token})
+        });
+        const renewed=await refreshResponse.json().catch(()=>({}));
+        if(refreshResponse.ok&&renewed.access_token&&renewed.user){
+          session=renewed;
+          sessionStorage.setItem("reputix_owner_session",JSON.stringify(session));
+          response=await checkoutRequest();
+        }
+      }
       const result=await response.json().catch(()=>({}));
       if(!response.ok)throw new Error(result.error||result.message||("Stripe respondió con error "+response.status));
       if(!result.url)throw new Error("Stripe no devolvió el enlace de pago.");
