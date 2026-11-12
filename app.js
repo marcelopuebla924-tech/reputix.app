@@ -520,6 +520,10 @@ function setLanguage(value) {
   $("independentHeaderBtn").textContent = lang === "es"
     ? "Ofrece tu servicio"
     : "Offer your service";
+  const homeNavLabel = document.querySelector('[data-nav-label="home"]');
+  if (homeNavLabel) homeNavLabel.textContent = lang === "es" ? "Inicio" : "Home";
+  const mapCtaLabel = document.querySelector("[data-map-cta]");
+  if (mapCtaLabel) mapCtaLabel.textContent = lang === "es" ? "ABRIR MAPA DE NEGOCIOS" : "OPEN BUSINESS MAP";
   $("googleDiscoveryTitle").textContent = lang === "es"
     ? "Próximamente: descubrimiento con Google"
     : "Coming soon: Google business discovery";
