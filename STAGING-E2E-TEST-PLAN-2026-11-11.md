@@ -102,3 +102,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - This validates the browser request only; it does not exercise live RLS or a production write.
 - Commit: `d020dcaf993365c134fad2aa41b08732fcd8fa27`.
 - Await GitHub Actions result before marking this check passed.
+
+
+## Update — 2026-11-11 18:09 PST
+
+- Extended the existing mocked customer/owner messaging scenario with assertions for the customer complaints quick-navigation button and verified-owner inbox refresh control.
+- These assertions test navigation and refresh behavior with synthetic identities and mocked Supabase REST responses.
+- Named check count remains 28; two additional assertions were added inside an existing scenario.
+- Commit: `8825afc4f939a2a9c9f08981e278dab1c9e76dbe`.
+- Latest combined commit status returned no entries. Do not mark the new assertions as passed until an independent CI result is available.
