@@ -1,4 +1,4 @@
-import Stripe from "npm:stripe";
+import Stripe from "npm:stripe@23.1.0";
 import { createStripeWebhookHandler } from "./core.mjs";
 
 const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
