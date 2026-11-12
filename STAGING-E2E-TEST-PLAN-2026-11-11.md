@@ -149,3 +149,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Fix commit: `53f3616c2c72e4cb3696d1da4fc37992ac5411b0`.
 - Browser QA runs #144 (photo upload) and #148 (corrected review test) are pending completion.
 - No application code or production data was changed for this test-only correction.
+
+
+## Update — 2026-11-11 18:14 PST
+
+- CI confirms the business photo upload test passed in run #144; the run failed only because the separate public review submission test timed out.
+- The review test continued to time out in run #148 after the success-message matcher was corrected.
+- Updated the test to target the review form by its comment textarea and include the exact form message, request payload, and mocked AI call trace on failure.
+- Diagnostic commit: `4ef760b8c089c1a705b43e3cbdb4f7bf1276fad5`.
+- Browser QA run #152 is in progress.
