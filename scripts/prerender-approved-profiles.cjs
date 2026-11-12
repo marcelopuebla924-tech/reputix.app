@@ -19,7 +19,7 @@ function cleanPublicCity(value) {
 function cleanPublicStreetAddress(value) {
   const address = cleanText(value, 180);
   // Do not publish concatenated house-number/street values such as "9233south gate".
-  if (/^\d{3,}(?:[a-z]{2,}|[A-Z][a-z]{2,})(?:\\s|$)/.test(address)) return "";
+  if (/^\d{3,}(?:[a-z]{2,}|[A-Z][a-z]{2,})(?:\s|$)/.test(address)) return "";
   return address;
 }
 
