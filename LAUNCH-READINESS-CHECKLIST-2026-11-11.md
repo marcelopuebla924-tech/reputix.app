@@ -11,7 +11,7 @@ Supabase project: `udvsrmfgjfinwbgvhchs`
 
 ## Verified
 
-- Browser Playwright suite: **32/32 checks passed** in run #264 for commit `777d9bc0b0cc4e0b37dadebb13b7440710690360`, with zero failures and zero page errors. Run #264 includes the added empty-message checks.
+- Browser Playwright suite: **32/32 checks passed** in run #270 for commit `3b0dc208f3366222341174232e676879b4e2dbe5`, with zero failures and zero page errors. This includes blank review/complaint/message blocking, read-receipt payload restrictions, and admin campaign blank-form/date validation.
 - Static homepage buttons: all 40 button IDs have an actual click represented in the test source.
 - Public Reputix AI: all eight shortcut prompts, close behavior, and sign-in gate covered with mocks.
 - Reviews: valid submission payload, pending moderation status, advisory AI behavior, translation toggle, and invalid blank-form blocking covered.
@@ -19,7 +19,7 @@ Supabase project: `udvsrmfgjfinwbgvhchs`
 - Messaging UI: synthetic customer/verified-owner conversation creation, replies, inbox refresh, empty-message validation, and read-receipt behavior covered.
 - Read-receipt UI guard: PATCH payload is exactly `read_at`, and each participant marks only messages received by them as read.
 - Production messaging grants: `anon` has no direct privileges on the two messaging tables; `authenticated` retains SELECT, scoped INSERT column grants, and UPDATE only on `business_messages.read_at`. Post-change privilege queries confirmed that `body` and `sender_id` cannot be updated by `authenticated`; existing RLS policies remain.
-- Ads admin controls: campaign creation payload plus activate, pause, finish, reject, and resubmit-to-review actions covered with mocked API responses.
+- Ads admin controls: blank form and invalid date-range blocking, valid campaign payload, plus activate, pause, finish, reject, and resubmit-to-review actions covered with mocked API responses.
 - Map: all five category filters, text search, marker visibility synchronization, reset viewport behavior, and untrusted business-name rendering covered.
 - GitHub Pages deployment #490 succeeded for the map marker/filter synchronization update.
 - No production records, real campaigns, real messages, live charges, or protected database settings were changed in this QA work.
@@ -72,3 +72,10 @@ Earlier inspection found broad table-level grants. A separate applied-change rec
 ## Safety boundary
 
 All recent browser tests use synthetic identities and mocked API responses. No production rows, accounts, reviews, businesses, photos, conversations, or payment records were changed by this QA work. The current messaging grant state is narrower, but the provenance of the production change is unverified in the available conversation history and no matching migration is present; see the provenance addendum in the applied-change record. RLS policies, Auth settings, Stripe live settings, and domain/DNS settings were not changed in this QA work.
+
+
+## Latest browser validation — 2026-11-12
+
+- Run #270 passed all 32 checks, zero failures and zero page errors. The admin campaign test now checks blank required fields, rejects an end date equal to/before the start, then submits only after the end date is later.
+- Runs #268 and #269 failed because the test fixture changed the invalid end date to exactly the same timestamp as the start date, so the supposedly corrected form remained invalid. The fixture was corrected to the following day in commit `3b0dc208f3366222341174232e676879b4e2dbe5`; run #270 passed.
+- This was a test-data error, not a production application regression. All admin campaign interactions remained mocked.
