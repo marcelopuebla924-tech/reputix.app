@@ -325,36 +325,29 @@ const { chromium } = require("playwright");
     await check("Standalone map loads approved businesses, filters results, and safely renders untrusted names", async () => {
       const mapPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       mapPage.on("pageerror", error => failures.push(error.stack || error.message));
-      await mapPage.route("**/leaflet.js", async route => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/javascript",
-          body: `
-            (() => {
-              const map = {
-                setView() { return this; },
-                flyTo() { return this; },
-                fitBounds() { return this; },
-                invalidateSize() { return this; }
-              };
-              window.L = {
-                map: () => map,
-                tileLayer: () => ({ addTo() { return this; } }),
-                divIcon: () => ({}),
-                marker: coords => ({
-                  coords,
-                  addTo() { return this; },
-                  bindPopup() { return this; },
-                  on() { return this; },
-                  getLatLng() { return { lat: coords[0], lng: coords[1] }; },
-                  openPopup() { return this; }
-                }),
-                featureGroup: () => ({ getBounds: () => ({}) })
-              };
-            })();
-          `
-        });
+      await mapPage.addInitScript(() => {
+        const map = {
+          setView() { return this; },
+          flyTo() { return this; },
+          fitBounds() { return this; },
+          invalidateSize() { return this; }
+        };
+        window.L = {
+          map: () => map,
+          tileLayer: () => ({ addTo() { return this; } }),
+          divIcon: () => ({}),
+          marker: coords => ({
+            coords,
+            addTo() { return this; },
+            bindPopup() { return this; },
+            on() { return this; },
+            getLatLng() { return { lat: coords[0], lng: coords[1] }; },
+            openPopup() { return this; }
+          }),
+          featureGroup: () => ({ getBounds: () => ({}) })
+        };
       });
+      await mapPage.route("**/leaflet.js", route => route.abort());
       await mapPage.route("**/rest/v1/businesses?*", async route => {
         await route.fulfill({
           status: 200,
