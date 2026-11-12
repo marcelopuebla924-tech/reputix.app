@@ -34,8 +34,8 @@ function fixture() {
       id: approvedId,
       status: "approved",
       name: "QA <script>alert(1)</script> Store",
-      category: "Retail",
-      description: "A  public   description with </script><script>alert(2)</script> content.",
+      category: "Retail </script><script>alert(2)</script>",
+      description: "A public description that must not be published as official business copy.",
       address: "100 Test Avenue",
       city: "Los Angeles",
       state: "CA",
@@ -62,8 +62,9 @@ test("only approved records produce profile HTML and sitemap URLs; private field
   assert.match(html, /<base href="\/">/);
   assert.match(html, /<noscript><main><h1>QA &lt;script&gt;alert\(1\)&lt;\/script&gt; Store<\/h1>/);
   assert.match(html, new RegExp("https://www\\.reputixapp\\.com/business/" + approvedId + "/"));
-  assert.match(html, /A public description with &lt;\/script&gt;&lt;script&gt;alert\(2\)&lt;\/script&gt; content\./);
+  assert.ok(html.includes("Retail &lt;/script&gt;&lt;script&gt;alert(2)&lt;/script&gt; · Los Angeles · CA"));
   assert.doesNotMatch(html, /private@example\.com|NEVER PUBLISH INTERNAL NOTES|cus_private|Pending Secret Business|Rejected Secret Business/);
+  assert.ok(!html.includes("A public description that must not be published as official business copy"));
   assert.doesNotMatch(html, /<script>alert\(1\)<\/script>|<script>alert\(2\)<\/script>/);
   assert.match(html, /id="reputix-business-structured-data"/);
   assert.match(html, /\\u003c\/script\\u003e/);

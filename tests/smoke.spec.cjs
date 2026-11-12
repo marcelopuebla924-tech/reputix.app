@@ -94,7 +94,7 @@ const { execFileSync } = require("node:child_process");
             body: JSON.stringify(isDirectProfile ? [{
               id: businessId,
               name: businessName,
-              category: "Profesional / servicio: Psicólogo/a",
+              category: "Profesional  / servicio: Psicólogo/a",
               address: "100 QA Test Avenue",
               city: "Los Angeles",
               zip: "90001",
@@ -113,7 +113,7 @@ const { execFileSync } = require("node:child_process");
         throw new Error("Direct profile did not set a business-specific page title");
       }
       const metaDescription = await profilePage.locator('meta[name="description"]').getAttribute("content");
-      if (metaDescription !== "A synthetic approved business used only for browser QA.") {
+      if (metaDescription !== "Profesional / servicio: Psicólogo/a · Los Angeles") {
         throw new Error("Business metadata did not normalize repeated whitespace");
       }
       const canonical = await profilePage.locator('link[rel="canonical"]').getAttribute("href");
