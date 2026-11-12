@@ -506,8 +506,10 @@ const { chromium } = require("playwright");
     await check("Admin moderation and advertising controls work with mocked data", async () => {
       const adminPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       adminPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let adPayload = null;
       await adminPage.route("**/rest/v1/**", async route => {
         if (route.request().method() === "POST" && route.request().url().includes("/ad_campaigns")) {
+          adPayload = route.request().postDataJSON();
           await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
         } else {
           await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
@@ -540,12 +542,28 @@ const { chromium } = require("playwright");
       });
       await adminPage.locator("#adsTitle").fill("QA Mock Campaign");
       await adminPage.locator("#adsDescription").fill("Simulated campaign. No real billing.");
+      await adminPage.locator("#adsBudget").fill("75");
+      await adminPage.locator("#adsDestination").fill("https://example.invalid/qa-campaign");
+      await adminPage.locator("#adsPlacement").selectOption("discovery_feed");
+      await adminPage.locator("#adsStarts").fill("2026-11-12T10:00");
+      await adminPage.locator("#adsEnds").fill("2026-11-20T10:00");
       const adPost = adminPage.waitForResponse(response =>
         response.url().includes("/rest/v1/ad_campaigns") && response.request().method() === "POST"
       );
       await adminPage.locator("#adsCreateButton").click();
       await adPost;
       await adminPage.waitForFunction(() => /campaña creada y enviada a revisión/i.test(document.querySelector("#adsAdminMessage")?.textContent || ""), null, { timeout: 8000 });
+      if (!adPayload ||
+          adPayload.business_id !== "00000000-0000-4000-8000-000000000004" ||
+          adPayload.title !== "QA Mock Campaign" ||
+          adPayload.status !== "pending_review" ||
+          adPayload.budget_cents !== 7500 ||
+          adPayload.destination_url !== "https://example.invalid/qa-campaign" ||
+          adPayload.placement !== "discovery_feed" ||
+          !adPayload.starts_at || !adPayload.ends_at ||
+          new Date(adPayload.ends_at) <= new Date(adPayload.starts_at)) {
+        throw new Error("Admin campaign form did not submit the expected review-only campaign payload: " + JSON.stringify(adPayload));
+      }
       await adminPage.close();
     });
 
