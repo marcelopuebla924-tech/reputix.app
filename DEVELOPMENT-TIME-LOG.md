@@ -564,3 +564,14 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - `f527464afceaf277fdbd42ef82fba8c73be71ac3` — ad campaign lifecycle actions.
 - Browser QA run #219 was in progress at log time.
 - All data and API responses are synthetic/mocked; no real ad campaign or owner claim was changed.
+
+
+## Session 028 — 2026-11-11
+
+- Checkpoint: 18:33:30 PST.
+- Added a dedicated browser test for the published-review translation toggle, including hidden-by-default, reveal, label update, and hide-again behavior.
+- Test commit: `c1c66a826802539386dd0d710cb089fbb5e828a5`.
+- Suite now contains 32 named checks; the new check is pending CI verification.
+- Browser QA run #198 passed the previous 31-check suite. Run #219 was still in progress at the prior checkpoint and does not include this later test commit.
+- Exact active duration not measured; excluded.
+- Official cumulative tracked development time remains 49 minutes 8 seconds (0.819 hours).
