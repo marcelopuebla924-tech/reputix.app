@@ -364,6 +364,51 @@ const { chromium } = require("playwright");
       await page.waitForFunction(() => /correo|email/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""));
     });
 
+    await check("Password recovery verifies a one-time link only once and safely updates the password", async () => {
+      const recoveryPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      recoveryPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let verifyCalls = 0;
+      let updateCalls = 0;
+      let updateAuthorization = "";
+      let updatedPassword = "";
+      await recoveryPage.route("**/auth/v1/verify*", async route => {
+        verifyCalls += 1;
+        await new Promise(resolve => setTimeout(resolve, 120));
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            access_token: "qa-recovery-access-token",
+            refresh_token: "qa-recovery-refresh-token",
+            user: { id: "00000000-0000-4000-8000-000000000211", email: "recovery-qa@example.invalid" }
+          })
+        });
+      });
+      await recoveryPage.route("**/auth/v1/user", async route => {
+        if (route.request().method() !== "PUT") return route.continue();
+        updateCalls += 1;
+        updateAuthorization = route.request().headers().authorization || "";
+        updatedPassword = route.request().postDataJSON()?.password || "";
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ id: "00000000-0000-4000-8000-000000000211", email: "recovery-qa@example.invalid" })
+        });
+      });
+      await recoveryPage.goto("http://127.0.0.1:4173/?recovery=1&token_hash=qa-recovery-one-time-token&type=recovery#ownerArea", { waitUntil: "domcontentloaded" });
+      await recoveryPage.locator("#ownerPasswordResetPanel").waitFor({ state: "visible", timeout: 10000 });
+      await recoveryPage.waitForFunction(() => !location.search.includes("token_hash"));
+      if (verifyCalls !== 1) throw new Error("Recovery OTP was verified more than once during overlapping page lifecycle events");
+      await recoveryPage.locator("#ownerNewPassword").fill("QA-only-new-password-123");
+      await recoveryPage.locator("#ownerConfirmPassword").fill("QA-only-new-password-123");
+      await recoveryPage.locator("#ownerSaveNewPassword").click();
+      await recoveryPage.waitForFunction(() => /contraseña actualizada|password updated/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""));
+      if (updateCalls !== 1) throw new Error("Password update was not submitted exactly once");
+      if (updateAuthorization !== "Bearer qa-recovery-access-token") throw new Error("Password update did not use the verified recovery access token");
+      if (updatedPassword !== "QA-only-new-password-123") throw new Error("Password update payload did not match the synthetic test input");
+      await recoveryPage.close();
+    });
+
     await check("Checkout refreshes an expired session once before retrying safely", async () => {
       const checkoutPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       checkoutPage.on("pageerror", error => failures.push(error.stack || error.message));
