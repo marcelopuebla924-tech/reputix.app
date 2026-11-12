@@ -4,7 +4,7 @@ Review date: 2026-11-12 11:48 a.m. Pacific
 Status: read-only production review; candidate remains unmerged and unapplied.
 
 ## Exact production schema facts
-- Production project: udvsrmfgjfinwbgvhchs. Only catalog metadata and plan rows were queried; no rows were inserted, updated, or deleted.
+- Production project: udvsrmfgjfinwbgvhchs. Staging project: lzcyulncvjjxsyyivlty. Read-only catalog inspection confirms the relevant payment_events and user_subscriptions constraints match in both projects. Only catalog metadata and plan catalog rows were queried; no rows were inserted, updated, or deleted.
 - payment_events has NOT NULL provider, provider_event_id, event_type, processing_status, created_at; nullable business_id, processed_at, error_message. processing_status CHECK is received | processed | failed | ignored.
 - payment_events has a global UNIQUE(provider_event_id) constraint/index (not a composite provider+event key). The candidate's ON CONFLICT(provider_event_id) matches this current constraint.
 - user_subscriptions has NOT NULL user_id, plan_code, status, provider, provider_subscription_id, cancel_at_period_end, created_at, updated_at; nullable provider_customer_id and current period timestamps.
