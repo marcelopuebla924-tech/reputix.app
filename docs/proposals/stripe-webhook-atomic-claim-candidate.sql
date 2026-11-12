@@ -2,6 +2,11 @@
 -- Reviewed against Reputix-Staging's observed payment_events and user_subscriptions schema
 -- on 2026-11-12. This file intentionally lives outside supabase/migrations until
 -- the independent-session test harness and full review are complete.
+--
+-- Existing subscription rows will have NULL provider_event_created_at after adding
+-- this column. The conflict predicate below deliberately refuses to overwrite those
+-- legacy rows until an explicit reconciliation/backfill from Stripe's authoritative
+-- current subscription state has been completed.
 
 BEGIN;
 
@@ -114,8 +119,10 @@ BEGIN
       cancel_at_period_end = EXCLUDED.cancel_at_period_end,
       provider_event_created_at = EXCLUDED.provider_event_created_at,
       updated_at = pg_catalog.now()
-    WHERE public.user_subscriptions.provider_event_created_at IS NULL
-       OR public.user_subscriptions.provider_event_created_at < EXCLUDED.provider_event_created_at;
+    -- A NULL timestamp means a legacy row has not yet been reconciled.
+    -- Quarantine it rather than risk replacing a newer snapshot with a delayed event.
+    WHERE public.user_subscriptions.provider_event_created_at IS NOT NULL
+      AND public.user_subscriptions.provider_event_created_at < EXCLUDED.provider_event_created_at;
 
     GET DIAGNOSTICS v_subscription_rows = ROW_COUNT;
     v_final_status := CASE WHEN v_subscription_rows = 1 THEN 'processed' ELSE 'ignored' END;
