@@ -83,3 +83,13 @@ Move beyond mocked browser tests without risking real customer accounts, message
 1. Verify the new Browser QA run after GitHub Actions completes.
 2. If it passes, continue reviewing remaining private-data reads and the member/owner control flows.
 3. Keep production DB, Auth, Stripe, domain, and DNS unchanged.
+
+
+## Update — 2026-11-11 18:05 PST
+
+### Expanded browser regression coverage
+- Public AI: all eight suggestion shortcuts must populate the prompt; submitting while signed out must preserve the question, direct the visitor to sign-in, and make no unauthenticated AI function request.
+- Admin claims: owner verification must show a confirmation dialog and submit the expected status update; test data and REST responses are synthetic/mocked.
+- These are browser tests only. They do not certify live Supabase RLS, Auth, database writes, or production integration.
+- Commits: `eebb436f50bdb5c0f8cfb74520109ff1c499769a`, `66ce065665161086a1869646b3b78ef7526f7875`.
+- Await GitHub Actions before marking these tests passed.
