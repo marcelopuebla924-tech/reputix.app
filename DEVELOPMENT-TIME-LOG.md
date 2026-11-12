@@ -604,3 +604,20 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - All 40 static homepage button IDs now appear in the test source; the latest additions remain pending CI verification.
 - Exact active duration not measured; excluded.
 - Official cumulative tracked time remains 49 minutes 8 seconds (0.819 hours).
+
+
+## Session 028 — 2026-11-11
+
+- Start: 18:34:26 PST
+- End: 18:36:34 PST
+- Active tracked time: 2 minutes 8 seconds (0.036 hours)
+- Cumulative tracked time since baseline: 52 minutes 26 seconds (0.874 hours)
+
+### Verification
+- Browser QA run #231: SUCCESS.
+- 32/32 named checks passed; zero failures and zero page errors.
+- Admin ad campaign lifecycle passed all four state actions: activate, pause, finish, reject.
+- Passing test commit: `f17a33b14429655795eddfba6b02428d49989463`.
+
+### Safety
+- All campaigns, identities, REST responses, and state changes were synthetic/mocked. No real campaign, charge, or production record was created or changed.
