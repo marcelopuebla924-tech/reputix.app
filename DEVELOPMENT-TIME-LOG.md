@@ -402,3 +402,23 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 ### Verification and safety
 - Browser QA run #177 was in progress for the message-button changes.
 - No real claim, message, account, or production record was changed.
+
+
+## Session 020 — 2026-11-11
+
+- Start: 18:22:12 PST
+- End: 18:23:37 PST
+- Active tracked time: 1 minute 25 seconds (0.024 hours)
+- Cumulative tracked time since baseline: 38 minutes 43 seconds (0.646 hours)
+
+### Verification and work performed
+1. Browser QA run #177 passed after changing the customer and verified-owner messaging scenario to click the actual reply buttons; zero page errors.
+2. Changed customer complaint submission to click the visible submit button rather than calling `requestSubmit()` directly.
+3. Added a check that the private reviews refresh button triggers a reviews query scoped to the signed-in synthetic user.
+
+### Commits
+- `e241c7386685e94d3b617c4aebcb193bca30a644` — customer complaint and private reviews button coverage.
+
+### Verification and safety
+- Browser QA run #181 was in progress at log time.
+- No real complaint, review, message, or account was created; all backend interactions are mocked.
