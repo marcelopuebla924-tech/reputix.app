@@ -176,6 +176,12 @@ const { chromium } = require("playwright");
             return;
           }
           if (url.includes("/user_profiles") && route.request().method() === "GET") refreshProfileCalls += 1;
+          if (url.includes("/businesses?")) {
+            await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+              id: "00000000-0000-4000-8000-000000000093", name: "QA Approved Business", city: "Los Angeles", status: "approved"
+            }]) });
+            return;
+          }
           await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
         });
         await paidPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
@@ -213,6 +219,24 @@ const { chromium } = require("playwright");
         await paidPage.locator("#customerWorkspaceRefresh").click();
         await paidPage.waitForFunction(() => /updated|actualizado/i.test(document.querySelector("#customerWorkspaceStatus")?.textContent || ""), null, { timeout: 8000 });
         if (refreshProfileCalls <= before) throw new Error("Workspace refresh did not reload the customer profile data");
+        if (plan === "basic") {
+          await paidPage.locator("#customerComplaintBusiness").selectOption("00000000-0000-4000-8000-000000000093");
+          await paidPage.locator("#customerComplaintText").fill("QA synthetic complaint about a delayed service.");
+          let complaintPayload = null;
+          await paidPage.route("**/rest/v1/complaints", async route => {
+            if (route.request().method() === "POST") {
+              complaintPayload = route.request().postDataJSON();
+              await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
+            } else {
+              await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+            }
+          });
+          await paidPage.locator("#customerComplaintForm").evaluate(form => form.requestSubmit());
+          await paidPage.waitForFunction(() => /reclamo enviado|complaint submitted/i.test(document.querySelector("#customerComplaintStatus")?.textContent || ""), null, { timeout: 8000 });
+          if (!complaintPayload || complaintPayload.status !== "pending" || complaintPayload.user_id !== "00000000-0000-4000-8000-000000000091") {
+            throw new Error("Complaint form did not submit a pending complaint owned by the signed-in synthetic user");
+          }
+        }
         await paidPage.locator("#customerLinkReviews").click();
         await paidPage.waitForFunction(() => location.hash === "#privateOwnReviewsTitle");
         await paidPage.setViewportSize({ width: 390, height: 844 });
