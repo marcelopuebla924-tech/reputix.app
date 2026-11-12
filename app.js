@@ -981,39 +981,59 @@ function photoPathUrl(path) {
 async function optimizeBusinessPhoto(file) {
   if (!file) throw new Error(lang === "es" ? "Selecciona una foto." : "Choose a photo.");
   const allowed = ["image/jpeg","image/png","image/webp"];
-  if (!allowed.includes(file.type)) throw new Error(lang === "es" ? "Usa JPG, PNG o WebP." : "Use JPG, PNG or WebP.");
-  // Avoid loading unexpectedly huge originals into mobile memory.
-  if (file.size > 25 * 1024 * 1024) throw new Error(lang === "es" ? "La foto original supera 25 MB. Elige una más pequeña." : "Original photo exceeds 25 MB. Choose a smaller one.");
-  if (typeof createImageBitmap !== "function") {
-    if (file.size <= 5 * 1024 * 1024) return file;
-    throw new Error(lang === "es" ? "Este navegador no permite optimizar esta foto. Prueba con Chrome actualizado." : "This browser cannot optimize this photo. Try an updated Chrome.");
+  if (!allowed.includes(file.type)) throw new Error(lang === "es" ? "Usa JPG, PNG o WebP. Si tu teléfono guarda HEIC, conviértela a JPG antes de subirla." : "Use JPG, PNG or WebP. If your phone saves HEIC, convert it to JPG before uploading.");
+  // Acepta originales grandes; siempre se comprimen antes de enviarlos a Storage.
+  if (file.size > 40 * 1024 * 1024) throw new Error(lang === "es" ? "La foto supera el límite de 40 MB. Elige una más pequeña." : "Photo exceeds the 40 MB limit. Choose a smaller one.");
+
+  let source = null, width = 0, height = 0, release = () => {};
+  if (typeof createImageBitmap === "function") {
+    try {
+      source = await createImageBitmap(file,{imageOrientation:"from-image"});
+      width = source.width; height = source.height;
+      release = () => source.close?.();
+    } catch (_) { source = null; }
   }
-  let bitmap;
-  try { bitmap = await createImageBitmap(file, { imageOrientation:"from-image" }); }
-  catch (_) { bitmap = await createImageBitmap(file); }
+  // Respaldo para navegadores móviles que no implementan createImageBitmap.
+  if (!source) {
+    const objectUrl = URL.createObjectURL(file);
+    try {
+      source = await new Promise((resolve,reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error("Image decode failed"));
+        img.src = objectUrl;
+      });
+      width = source.naturalWidth; height = source.naturalHeight;
+      release = () => URL.revokeObjectURL(objectUrl);
+    } catch (_) {
+      URL.revokeObjectURL(objectUrl);
+      throw new Error(lang === "es" ? "Este teléfono no pudo leer la foto. Guarda una copia en JPG y vuelve a intentarlo." : "This phone could not read the photo. Save a JPG copy and try again.");
+    }
+  }
+
   try {
     const maxEdge = 1920;
-    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+    const scale = Math.min(1,maxEdge/Math.max(width,height));
     const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-    const ctx = canvas.getContext("2d", { alpha:false });
+    canvas.width = Math.max(1,Math.round(width*scale));
+    canvas.height = Math.max(1,Math.round(height*scale));
+    const ctx = canvas.getContext("2d",{alpha:false});
     if (!ctx) throw new Error("Canvas unavailable");
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+    ctx.drawImage(source,0,0,canvas.width,canvas.height);
     const toBlob = (type,quality) => new Promise(resolve => canvas.toBlob(resolve,type,quality));
-    let blob = await toBlob("image/webp",0.84);
-    if (!blob || blob.type !== "image/webp") blob = await toBlob("image/jpeg",0.84);
-    for (const quality of [0.76,0.68,0.60]) {
-      if (blob && blob.size <= 4.5 * 1024 * 1024) break;
+    let blob = await toBlob("image/webp",0.82);
+    if (!blob || blob.type !== "image/webp") blob = await toBlob("image/jpeg",0.82);
+    for (const quality of [0.76,0.68,0.60,0.52,0.45]) {
+      if (blob && blob.size <= 4.5*1024*1024) break;
       blob = await toBlob(blob?.type || "image/jpeg",quality);
     }
-    if (!blob || blob.size > 5 * 1024 * 1024) throw new Error(lang === "es" ? "No se pudo reducir la foto a menos de 5 MB." : "Could not reduce the photo below 5 MB.");
+    if (!blob || blob.size > 5*1024*1024) throw new Error(lang === "es" ? "No se pudo optimizar la foto a menos de 5 MB. Intenta con otra imagen." : "Could not optimize the photo below 5 MB. Try another image.");
     const ext = blob.type === "image/webp" ? "webp" : "jpg";
-    return new File([blob],(file.name.replace(/\.[^.]+$/,"") || "business-photo") + "-optimized." + ext,{type:blob.type,lastModified:Date.now()});
+    return new File([blob],(file.name.replace(/\\.[^.]+$/,"") || "business-photo")+"-optimized."+ext,{type:blob.type,lastModified:Date.now()});
   } finally {
-    bitmap.close?.();
+    release();
   }
 }
 
@@ -2170,8 +2190,8 @@ function renderCommunityForm(type) {
   addField(t("formDescription"),"description","textarea",t("formDescriptionHint"),true);
 
   const photoLabel = node("label","field full",lang === "es"
-    ? "Foto del negocio (opcional; JPG, PNG o WebP; máximo 5 MB)"
-    : "Business photo (optional; JPG, PNG or WebP; 5 MB max)");
+    ? "Foto del negocio (opcional; JPG, PNG o WebP; original hasta 40 MB, se optimiza automáticamente)"
+    : "Business photo (optional; JPG, PNG or WebP; original up to 40 MB, automatically optimized)");
   const photoInput = node("input");
   photoInput.type = "file";
   photoInput.name = "photo";
