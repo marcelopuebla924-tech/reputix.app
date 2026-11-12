@@ -343,9 +343,18 @@ const { chromium } = require("playwright");
       await adminPage.close();
     });
 
-    await check("Public Reputix AI opens and closes", async () => {
+    await check("Public Reputix AI opens, all eight prompt shortcuts populate the question, and closes", async () => {
       await page.locator("#reputixAiFab").click();
       await page.locator("#reputixAiModal").waitFor({ state: "visible" });
+      const shortcuts = page.locator('#reputixAiModal [data-ai-prompt]');
+      if (await shortcuts.count() !== 8) throw new Error("Expected all eight AI prompt shortcuts");
+      for (let i = 0; i < await shortcuts.count(); i++) {
+        const shortcut = shortcuts.nth(i);
+        const expected = await shortcut.getAttribute("data-ai-prompt");
+        await shortcut.click();
+        const actual = await page.locator("#publicAiPrompt").inputValue();
+        if (actual !== expected) throw new Error("AI shortcut " + (i + 1) + " did not populate the prompt");
+      }
       await page.locator("#publicAiClose").click();
       await page.locator("#reputixAiModal").waitFor({ state: "hidden" });
     });
