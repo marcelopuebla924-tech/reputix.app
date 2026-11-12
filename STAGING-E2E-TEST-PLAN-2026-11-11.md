@@ -225,3 +225,13 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Test commit: `e241c7386685e94d3b617c4aebcb193bca30a644`.
 - Browser QA run #181 is running for the new button-level assertions.
 - All test data remains synthetic/mocked.
+
+
+## Update — 2026-11-11 18:25 PST
+
+- Browser QA run #181 passed the 31-check suite, including actual customer/owner reply button clicks, zero page errors.
+- Added customer complaint submit and private reviews refresh button interactions.
+- Added advanced statistics refresh button query assertion.
+- Owner claim submission now clicks the actual submit button.
+- Test commits: `815268ccb5c4daff7975eb2581c3d7a1ed57da9b`, `2f41253d693f35af0482bc74199f9f09c7595158`.
+- Browser QA run #186 is pending for the latest button-level coverage.
