@@ -5,7 +5,7 @@ Status: isolated candidate only. The production stripe-webhook v3 function has n
 ## Candidate files
 - supabase/functions/stripe-webhook/index.ts: Deno/Supabase Edge Function adapter using pinned Stripe SDK 23.1.0 and environment-only credentials.
 - supabase/functions/stripe-webhook/core.mjs: dependency-injected request handler, separable from Deno for Node contract tests.
-- tests/stripe-webhook-handler.test.mjs: Node built-in tests with synthetic events and fake Stripe/Supabase transport.
+- tests/stripe-webhook-handler.test.mjs: Node built-in tests with synthetic events, fake Supabase transport, and one real HMAC verification using the pinned Stripe SDK.
 - .github/workflows/stripe-webhook-handler-tests.yml: runs contract tests and Deno type-check on relevant pull-request changes.
 
 ## Security and event processing contract
@@ -21,13 +21,13 @@ Status: isolated candidate only. The production stripe-webhook v3 function has n
 - The candidate requires verify_jwt=false at the Edge Function gateway because Stripe's signature verification is the authentication mechanism. This setting has not been deployed or changed.
 
 ## Isolated contract test coverage
-- method guard; missing and invalid signatures; exact raw-body preservation; explicit mode configuration and mismatch rejection; Stripe incomplete_expired status passthrough;
+- method guard; missing and invalid signatures; exact raw-body preservation; real Stripe HMAC verification; explicit mode configuration and mismatch rejection; Stripe incomplete_expired status passthrough;
 - event.created timestamp conversion; metadata trust/fallback; unknown/missing-metadata events recorded as ignored;
 - invoice.payment_failed preserves retrieved active status;
 - only the atomic RPC endpoint is called; duplicate/processed/ignored results acknowledged; RPC failure returns 500.
 
 ## Remaining release gates
-- GitHub Actions handler contract workflow run #7 passed after pinning Stripe SDK 23.1.0: Deno type-check succeeded and Node contract suite passed 15/15 tests. These use synthetic events and fake transports only; they do not invoke Supabase RPC or a real Stripe endpoint.
+- GitHub Actions handler contract workflow run #7 passed after pinning Stripe SDK 23.1.0: Deno type-check succeeded and Node contract suite passed 15/15 tests. The latest revision adds a real HMAC verification test using Stripe's pinned SDK plus fake Supabase transport; rerun CI before treating this expanded suite as passed. No Supabase RPC or real Stripe endpoint is invoked.
 - Add a Deno typecheck/build step using the pinned Stripe SDK version and confirm import compatibility.
 - Validate RPC parameter/result behavior against an isolated Supabase schema (not production); test real Stripe test-mode signed events only after explicit test-environment approval.
 - Confirm the intended STRIPE_EXPECT_LIVEMODE value and test/live key pairing in a separately approved environment. Do not read or modify production secrets as part of this candidate work.
