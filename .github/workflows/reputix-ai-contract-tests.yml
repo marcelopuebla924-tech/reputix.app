@@ -1,0 +1,28 @@
+name: Reputix AI source contract tests
+
+on:
+  push:
+    paths:
+      - "supabase/functions/reputix-ai/**"
+      - "tests/reputix-ai-source-contract.test.mjs"
+      - ".github/workflows/reputix-ai-contract-tests.yml"
+  pull_request:
+    paths:
+      - "supabase/functions/reputix-ai/**"
+      - "tests/reputix-ai-source-contract.test.mjs"
+      - ".github/workflows/reputix-ai-contract-tests.yml"
+  workflow_dispatch:
+
+jobs:
+  ai-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: denoland/setup-deno@v2
+      - name: Type-check Reputix AI Edge Function
+        run: deno check supabase/functions/reputix-ai/index.ts
+      - name: Run AI authorization and CORS source-contract tests
+        run: node --test tests/reputix-ai-source-contract.test.mjs
