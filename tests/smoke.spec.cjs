@@ -239,7 +239,7 @@ const { chromium } = require("playwright");
       const postResponse = claimPage.waitForResponse(response =>
         response.url().includes("/rest/v1/business_owner_claims") && response.request().method() === "POST"
       );
-      await claimPage.locator("#ownerClaimForm").evaluate(form => form.requestSubmit());
+      await claimPage.locator("#claimSubmit").click();
       await postResponse;
       await claimPage.waitForTimeout(300);
       const claimMessage = (await claimPage.locator("#ownerClaimMessage").textContent()) || "";
