@@ -60,7 +60,7 @@ test("only approved records produce profile HTML and sitemap URLs; private field
 
   assert.match(html, /<title>QA &lt;script&gt;alert\(1\)&lt;\/script&gt; Store \| Reputix<\/title>/);
   assert.match(html, /<base href="\/">/);
-  assert.match(html, /<noscript><main><h1>QA &lt;script&gt;alert\\(1\\)&lt;\\/script&gt; Store<\\/h1>/);
+  assert.match(html, /<noscript><main><h1>QA &lt;script&gt;alert\(1\)&lt;\/script&gt; Store<\/h1>/);
   assert.match(html, new RegExp("https://www\\.reputixapp\\.com/business/" + approvedId + "/"));
   assert.match(html, /A public description with &lt;\/script&gt;&lt;script&gt;alert\(2\)&lt;\/script&gt; content\./);
   assert.doesNotMatch(html, /private@example\.com|NEVER PUBLISH INTERNAL NOTES|cus_private|Pending Secret Business|Rejected Secret Business/);
