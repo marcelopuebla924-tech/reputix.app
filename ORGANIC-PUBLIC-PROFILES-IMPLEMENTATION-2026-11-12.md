@@ -188,7 +188,7 @@ Allow customers to open and share a direct public link to an approved business p
 - Continue to preserve all protected production settings and data.
 
 
-## Director checkpoint — 12 Nov 2026, 10:57:49 a.m. PST
+## Director checkpoint — 12 Nov 2026, 10:58:51 a.m. PST
 
 ### PR #21 — sync accessible search labels to generated profiles
 - PR #21 (https://github.com/marcelopuebla924-tech/reputix.app/pull/21) merged successfully by squash.
@@ -198,11 +198,12 @@ Allow customers to open and share a direct public link to an approved business p
 - Confirmed `sitemap.xml` was byte-for-byte identical between main and candidate. No profile content, business records, reviews, or customer data changed.
 
 ### PR #22 — regression coverage for generated profiles
-- PR #22 (https://github.com/marcelopuebla924-tech/reputix.app/pull/22) is open and awaiting CI.
+- PR #22 (https://github.com/marcelopuebla924-tech/reputix.app/pull/22) merged successfully by squash.
+- Merge commit: `092aadd6fd1cd3ac8656e647eaae8a7317955656`.
 - Added one browser regression check that visits all five approved static profile routes and verifies the search field's Spanish accessible name on load and English accessible name after switching languages.
-- The approved-only static profile generation job completed successfully in workflow run `43285107229`; the browser smoke step was still running at checkpoint time.
-- Test-only change: no production application code, Supabase settings, billing, domain configuration, or user data changed.
-- Do not merge PR #22 until the complete browser QA workflow passes and review/check state is inspected.
+- Workflow run `43285107229` completed successfully: all 40 Playwright browser checks passed, 0 failed; all 9 Node unit tests passed, 0 failed; `pageErrors: []`.
+- The new generated-profile bilingual search-label regression check passed for all five routes.
+- Review threads were empty. The change was test-only; no production application code, Supabase settings, billing, domain configuration, or user data changed.
 
 ### Deployment and remaining checks
 - The connector returned no PR-triggered workflow runs for the PR #21 merge commit; therefore a main-branch GitHub Pages deployment after PR #21 remains unverified.
