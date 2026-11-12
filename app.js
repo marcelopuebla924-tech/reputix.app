@@ -2855,6 +2855,7 @@ async function detectRegistrationCountry() {
     return { country: current || "", country_code: window.reputixDetectedCountryCode || null };
   }
 }
+$("ownerCountry")?.addEventListener("input", () => { window.reputixDetectedCountryCode = null; });
 async function syncOwnerCountryProfile(session) {
   const meta = session?.user?.user_metadata || {};
   const country = String(meta.country_name || $("ownerCountry")?.value || "").trim().slice(0,80);
