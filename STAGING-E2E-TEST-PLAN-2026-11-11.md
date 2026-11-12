@@ -384,3 +384,13 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Browser QA #249 passed all 32 named checks with marker-visibility assertions across all five category filters, map search, and clearing the search (test commit `b1281cb7bd430ce9b29342cbe1a3e41e96053f2f`).
 - Intermediate run #248 failed because the test's mocked Leaflet marker lacked the `remove()` method now used by the app. The mock was corrected in the next test commit; run #249 passed.
 - Synthetic businesses and mocked services only; no production data or settings changed.
+
+
+## Update — 2026-11-11 (form validation and messaging security)
+
+- Browser QA #252 passed 32 checks, including blocking a blank public review before any REST or AI request (commit `8af467895af09a2b2fb9803bf5b07105f4ea043d`).
+- Browser QA #254 passed 32 checks, including blocking a blank customer complaint before REST submission (commit `cd32f85da4220ea58b2c49fce7e723bede40eb78`).
+- Read-only production Supabase inspection found a serious privilege concern on `public.business_messages`: authenticated has broad UPDATE privileges on columns including `body`, `conversation_id`, `sender_id`, and `read_at`, while the RLS UPDATE `WITH CHECK` only requires `sender_id <> auth.uid()`. A participant may be able to alter a received message beyond marking it read.
+- Draft review: `SECURITY-REVIEW-MESSAGING-UPDATE-2026-11-11.md`. Proposed least-privilege direction: revoke table-level UPDATE from authenticated and grant UPDATE only on `read_at`, then validate the RLS policy with two synthetic users and negative tests.
+- This is a production messaging security blocker. No SQL, grants, policies, data, or protected settings were changed. Remediation requires explicit owner approval and a truly isolated backend; staging remains unavailable under the current Supabase plan/repository snapshot.
+- The current frontend sends only a `read_at` field when marking received messages as read. A mocked UI regression assertion is pending in run #256; it is not a substitute for the database fix.
