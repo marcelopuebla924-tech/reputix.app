@@ -46,6 +46,15 @@
 5. Performance advisor found five foreign keys without covering indexes. Review workload and migration/recovery plan before adding indexes.
 6. Do not remove unused indexes solely because the advisor reports no observed use; collect workload context first.
 
+
+## Security finding triage (read-only SQL review)
+- Both owner dashboard views currently have SELECT grants for anon and authenticated roles and are ordinary SECURITY DEFINER views (no security_invoker option).
+- Their definitions explicitly filter through auth.uid(), require a verified owner claim, an approved business, and an active/trialing subscription. The hourly view additionally requires Pro and at least three published reviews per hour. An anonymous caller has auth.uid() = NULL and therefore should not satisfy the owner filter. This reduces the immediate exposure concern, but the views still bypass underlying-table RLS and should be hardened or formally accepted with regression tests.
+- public.submit_business_proposal(...) is executable by anon and authenticated. Its function body validates required fields and maximum lengths, then inserts the business with status='pending'; it does not approve the business. This appears intentional for public business proposals, but abuse/rate limiting should be reviewed.
+- public.owner_respond_to_complaint(...) is executable only by authenticated (not anon). Its function checks auth.uid(), validates response length, and updates only a complaint belonging to a business with a verified owner claim. The advisor warning reflects SECURITY DEFINER, but the function contains an ownership check.
+- The four RLS-enabled/no-policy tables have no policies. The browser app does not directly reference these tables/views by table name. Current backend patterns use service-role access for moderation and payment event handling. This may be intentional service-role-only design; verify each writer/reader before changing it.
+- No database changes were made. No policies, grants, views, functions, authentication settings, or data were modified.
+
 ## Director execution order
 ### P0 — Security and access review (read-only first)
 - Inspect definitions, grants, and RLS policies for the two SECURITY DEFINER views and the two RPC functions.
