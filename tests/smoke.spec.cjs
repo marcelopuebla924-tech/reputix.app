@@ -359,6 +359,71 @@ const { chromium } = require("playwright");
       await page.waitForFunction(() => /correo|email/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""));
     });
 
+    await check("Owner registration, email-confirmation message, sign-in, and session restoration work with isolated Auth mocks", async () => {
+      const authPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      authPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let signupCalls = 0;
+      let signinCalls = 0;
+      let signupRedirect = "";
+      await authPage.route("**/rest/v1/**", route =>
+        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+      );
+      await authPage.route("**/auth/v1/signup*", async route => {
+        signupCalls += 1;
+        signupRedirect = new URL(route.request().url()).searchParams.get("redirect_to") || "";
+        const payload = route.request().postDataJSON();
+        if (payload.email !== "new-owner-qa@example.invalid" || payload.password !== "QA-only-password-123") {
+          return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ msg: "Unexpected synthetic signup payload" }) });
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            user: {
+              id: "00000000-0000-4000-8000-000000000213",
+              email: "new-owner-qa@example.invalid",
+              identities: [{ id: "qa-identity", provider: "email" }]
+            },
+            session: null
+          })
+        });
+      });
+      await authPage.route("**/auth/v1/token?grant_type=password", async route => {
+        signinCalls += 1;
+        const payload = route.request().postDataJSON();
+        if (payload.email !== "new-owner-qa@example.invalid" || payload.password !== "QA-only-password-123") {
+          return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ msg: "Invalid synthetic credentials" }) });
+        }
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            access_token: "qa-auth-access-token",
+            refresh_token: "qa-auth-refresh-token",
+            user: { id: "00000000-0000-4000-8000-000000000213", email: "new-owner-qa@example.invalid", app_metadata: {} }
+          })
+        });
+      });
+      await authPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await authPage.locator("#ownerEmail").fill("new-owner-qa@example.invalid");
+      await authPage.locator("#ownerPassword").fill("QA-only-password-123");
+      await authPage.locator("#ownerSignUp").click();
+      await authPage.waitForFunction(() => /confirmar tu correo|email confirmation/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""), null, { timeout: 8000 });
+      if (signupCalls !== 1) throw new Error("Registration request was not sent exactly once");
+      if (new URL(signupRedirect).origin !== "https://www.reputixapp.com") throw new Error("Registration confirmation redirect did not return to the Reputix domain");
+      if (!(await authPage.locator("#privateSpace").isHidden())) throw new Error("User received a private session before confirming email");
+
+      await authPage.locator("#ownerSignIn").click();
+      await authPage.waitForFunction(() => !document.querySelector("#privateSpace")?.hidden, null, { timeout: 8000 });
+      if (signinCalls !== 1) throw new Error("Sign-in request was not sent exactly once");
+      const stored = await authPage.evaluate(() => JSON.parse(sessionStorage.getItem("reputix_owner_session") || "null"));
+      if (stored?.access_token !== "qa-auth-access-token") throw new Error("Authenticated session was not stored for the current tab");
+      await authPage.reload({ waitUntil: "domcontentloaded" });
+      await authPage.waitForFunction(() => !document.querySelector("#privateSpace")?.hidden, null, { timeout: 8000 });
+      if (signinCalls !== 1) throw new Error("Reload unexpectedly repeated the password sign-in request");
+      await authPage.close();
+    });
+
     await check("Password recovery explains that email is required", async () => {
       await page.locator("#ownerForgotPassword").click();
       await page.waitForFunction(() => /correo|email/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""));
