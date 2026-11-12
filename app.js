@@ -446,6 +446,7 @@ function setLanguage(value) {
   $("ownerSignUp").textContent = lang === "es" ? "Crear cuenta" : "Create account";
   if ($("ownerForgotPassword")) $("ownerForgotPassword").textContent = lang === "es" ? "¿Olvidaste tu contraseña?" : "Forgot your password?";
   $("ownerSignOut").textContent = lang === "es" ? "Cerrar sesión" : "Sign out";
+  $("ownerSubscriptionPlans").textContent = lang === "es" ? "Ver planes" : "View plans";
   $("claimTitle").textContent = lang === "es" ? "Solicitar acceso al negocio" : "Request business access";
   $("claimIntro").textContent = lang === "es" ? "Selecciona el negocio y explica brevemente cómo puedes demostrar que eres su propietario o representante autorizado. La solicitud será revisada." : "Select the business and briefly explain how you can prove you are its owner or authorized representative. Your request will be reviewed.";
   if ($("claimBusinessLabel")) $("claimBusinessLabel").textContent = lang === "es" ? "Negocio" : "Business";
