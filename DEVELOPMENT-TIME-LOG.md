@@ -422,3 +422,25 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 ### Verification and safety
 - Browser QA run #181 was in progress at log time.
 - No real complaint, review, message, or account was created; all backend interactions are mocked.
+
+
+## Session 021 — 2026-11-11
+
+- Start: 18:23:37 PST
+- End: 18:25:07 PST
+- Active tracked time: 1 minute 30 seconds (0.025 hours)
+- Cumulative tracked time since baseline: 40 minutes 13 seconds (0.670 hours)
+
+### Verification and work performed
+1. Browser QA run #181 passed the 31-check suite after the actual customer and owner reply buttons were clicked; zero page errors.
+2. Added clicks for customer complaint submission and private reviews refresh, including the user-scoped read assertion.
+3. Added a test for the advanced statistics refresh button to re-query published reviews.
+4. Changed the owner claim submission scenario to click the actual `claimSubmit` button.
+
+### Commits
+- `815268ccb5c4daff7975eb2581c3d7a1ed57da9b` — statistics refresh button.
+- `2f41253d693f35af0482bc74199f9f09c7595158` — actual claim submit button.
+
+### Verification and safety
+- Browser QA run #186 was in progress at log time.
+- No real complaint, review, claim, message, or production data was changed.
