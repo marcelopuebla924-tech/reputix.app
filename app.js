@@ -1403,17 +1403,6 @@ function makeReviewForm(business) {
   submit.style.width = "100%";
   submit.style.marginTop = "12px";
 
-  const honeypotWrap = node("div","proposal-honeypot");
-  honeypotWrap.setAttribute("aria-hidden","true");
-  honeypotWrap.style.cssText = "position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;";
-  const honeypot = node("input");
-  honeypot.type = "text";
-  honeypot.name = "company_website";
-  honeypot.autocomplete = "off";
-  honeypot.tabIndex = -1;
-  honeypotWrap.append(honeypot);
-  f.append(honeypotWrap);
-
   const msg = node("p","form-message","");
   msg.setAttribute("aria-live","polite");
   f.append(submit,msg);
@@ -1889,6 +1878,17 @@ function renderCommunityForm(type) {
   submit.type = "submit";
   submit.style.marginTop = "14px";
   submit.style.width = "100%";
+
+  const honeypotWrap = node("div","proposal-honeypot");
+  honeypotWrap.setAttribute("aria-hidden","true");
+  honeypotWrap.style.cssText = "position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;";
+  const honeypot = node("input");
+  honeypot.type = "text";
+  honeypot.name = "company_website";
+  honeypot.autocomplete = "off";
+  honeypot.tabIndex = -1;
+  honeypotWrap.append(honeypot);
+  f.append(honeypotWrap);
 
   const msg = node("p","form-message","");
   msg.setAttribute("aria-live","polite");
