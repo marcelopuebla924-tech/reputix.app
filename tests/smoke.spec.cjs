@@ -1,4 +1,8 @@
 const { chromium } = require("playwright");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
@@ -133,7 +137,49 @@ const { chromium } = require("playwright");
       if (!/diagnósticos|tratamientos|medicamentos/i.test(await privacyNotice.textContent())) {
         throw new Error("Psychology review privacy guidance is missing");
       }
+      const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "reputix-static-profile-"));
+      const manifestPath = path.join(fixtureRoot, "approved-businesses.json");
+      const generatedRoot = path.join(fixtureRoot, "site");
+      fs.writeFileSync(manifestPath, JSON.stringify([{
+        id: businessId,
+        status: "approved",
+        name: businessName,
+        category: "Retail",
+        description: "A synthetic  approved   business used only for browser QA.",
+        address: "100 QA Test Avenue",
+        city: "Los Angeles",
+        state: "CA",
+        country: "US",
+        private_owner_email: "must-not-be-published@example.com"
+      }]));
+      execFileSync(process.execPath, [
+        path.resolve("scripts/prerender-approved-profiles.cjs"),
+        manifestPath,
+        generatedRoot,
+        path.resolve("index.html")
+      ]);
+      const staticHtml = fs.readFileSync(path.join(generatedRoot, "business", businessId, "index.html"), "utf8");
+      await profilePage.route("http://127.0.0.1:4173/business/" + businessId + "/", route =>
+        route.fulfill({ status: 200, contentType: "text/html", body: staticHtml })
+      );
+      await profilePage.goto("http://127.0.0.1:4173/business/" + businessId + "/", { waitUntil: "domcontentloaded" });
+      const staticCard = profilePage.locator("#results .business-card").filter({ hasText: businessName }).first();
+      await staticCard.waitFor({ state: "visible", timeout: 10000 });
+      const staticCanonical = await profilePage.locator('link[rel="canonical"]').getAttribute("href");
+      if (staticCanonical !== "https://www.reputixapp.com/business/" + businessId + "/") {
+        throw new Error("Pre-rendered profile canonical URL was not preserved after the app loaded");
+      }
+      if (!(await profilePage.title()).includes(businessName)) {
+        throw new Error("Pre-rendered profile route did not load the business app shell");
+      }
+      await staticCard.locator(".actions button").nth(2).click();
+      await profilePage.waitForFunction(() => !!window.__reputixSharePayload?.url);
+      const staticShare = await profilePage.evaluate(() => window.__reputixSharePayload);
+      if (staticShare.url !== "http://127.0.0.1:4173/business/" + businessId + "/") {
+        throw new Error("Share action did not preserve the static profile route");
+      }
       await profilePage.close();
+      fs.rmSync(fixtureRoot, { recursive: true, force: true });
     });
 
     await check("Unapproved or missing business IDs are not exposed by direct profile links", async () => {
