@@ -94,4 +94,4 @@ rollback_count="$(psql "$DATABASE_URL" -X -A -t -c "select count(*) from public.
 
 # Sequential redelivery returns duplicate and does not create another event.
 [[ "$(call_rpc evt_parallel_claim 2026-11-12T18:00:00Z active sub_parallel)" == "duplicate" ]]
-echo "PASS: concurrent claims, stale/deleted/equal ordering, Stripe terminal status, unknown events, legacy quarantine, rollback/retry safety."
+echo "PASS: concurrent claims, stale/deleted/equal ordering, invoice failure/recovery state, Stripe terminal status, unknown events, legacy quarantine, rollback/retry safety."
