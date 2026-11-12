@@ -1468,6 +1468,28 @@ const { chromium } = require("playwright");
                 latitude: 34.01,
                 longitude: -118.25,
                 status: "approved"
+              },
+              {
+                id: "qa-map-3",
+                name: "QA Clothing Store",
+                category: "Clothing Store",
+                address: "300 Main Street",
+                city: "Los Angeles",
+                zip: "90003",
+                latitude: 34.02,
+                longitude: -118.24,
+                status: "approved"
+              },
+              {
+                id: "qa-map-4",
+                name: "QA Plumbing Service",
+                category: "Plumber",
+                address: "400 Main Street",
+                city: "Los Angeles",
+                zip: "90004",
+                latitude: 34.03,
+                longitude: -118.23,
+                status: "approved"
               }
             ])
           });
@@ -1482,16 +1504,27 @@ const { chromium } = require("playwright");
       });
       await mapPage.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
       try {
-        await mapPage.waitForFunction(() => /2 de 2 negocios ubicados/i.test(document.querySelector("#status")?.textContent || ""), null, { timeout: 10000 });
+        await mapPage.waitForFunction(() => /4 de 4 negocios ubicados/i.test(document.querySelector("#status")?.textContent || ""), null, { timeout: 10000 });
       } catch (error) {
         const statusText = await mapPage.locator("#status").textContent().catch(() => "missing status");
         const rowCount = await mapPage.locator("#businessList .business").count().catch(() => -1);
         throw new Error(error.message + "; map status: " + statusText + "; business rows: " + rowCount + "; diagnostics: " + mapDiagnostics.join(" | "));
       }
       const rows = mapPage.locator("#businessList .business");
-      if (await rows.count() !== 2) throw new Error("Approved businesses did not appear in the map list");
+      if (await rows.count() !== 4) throw new Error("All four approved synthetic businesses did not appear in the map list");
+      for (const [category, expectedCount] of [["smoke", 1], ["restaurant", 1], ["shop", 1], ["service", 1]]) {
+        const filter = mapPage.locator('#filters [data-category="' + category + '"]');
+        await filter.click();
+        if (await rows.count() !== expectedCount) {
+          throw new Error(category + " map filter returned " + await rows.count() + " results instead of " + expectedCount);
+        }
+        if (!(await filter.evaluate(el => el.classList.contains("active")))) {
+          throw new Error(category + " map filter did not become active");
+        }
+      }
+      await mapPage.locator('#filters [data-category="all"]').click();
+      if (await rows.count() !== 4) throw new Error("All-business map filter did not restore all four results");
       await mapPage.locator('#filters [data-category="smoke"]').click();
-      if (await rows.count() !== 1) throw new Error("Smoke shop filter returned an incorrect result count");
       await rows.first().click();
       const detail = mapPage.locator("#detail");
       if (!(await detail.textContent()).includes("<img src=x onerror=alert(1)>")) {
