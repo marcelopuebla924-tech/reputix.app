@@ -402,9 +402,23 @@ const { chromium } = require("playwright");
           return;
         }
         if (url.includes("/rest/v1/businesses")) {
+          if (route.request().method() === "OPTIONS") {
+            await route.fulfill({
+              status: 204,
+              headers: {
+                "access-control-allow-origin": "*",
+                "access-control-allow-methods": "GET, OPTIONS",
+                "access-control-allow-headers": "apikey, authorization, content-type, accept"
+              }
+            });
+            return;
+          }
           await route.fulfill({
             status: 200,
-            contentType: "application/json",
+            headers: {
+              "access-control-allow-origin": "*",
+              "content-type": "application/json"
+            },
             body: JSON.stringify([
               {
                 id: "qa-map-1",
