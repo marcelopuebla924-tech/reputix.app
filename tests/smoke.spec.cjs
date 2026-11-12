@@ -355,6 +355,20 @@ const { chromium } = require("playwright");
         const actual = await page.locator("#publicAiPrompt").inputValue();
         if (actual !== expected) throw new Error("AI shortcut " + (i + 1) + " did not populate the prompt");
       }
+      const retainedQuestion = "QA public AI login-gate check";
+      await page.locator("#publicAiPrompt").fill(retainedQuestion);
+      let aiEndpointCalled = false;
+      const observeAi = response => {
+        if (response.url().includes("/functions/v1/reputix-ai")) aiEndpointCalled = true;
+      };
+      page.on("response", observeAi);
+      await page.locator("#publicAiAsk").click();
+      await page.waitForFunction(() => /inicia sesión|sign in/i.test(document.querySelector("#publicAiStatus")?.textContent || ""));
+      if (await page.locator("#publicAiPrompt").inputValue() !== retainedQuestion) {
+        throw new Error("Public AI login gate did not preserve the user's question");
+      }
+      if (aiEndpointCalled) throw new Error("Public AI endpoint was called without an authenticated session");
+      page.off("response", observeAi);
       await page.locator("#publicAiClose").click();
       await page.locator("#reputixAiModal").waitFor({ state: "hidden" });
     });
