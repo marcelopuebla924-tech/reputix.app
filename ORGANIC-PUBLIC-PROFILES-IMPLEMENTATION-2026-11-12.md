@@ -123,3 +123,41 @@ Allow customers to open and share a direct public link to an approved business p
 ### Safety and next actions
 - No production Supabase schema/data/policies, accounts, reviews, businesses, photos, secrets, Stripe, DNS or custom-domain settings changed.
 - Next: verify public homepage and approved profile externally, then design and test an approved-only static profile publishing pipeline before exposing any live records in generated HTML.
+
+---
+
+## Director checkpoint — 12 November 2026, 10:37:42 a.m. PST (America/Los_Angeles)
+
+### Static approved-profile publishing delivered
+- PR #16 merged the approved-only static profile generator, /business/<uuid>/ app route support, and synthetic privacy/escaping tests.
+- PR #17 merged the public Supabase export and publishing workflow. It reads only `id,name,category,address,city,status` from `businesses`, filtered by `status=approved`, using the app's `sb_publishable_` key in the `apikey` header only. It does not use a service-role key, privileged token, or new secret.
+- PR #18 removed `businesses.description` from SEO metadata, static LocalBusiness JSON-LD, and no-script fallback because the live values' provenance was not verified as official business copy. Metadata now uses category and city only.
+- PR #18 also removed unnecessary `pull-requests: write` workflow permission. The repository setting that allows GitHub Actions to create PRs remains unchanged. The scheduled workflow pushes a tested candidate branch; the Director creates a separate review PR before publication.
+- The publishing workflow runs every six hours and supports manual dispatch. It runs 9 Node unit tests and the 37-check Playwright browser suite before updating the candidate branch.
+
+### First live approved snapshot published
+- The public Supabase export returned 5 approved businesses. The generator created exactly 5 static profile pages and a sitemap containing the homepage plus those 5 profile URLs.
+- All 5 generated files were inspected. They contain public business name, category, address/city, canonical URL, Open Graph/Twitter metadata, LocalBusiness JSON-LD, and a no-script fallback. No owner email, internal notes, billing identifiers, review/comment text, or non-allowlisted fields were found.
+- PR #19 (https://github.com/marcelopuebla924-tech/reputix.app/pull/19) merged successfully into main.
+- Merge commit: `49b6a12d9a58cc56bf40fca380da793e879799c2`.
+- Main-branch browser QA run `43281566967` passed: all 9 Node unit tests, all 37 Playwright checks, and `pageErrors: []`.
+- GitHub Pages run `43281565636` completed its build and deploy jobs successfully for the profile-page commit.
+- Main now contains 5 `business/<uuid>/index.html` profile pages. `sitemap.xml` lists the homepage and all 5 pages. `robots.txt` still points to that sitemap.
+- `CNAME` remains `www.reputixapp.com`.
+
+### Publication and revocation controls
+- New approvals and revocations are detected by the six-hour workflow. The workflow updates the candidate branch only after successful fetch, generation, unit tests, and browser QA.
+- A Director review PR must still be created and merged to publish each candidate snapshot. The repository setting allowing Actions to create PRs was not enabled.
+- Because static files are snapshots, a revoked business page remains in the current published snapshot until the next candidate update is reviewed and merged. Prioritize removal PRs when an approval is withdrawn.
+
+### Release verification and remaining caution
+- GitHub Pages reports successful build and deployment for the merged profile snapshot.
+- Direct retrieval of the custom domain through the external browsing tool was unavailable in this session; therefore the public HTTP response and social preview cache were not independently confirmed. Do not claim those external checks passed.
+- No production Supabase schema/data/policies, user accounts, reviews, photos, service-role secrets, Stripe settings, custom domain, or DNS records were changed.
+- No business descriptions, ratings, review counts, or unverified professional credentials are fabricated or promoted in static metadata.
+
+### Next director actions
+1. Verify the public homepage and all five direct profile URLs from a normal browser or Google Search Console when available.
+2. Submit `https://www.reputixapp.com/sitemap.xml` in Google Search Console and monitor indexing; do not promise immediate indexing.
+3. On each scheduled candidate update, inspect the generated branch and create a review PR; prioritize removals for any newly unapproved business.
+4. Continue broader regression and accessibility checks without changing protected production settings.
