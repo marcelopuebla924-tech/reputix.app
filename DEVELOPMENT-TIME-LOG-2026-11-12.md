@@ -2,8 +2,8 @@
 
 ## Session 030 — Director continuation
 - Start checkpoint: 11:38 a.m. Pacific
-- End checkpoint: 12:10 p.m. Pacific
-- Elapsed session window: approximately 32 minutes
+- End checkpoint: 12:12 p.m. Pacific
+- Elapsed session window: approximately 34 minutes
 - Exact active coding/review time was not independently measured; excluded from official cumulative active-time total.
 
 ### Work performed
@@ -15,13 +15,14 @@
 6. Added real Stripe HMAC positive and tampered-body tests; Deno check and 17/17 Node tests passed.
 7. Added disposable local PostgREST integration; corrected a malformed dollar-quoted SQL fixture and verified the handler against PostgreSQL 17 + PostgREST. Workflow #12 passed 2/2 integration tests.
 8. Recorded all candidate decisions, limitations, and safety boundaries in PR #33/#34 documentation and Director checkpoints.
+9. Completed a read-only production Storage audit: confirmed both private buckets, scoped proposal-upload/approved-photo policies, and aggregate counts. Found one photo object without metadata; did not inspect its path or delete it. Documented cleanup risk from object-first/metadata-second upload flow.
 
 ### CI evidence
 - PR #34: isolated PostgreSQL workflow #4 SUCCESS; Browser QA #438 SUCCESS.
 - PR #33: latest exact-head atomic PostgreSQL workflow #42 SUCCESS; handler Deno/Node workflow #28 SUCCESS (17/17); Browser QA #483 SUCCESS; local PostgREST integration workflow #13 SUCCESS (2/2).
 
 ### Safety
-- No production or staging migrations, Edge Function deployments/invocations, real Stripe events, Checkout sessions, charges, refunds, secret reads/writes, Dashboard changes, Auth/Storage/RLS changes, domain/DNS changes, or production data writes.
+- No production or staging migrations, Edge Function deployments/invocations, real Stripe events, Checkout sessions, charges, refunds, secret reads/writes, Dashboard changes, Auth/Storage/RLS changes, domain/DNS changes, or production data writes. Storage audit was read-only; no object or policy changed.
 - All new code remains in draft PR #33/#34; no draft was merged or marked ready.
 - Temporary test-only PR #35 was closed without merging.
 
