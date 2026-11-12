@@ -26,6 +26,9 @@
 4. Design restricted server-side cleanup for orphan photo objects; do not delete the existing orphan or add client DELETE policy.
 5. Complete staging schema diff/advisors, migration ordering, real Auth, Storage, live RLS, billing, and ad-serving QA.
 
+## Additional photo QA work
+- Added a Playwright assertion in tests/smoke.spec.cjs to reject a 5 MiB + 1 byte business photo before any Storage upload or metadata insert. Commit c91f5f6829593ed61b8b7e31db994245f3c0a099. No app runtime code changed. A workflow run for this exact main commit was not yet observed; treat this new assertion as pending CI validation.
+
 ## Safety
 - No production or staging migration, Edge Function deployment/invocation, real Stripe event, Checkout, charge, refund, secret access/change, Dashboard change, Auth/Storage/RLS policy change, object mutation, domain/DNS change, or production data write.
 - Preserve all existing accounts, businesses, reviews, photos, verification documents, complaints, messages, and payment records.
