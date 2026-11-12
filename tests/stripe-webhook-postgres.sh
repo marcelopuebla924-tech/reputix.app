@@ -74,6 +74,11 @@ psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -c "
 legacy_status="$(psql "$DATABASE_URL" -X -A -t -c "select status from public.user_subscriptions where provider_subscription_id='sub_legacy_null'")"
 [[ "$legacy_status" == "active" ]] || { echo "Unreconciled legacy subscription was overwritten: $legacy_status"; exit 1; }
 
+# Stripe's terminal incomplete_expired state is stored without granting access.
+[[ "$(call_rpc evt_incomplete_expired 2026-11-12T23:00:00Z incomplete_expired sub_incomplete_expired)" == "processed" ]]
+expired_status="$(psql "$DATABASE_URL" -X -A -t -c "select status from public.user_subscriptions where provider_subscription_id='sub_incomplete_expired'")"
+[[ "$expired_status" == "incomplete_expired" ]] || { echo "Terminal Stripe status was not persisted: $expired_status"; exit 1; }
+
 # Equal-second timestamps are deliberately not ordered and do not overwrite.
 [[ "$(call_rpc evt_equal 2026-11-12T19:00:00Z active sub_order_test)" == "ignored" ]]
 final_status="$(psql "$DATABASE_URL" -X -A -t -c "select status from public.user_subscriptions where provider_subscription_id='sub_order_test'")"
@@ -89,4 +94,4 @@ rollback_count="$(psql "$DATABASE_URL" -X -A -t -c "select count(*) from public.
 
 # Sequential redelivery returns duplicate and does not create another event.
 [[ "$(call_rpc evt_parallel_claim 2026-11-12T18:00:00Z active sub_parallel)" == "duplicate" ]]
-echo "PASS: concurrent claims, stale/deleted/equal ordering, unknown events, legacy quarantine, rollback/retry safety."
+echo "PASS: concurrent claims, stale/deleted/equal ordering, Stripe terminal status, unknown events, legacy quarantine, rollback/retry safety."
