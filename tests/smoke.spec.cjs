@@ -1226,6 +1226,11 @@ const { chromium } = require("playwright");
       }), { customerId });
       await customerPage.locator("#privateMessagesAction").click();
       await customerPage.locator("#messageBusiness option").nth(1).waitFor({ state: "attached", timeout: 8000 });
+      await customerPage.locator("#messageStartButton").click();
+      if (conversations.length !== 0 || messages.length !== 0 ||
+          !(await customerPage.locator("#messageStatus").textContent()).trim()) {
+        throw new Error("Blank message start was not blocked with a validation message");
+      }
       await customerPage.locator("#messageBusiness").selectOption(businessId);
       await customerPage.locator("#messageSubject").fill("QA conversation");
       await customerPage.locator("#messageFirstBody").fill("Hello from the synthetic customer account.");
@@ -1264,6 +1269,11 @@ const { chromium } = require("playwright");
       if (!(await ownerPage.locator("#ownerMessageThreadItems").textContent()).includes("Hello from the synthetic customer account.")) {
         throw new Error("Verified owner could not read the customer's message");
       }
+      if (await ownerPage.locator("#ownerMessageReplyForm").evaluate(form => form.checkValidity())) {
+        throw new Error("Blank verified-owner reply should fail required-field validation");
+      }
+      await ownerPage.locator("#ownerMessageReplyButton").click();
+      if (messages.length !== 1) throw new Error("Blank verified-owner reply reached the message API");
       await ownerPage.locator("#ownerMessageReplyBody").fill("Hello from the synthetic verified business owner.");
       await ownerPage.locator("#ownerMessageReplyButton").click();
       await ownerPage.waitForFunction(() => /respuesta enviada|reply sent/i.test(document.querySelector("#ownerMessageReplyStatus")?.textContent || ""), null, { timeout: 8000 });
@@ -1281,6 +1291,11 @@ const { chromium } = require("playwright");
         null,
         { timeout: 8000 }
       );
+      if (await customerPage.locator("#messageReplyForm").evaluate(form => form.checkValidity())) {
+        throw new Error("Blank customer reply should fail required-field validation");
+      }
+      await customerPage.locator("#messageReplyButton").click();
+      if (messages.length !== 2) throw new Error("Blank customer reply reached the message API");
       await customerPage.locator("#messageReplyBody").fill("Customer follow-up from the synthetic account.");
       await customerPage.locator("#messageReplyButton").click();
       await customerPage.waitForFunction(() =>
