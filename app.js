@@ -2931,8 +2931,8 @@ window.reputixHandleOwnerClaimSubmit = async e => {
       })
     });
     if (!Array.isArray(result) || !result.length) throw new Error("Supabase no confirmó la creación de la solicitud.");
-    message.textContent = ownerText("¡Solicitud recibida! Quedó pendiente de revisión. Tu sesión sigue activa.", "Request received! It is pending review. Your session remains active.");
     await loadOwnerClaims();
+    message.textContent = ownerText("¡Solicitud recibida! Quedó pendiente de revisión. Tu sesión sigue activa.", "Request received! It is pending review. Your session remains active.");
   } catch (err) {
     console.error("Reputix owner claim submit:", err);
     const detail = err?.message || String(err);
