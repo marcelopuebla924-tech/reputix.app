@@ -31,5 +31,7 @@ jobs:
           done
           cat /tmp/reputix-http.log
           exit 1
+      - name: Test approved-only static profile generation
+        run: node --test tests/prerender-approved-profiles.test.cjs
       - name: Run browser smoke tests
         run: node tests/smoke.spec.cjs
