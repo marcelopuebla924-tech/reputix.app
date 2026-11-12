@@ -85,6 +85,39 @@ const { chromium } = require("playwright");
       });
     });
 
+    await check("Business and professional proposal buttons open the correct form", async () => {
+      await page.locator("#independentHeaderBtn").click();
+      await page.locator("#communityFormWrap form").waitFor({ state: "visible" });
+      await page.locator("#addBusinessChoice").click();
+      const businessOptions = await page.locator('#communityFormWrap select[name="category"] option').allTextContents();
+      if (businessOptions.length < 2) throw new Error("Business categories did not load");
+      await page.locator("#addProChoice").click();
+      const professionalOptions = await page.locator('#communityFormWrap select[name="category"] option').allTextContents();
+      if (professionalOptions.length < 2) throw new Error("Professional categories did not load");
+    });
+
+    await check("Reviews and statistics feature buttons open their sections", async () => {
+      await page.locator("#featureReviews").click();
+      await page.waitForFunction(() => {
+        const target = document.querySelector("#reviewTickerPanel");
+        return !!target && Math.abs(target.getBoundingClientRect().top) < window.innerHeight;
+      }, null, { timeout: 8000 });
+      await page.locator("#featureStats").click();
+      await page.waitForFunction(() => {
+        const panel = document.querySelector("#advancedStatsDashboard");
+        return !!panel && !panel.hidden;
+      }, null, { timeout: 8000 });
+    });
+
+    await check("Business claim picker opens and closes without submitting a claim", async () => {
+      await page.locator("#ownerClaimArea").evaluate(el => { el.hidden = false; });
+      await page.locator("#claimBusinessOpen").click();
+      await page.locator("#claimBusinessModal").waitFor({ state: "visible" });
+      await page.locator("#claimBusinessSearch").fill("Tamos Chelo");
+      await page.locator("#claimBusinessClose").click();
+      await page.locator("#claimBusinessModal").waitFor({ state: "hidden" });
+    });
+
     await page.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => !!window.L && !!document.querySelector("#map"), null, { timeout: 15000 });
 
@@ -94,6 +127,37 @@ const { chromium } = require("playwright");
       if (!(await smoke.evaluate(el => el.classList.contains("active")))) throw new Error("Smoke filter did not become active");
       await page.locator("#resetView").click();
     });
+
+    const mobile = await browser.newPage({
+      viewport: { width: 390, height: 844 },
+      isMobile: true,
+      hasTouch: true,
+      deviceScaleFactor: 2
+    });
+    mobile.on("pageerror", error => failures.push(error.stack || error.message));
+    await mobile.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+    await mobile.waitForFunction(() => typeof window.reputixStartCheckout === "function", null, { timeout: 15000 });
+
+    await check("Mobile AI and account access controls respond to touch", async () => {
+      await mobile.locator("#reputixAiFab").click();
+      await mobile.locator("#reputixAiModal").waitFor({ state: "visible" });
+      await mobile.locator("#publicAiClose").click();
+      await mobile.locator("#reputixAiModal").waitFor({ state: "hidden" });
+      await mobile.locator("#accountAccessBtn").click();
+      await mobile.locator("#ownerSignIn").waitFor({ state: "visible" });
+      await mobile.locator("#ownerSignIn").click();
+      await mobile.waitForFunction(() => /correo|email/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""), null, { timeout: 8000 });
+    });
+
+    await mobile.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
+    await mobile.waitForFunction(() => !!window.L && !!document.querySelector("#map"), null, { timeout: 15000 });
+    await check("Mobile map filters respond to touch", async () => {
+      const filter = mobile.locator('#filters [data-category="restaurant"]');
+      await filter.click();
+      if (!(await filter.evaluate(el => el.classList.contains("active")))) throw new Error("Mobile category filter did not become active");
+      await mobile.locator("#resetView").click();
+    });
+    await mobile.close();
 
     if (failures.length) {
       console.error(JSON.stringify({ results, pageErrors: failures }, null, 2));
