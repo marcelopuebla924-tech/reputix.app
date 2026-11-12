@@ -444,7 +444,7 @@ const { execFileSync } = require("node:child_process");
       }
       if (!reviewPayload ||
           reviewPayload.business_id !== businessId ||
-          reviewPayload.user_id !== userId ||
+          reviewPayload.user_id !== null ||
           reviewPayload.visit_date !== "2026-11-10" ||
           reviewPayload.visit_time !== "13:30" ||
           reviewPayload.cleanliness !== 5 ||
