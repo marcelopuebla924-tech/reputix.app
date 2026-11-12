@@ -110,6 +110,30 @@ const { execFileSync } = require("node:child_process");
       await page.waitForFunction(() => typeof window.reputixStartCheckout === "function", null, { timeout: 15000 });
     });
 
+    await check("Generated approved business profiles expose bilingual search accessible names", async () => {
+      const businessIds = [
+        "69e31935-830c-4efe-9b42-e1565e481de1",
+        "764e1139-38b2-494e-9b22-f81e8540c6bc",
+        "82d23337-58b0-437e-8a80-ddb568d584b9",
+        "a2861806-7e33-4eff-907f-f6206535fb7c",
+        "b2a18a5d-2fca-44f2-aa62-038b972d1a2b"
+      ];
+      for (const businessId of businessIds) {
+        await page.goto(`http://127.0.0.1:4173/business/${businessId}/`, { waitUntil: "domcontentloaded" });
+        const search = page.locator("#business");
+        await search.waitFor({ state: "visible" });
+        if (await search.getAttribute("aria-label") !== "Buscar negocios, servicios o categorías") {
+          throw new Error("Spanish accessible search name missing on profile " + businessId);
+        }
+        await page.locator("#language").selectOption("en");
+        if (await search.getAttribute("aria-label") !== "Search businesses, services, or categories") {
+          throw new Error("English accessible search name missing on profile " + businessId);
+        }
+      }
+      await page.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await page.waitForFunction(() => typeof window.reputixStartCheckout === "function", null, { timeout: 15000 });
+    });
+
     await check("Spanish and English language selector works without runtime errors", async () => {
       await page.locator("#language").selectOption("en");
       if (await page.locator("#business").getAttribute("aria-label") !== "Search businesses, services, or categories") throw new Error("English search accessible name did not update");
