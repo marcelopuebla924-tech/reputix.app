@@ -66,6 +66,53 @@ const { chromium } = require("playwright");
       await card.locator("section.details").first().waitFor({ state: "visible" });
     });
 
+    await check("Published review translation button toggles the translated text", async () => {
+      const translationPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      translationPage.on("pageerror", error => failures.push(error.stack || error.message));
+      const businessId = "00000000-0000-4000-8000-000000000311";
+      const translatedText = "Synthetic translated review for Reputix QA.";
+      await translationPage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = new URL(request.url());
+        const table = url.pathname.split("/").pop();
+        if (table === "businesses" && request.method() === "GET") {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+            id: businessId, name: "QA Translation Business", category: "Retail", city: "Los Angeles", status: "approved"
+          }]) });
+          return;
+        }
+        if (table === "reviews" && request.method() === "GET") {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+            id: "qa-translated-review", business_id: businessId, visit_date: "2026-11-10", visit_time: "12:30",
+            cleanliness: 5, service_quality: 5, product_quality: 5, speed: 4, value_for_money: 5,
+            comment: "Synthetic original review.", status: "published", original_language: "en",
+            translated_comment: translatedText, translated_language: "es"
+          }]) });
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await translationPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await translationPage.locator("#business").fill("QA Translation Business");
+      await translationPage.locator("#searchButton").click();
+      const card = translationPage.locator("#results .business-card").filter({ hasText: "QA Translation Business" }).first();
+      await card.waitFor({ state: "visible", timeout: 10000 });
+      await card.locator(".actions button.secondary").click();
+      const review = card.locator(".details article.review").first();
+      await review.waitFor({ state: "visible", timeout: 10000 });
+      const translated = review.locator("p").filter({ hasText: translatedText });
+      if (!(await translated.isHidden())) throw new Error("Translated review text should start hidden");
+      const toggle = review.locator("button.secondary").first();
+      await toggle.click();
+      if (!(await translated.isVisible())) throw new Error("Translation button did not reveal the translated review");
+      if (!/ocultar traducción|hide translation/i.test((await toggle.textContent()) || "")) {
+        throw new Error("Translation button label did not switch to the hide action");
+      }
+      await toggle.click();
+      if (!(await translated.isHidden())) throw new Error("Translation button did not hide the translated review again");
+      await translationPage.close();
+    });
+
     await check("Public review submission saves the five ratings as pending and keeps AI moderation advisory", async () => {
       const reviewPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       reviewPage.on("pageerror", error => failures.push(error.stack || error.message));
