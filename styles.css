@@ -2165,3 +2165,25 @@ select option, select optgroup {
 
 /* El identificador del negocio es un input oculto, nunca un <select> */
 #claimBusiness{display:none!important}
+
+
+/* Paid member desktop workspace: override the legacy 980px account panel cap. */
+@media (min-width: 901px) {
+  #ownerArea.owner-area {
+    display:block !important;
+    width:calc(100% - 48px) !important;
+    max-width:1560px !important;
+    margin:24px auto 40px !important;
+    padding:0 !important;
+  }
+  #ownerArea > .owner-panel {
+    box-sizing:border-box !important;
+    width:100% !important;
+    max-width:none !important;
+    padding:clamp(22px,2.8vw,38px) !important;
+  }
+  #ownerArea .private-space {
+    width:100% !important;
+    max-width:none !important;
+  }
+}
