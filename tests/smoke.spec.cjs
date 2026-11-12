@@ -1402,6 +1402,7 @@ const { chromium } = require("playwright");
       mapPage.on("pageerror", error => failures.push(error.stack || error.message));
       await mapPage.addInitScript(() => {
         window.__qaMapFitBoundsCalls = 0;
+        window.__qaMapMarkers = [];
         const map = {
           setView() { return this; },
           flyTo() { return this; },
@@ -1412,14 +1413,21 @@ const { chromium } = require("playwright");
           map: () => map,
           tileLayer: () => ({ addTo() { return this; } }),
           divIcon: () => ({}),
-          marker: coords => ({
-            coords,
-            addTo() { return this; },
-            bindPopup() { return this; },
-            on() { return this; },
-            getLatLng() { return { lat: coords[0], lng: coords[1] }; },
-            openPopup() { return this; }
-          }),
+          marker: (coords, options = {}) => {
+            const marker = {
+              coords,
+              title: options.title || "",
+              visible: false,
+              addTo() { this.visible = true; return this; },
+              remove() { this.visible = false; return this; },
+              bindPopup() { return this; },
+              on() { return this; },
+              getLatLng() { return { lat: coords[0], lng: coords[1] }; },
+              openPopup() { return this; }
+            };
+            window.__qaMapMarkers.push(marker);
+            return marker;
+          },
           featureGroup: () => ({ getBounds: () => ({ pad() { return this; } }) })
         };
       });
@@ -1522,9 +1530,23 @@ const { chromium } = require("playwright");
         if (!(await filter.evaluate(el => el.classList.contains("active")))) {
           throw new Error(category + " map filter did not become active");
         }
+        const visibleMarkers = await mapPage.evaluate(() => window.__qaMapMarkers.filter(marker => marker.visible).length);
+        if (visibleMarkers !== expectedCount) {
+          throw new Error(category + " map filter left " + visibleMarkers + " markers visible instead of " + expectedCount);
+        }
       }
       await mapPage.locator('#filters [data-category="all"]').click();
       if (await rows.count() !== 4) throw new Error("All-business map filter did not restore all four results");
+      let visibleMarkers = await mapPage.evaluate(() => window.__qaMapMarkers.filter(marker => marker.visible).length);
+      if (visibleMarkers !== 4) throw new Error("All-business map filter did not restore all four markers");
+      await mapPage.locator("#query").fill("QA Clothing Store");
+      if (await rows.count() !== 1) throw new Error("Map search did not filter the business list");
+      visibleMarkers = await mapPage.evaluate(() => window.__qaMapMarkers.filter(marker => marker.visible).length);
+      if (visibleMarkers !== 1) throw new Error("Map search did not filter the visible map markers");
+      await mapPage.locator("#query").fill("");
+      if (await rows.count() !== 4) throw new Error("Clearing map search did not restore all businesses");
+      visibleMarkers = await mapPage.evaluate(() => window.__qaMapMarkers.filter(marker => marker.visible).length);
+      if (visibleMarkers !== 4) throw new Error("Clearing map search did not restore all markers");
       await mapPage.locator('#filters [data-category="smoke"]').click();
       await rows.first().click();
       const detail = mapPage.locator("#detail");
