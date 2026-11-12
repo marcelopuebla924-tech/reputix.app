@@ -438,8 +438,26 @@ function setLanguage(value) {
   $("independentJoinText").textContent = lang === "es" ? "Agrega tu servicio a nuestra red. Construye tu reputación con calificaciones reales, gana visibilidad y encuentra oportunidades para llegar a más clientes." : "Add your service to our network. Build your reputation with real ratings, gain visibility, and find opportunities to reach more customers.";
   $("independentJoinNote").textContent = lang === "es" ? "Tu servicio se revisará antes de publicarse. Las oportunidades y los clientes no están garantizados." : "Your service will be reviewed before publication. Opportunities and customers are not guaranteed.";
   $("independentJoinBtn").innerHTML = lang === "es" ? 'Agregar mi servicio <span aria-hidden="true">→</span>' : 'Add my service <span aria-hidden="true">→</span>';
-  $("ownerTitle").textContent = lang === "es" ? "🏪 Panel para propietarios" : "🏪 Business owner dashboard";
-  $("ownerIntro").textContent = lang === "es" ? "Regístrate o inicia sesión para solicitar la verificación de tu negocio y consultar sus estadísticas privadas." : "Create an account or sign in to request business verification and view private analytics.";
+  $("ownerTitle").textContent = lang === "es" ? "◉ Tu cuenta Reputix" : "◉ Your Reputix account";
+  $("ownerIntro").textContent = lang === "es" ? "Regístrate o inicia sesión para gestionar tu perfil, actividad, conversaciones y herramientas de Reputix." : "Create an account or sign in to manage your profile, activity, conversations, and Reputix tools.";
+  const customerCopy = {
+    customerWorkspaceTitle:["Tu escritorio Reputix","Your Reputix workspace"],
+    customerLinkProfile:["Mi perfil","My profile"],
+    customerLinkProfileNote:["Datos y preferencias","Details and preferences"],
+    customerLinkMessages:["Mensajes","Messages"],
+    customerLinkMessagesNote:["Conversaciones con negocios","Conversations with businesses"],
+    customerLinkComplaints:["Mis reclamos","My complaints"],
+    customerLinkComplaintsNote:["Seguimiento de solicitudes","Track your requests"],
+    customerLinkPosts:["Publicaciones","Posts"],
+    customerLinkPostsNote:["Comparte con la comunidad","Share with the community"],
+    customerLinkDiscover:["Descubrir negocios","Discover businesses"],
+    customerLinkDiscoverNote:["Explora Reputix","Explore Reputix"],
+    customerLinkAITitle:["Reputix AI","Reputix AI"],
+    customerLinkAINote:["Asistente inteligente Pro","Pro intelligent assistant"],
+    customerWorkspaceFoot:["Las funciones se habilitan según tu suscripción activa. El acceso a negocios y estadísticas privadas requiere verificación de propiedad.","Features are enabled according to your active subscription. Business access and private analytics require verified ownership."]
+  };
+  Object.entries(customerCopy).forEach(([id,values])=>{const el=$(id);if(el)el.textContent=lang==="es"?values[0]:values[1];});
+  const customerHeading=$("customerWorkspaceTitle");if(customerHeading)customerHeading.textContent=lang==="es"?"Tu escritorio Reputix":"Your Reputix workspace";
   $("ownerEmailLabel").textContent = lang === "es" ? "Correo electrónico" : "Email address";
   $("ownerPasswordLabel").textContent = lang === "es" ? "Contraseña" : "Password";
   $("ownerSignIn").textContent = lang === "es" ? "Ya tengo cuenta · Iniciar sesión" : "I already have an account · Sign in";
