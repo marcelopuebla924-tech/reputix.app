@@ -106,6 +106,15 @@ test("obviously malformed locality values are omitted from public SEO metadata w
   assert.equal(business.state, "CA");
   assert.equal(business.country, "US");
 
+  const validHouseSuffix = normalizeApprovedBusinesses([{
+    id: "00000000-0000-4000-8000-000000000555",
+    status: "approved",
+    name: "Los primos",
+    address: "9419B San Pedro St",
+    city: "Los Angeles"
+  }])[0];
+  assert.equal(validHouseSuffix.address, "9419B San Pedro St");
+
   const template = '<head><title>Home</title><meta name="description" content="Home">' +
     '<link rel="canonical" href="https://www.reputixapp.com/">' +
     '<meta property="og:title" content="Home"><meta property="og:description" content="Home">' +
