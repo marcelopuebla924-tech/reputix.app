@@ -104,6 +104,64 @@ const { chromium } = require("playwright");
       await claimPage.close();
     });
 
+    await check("Customer and verified-owner workspaces stay separate and owner tools require a verified claim", async () => {
+      const workspacePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      workspacePage.on("pageerror", error => failures.push(error.stack || error.message));
+      let verified = true;
+      await workspacePage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = request.url();
+        if (url.includes("/business_owner_claims") && request.method() === "GET") {
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(verified ? [{
+              id: "qa-verified-claim",
+              business_id: "00000000-0000-4000-8000-000000000005",
+              status: "verified"
+            }] : [])
+          });
+        } else {
+          await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+        }
+      });
+      await workspacePage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await workspacePage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      const testSession = {
+        access_token: "qa-mocked-workspace-token",
+        refresh_token: "qa-mocked-workspace-refresh",
+        user: { id: "00000000-0000-4000-8000-000000000006", email: "workspace-qa@example.invalid", app_metadata: {} }
+      };
+      await workspacePage.evaluate(session => window.ownerSetSession(session), testSession);
+      await workspacePage.waitForFunction(() => {
+        const panel = document.querySelector("#ownerToolsSection");
+        return !!panel && !panel.hidden;
+      }, null, { timeout: 8000 });
+      const separation = await workspacePage.evaluate(() => {
+        const customer = document.querySelector(".customer-module-group");
+        const owner = document.querySelector("#ownerToolsSection");
+        return {
+          customerProfile: !!customer?.querySelector("#privateProfileTitle"),
+          customerMessages: !!customer?.querySelector("#privateMessagesTitle"),
+          customerComplaints: !!customer?.querySelector("#privateComplaintsTitle"),
+          customerPosts: !!customer?.querySelector("#privatePostsTitle"),
+          customerHasNoOwnerBusiness: !customer?.querySelector("#privateBusinessTitle"),
+          ownerBusiness: !!owner?.querySelector("#privateBusinessTitle"),
+          ownerReviews: !!owner?.querySelector("#privateReviewsTitle"),
+          ownerHasNoCustomerMessages: !owner?.querySelector("#privateMessagesTitle")
+        };
+      });
+      if (Object.values(separation).some(value => !value)) throw new Error("Customer/owner module separation failed: " + JSON.stringify(separation));
+      verified = false;
+      await workspacePage.evaluate(session => window.ownerSetSession(null), testSession);
+      await workspacePage.evaluate(session => window.ownerSetSession(session), testSession);
+      await workspacePage.waitForFunction(() => {
+        const panel = document.querySelector("#ownerToolsSection");
+        return !!panel && panel.hidden;
+      }, null, { timeout: 8000 });
+      await workspacePage.close();
+    });
+
     await check("Admin moderation and advertising controls work with mocked data", async () => {
       const adminPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       adminPage.on("pageerror", error => failures.push(error.stack || error.message));
