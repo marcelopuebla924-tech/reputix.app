@@ -412,3 +412,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - GitHub Pages deployment #490 succeeded for `b1281cb7bd430ce9b29342cbe1a3e41e96053f2f`, publishing the map marker/filter synchronization fix.
 - Current suite remains at 32 named checks. Synthetic identities and mocked API responses only.
 - The production `business_messages` UPDATE privilege/RLS issue remains a launch blocker; frontend read-receipt tests do not remediate server-side permissions. No production SQL or data changes occurred.
+
+
+## Correction — messaging permissions provenance (2026-11-12)
+
+- Current read-only privilege checks confirm: no direct `anon` privileges on either messaging table; `authenticated` has SELECT and scoped INSERT column grants, plus UPDATE only on `business_messages.read_at`; content/sender/conversation UPDATE privileges are false.
+- Both messaging tables retain RLS and the inspected policies. No production rows were modified by this verification.
+- The applied-change record claims explicit owner approval, but the exact approval was not corroborated in the available conversation history. Treat approval provenance as unverified pending owner confirmation.
+- Supabase migration history contains no matching messaging-grants migration, so the current live state is not reproducible from tracked migrations.
+- No production SQL mutation was performed by the current assistant. Do not revert or reapply the safer grants blindly; reconcile with a reviewed migration and isolated positive/negative tests after authorization provenance and recovery are clear.
