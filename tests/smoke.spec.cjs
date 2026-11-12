@@ -58,7 +58,7 @@ const { chromium } = require("playwright");
       }, null, { timeout: 15000 });
       const card = page.locator("#results .business-card").filter({ hasText: "Tamos Chelo Smoke Shop" }).first();
       await card.locator(".actions button.primary").click();
-      await card.locator(".details").waitFor({ state: "visible" });
+      await card.locator("section.details").first().waitFor({ state: "visible" });
       const reviewForm = card.locator(".details form").first();
       if (await reviewForm.locator('select[name="cleanliness"]').count() !== 1) throw new Error("Review criteria form missing");
       if (await reviewForm.locator('input[name="visit_date"]').count() !== 1) throw new Error("Visit date field missing");
