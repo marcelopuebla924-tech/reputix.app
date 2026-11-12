@@ -1679,7 +1679,8 @@ function makeReviewForm(business) {
         const tokenPayload = accessToken.split(".")[1];
         if (tokenPayload) {
           const normalizedPayload = tokenPayload.replace(/-/g, "+").replace(/_/g, "/");
-          const claims = JSON.parse(atob(normalizedPayload));
+          const paddedPayload = normalizedPayload + "=".repeat((4 - normalizedPayload.length % 4) % 4);
+          const claims = JSON.parse(atob(paddedPayload));
           if (claims.sub && claims.sub === ownerSession?.user?.id) {
             reviewUserId = claims.sub;
           }
