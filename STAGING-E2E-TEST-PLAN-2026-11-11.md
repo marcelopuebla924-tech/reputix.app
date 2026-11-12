@@ -272,3 +272,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Commits: `8c7503f6095ccd5bc8b6a63f353653859b7fbfe7`, `3aab841f2d7015098a9633434e37928510c2787e`.
 - New assertions are pending independent CI verification. Do not mark as passed until the exact push-triggered Browser QA run is confirmed.
 - Synthetic identities and mocked REST responses only; no production profile was read or modified.
+
+
+## Update — 2026-11-11 18:30 PST
+
+- Browser QA run #198 passed all 31 named checks, zero failures, zero page errors.
+- Admin advertising payload validation passed for business, title, budget, destination, placement, start/end timestamps, and pending-review status.
+- Static interactive-control scan found every actual static control ID covered by at least one test; remaining unmatched IDs are non-interactive containers/rails/text.
+- Passing commit: `c097b2ae2c485f0a95fe3e63ab839778dcb93181`.
+- Campaign/checkout/charge behavior remains mocked; no production ad or billing action was executed.
