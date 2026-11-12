@@ -94,7 +94,7 @@ const { chromium } = require("playwright");
               address: "100 QA Test Avenue",
               city: "Los Angeles",
               zip: "90001",
-              description: "A synthetic approved business used only for browser QA.",
+              description: "A synthetic  approved   business used only for browser QA.",
               status: "approved"
             }] : [])
           });
@@ -107,6 +107,10 @@ const { chromium } = require("playwright");
       await card.waitFor({ state: "visible", timeout: 10000 });
       if ((await profilePage.title()) !== businessName + " | Reputix") {
         throw new Error("Direct profile did not set a business-specific page title");
+      }
+      const metaDescription = await profilePage.locator('meta[name="description"]').getAttribute("content");
+      if (metaDescription !== "A synthetic approved business used only for browser QA.") {
+        throw new Error("Business metadata did not normalize repeated whitespace");
       }
       const canonical = await profilePage.locator('link[rel="canonical"]').getAttribute("href");
       if (!canonical || !canonical.includes("business=" + businessId)) {
