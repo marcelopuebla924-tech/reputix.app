@@ -119,7 +119,7 @@ const { chromium } = require("playwright");
       }
       await form.locator('textarea[name="comment"]').fill("Great service at this QA business.");
       await form.locator('button[type="submit"]').click();
-      await reviewPage.waitForFunction(() => /enviada|submitted/i.test(document.querySelector("#results .business-card .form-message")?.textContent || ""), null, { timeout: 10000 });
+      await reviewPage.waitForFunction(() => /opinión recibida|review received/i.test(document.querySelector("#results .business-card .form-message")?.textContent || ""), null, { timeout: 10000 });
       if (!reviewPayload ||
           reviewPayload.business_id !== businessId ||
           reviewPayload.user_id !== userId ||
