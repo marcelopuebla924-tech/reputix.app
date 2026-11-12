@@ -7,7 +7,7 @@ Status: isolated candidate only. The production stripe-webhook v3 function has n
 - supabase/functions/stripe-webhook/core.mjs: dependency-injected request handler, separable from Deno for Node contract tests.
 - tests/stripe-webhook-handler.test.mjs: Node built-in tests with synthetic events, fake Supabase transport, and one real HMAC verification using the pinned Stripe SDK.
 - .github/workflows/stripe-webhook-handler-tests.yml: runs contract tests and Deno type-check on relevant pull-request changes.
-- tests/stripe-webhook-postgrest.integration.mjs: prepared to exercise the handler through a disposable local PostgreSQL 17 + PostgREST container, using a synthetic service_role JWT and real Stripe HMAC. This is not a Supabase-hosted environment; this integration script has not yet been executed.
+- tests/stripe-webhook-postgrest.integration.mjs: exercises the handler through a disposable local PostgreSQL 17 + PostgREST container, using a synthetic service_role JWT and real Stripe HMAC. This is not a Supabase-hosted environment.
 
 ## Security and event processing contract
 - Reject non-POST requests and missing signatures.
@@ -29,7 +29,7 @@ Status: isolated candidate only. The production stripe-webhook v3 function has n
 
 ## Remaining release gates
 - GitHub Actions handler contract workflow run #13 passed after pinning Stripe SDK 23.1.0: Deno type-check succeeded and Node contract suite passed 17/17 tests. Real HMAC verification accepts a valid raw payload and rejects a tampered body before any database request. Supabase transport remains fake; no Supabase RPC or real Stripe endpoint is invoked.
-- Deno type-check and 17/17 handler unit tests pass, including real HMAC valid/tampered body cases. A disposable local PostgREST integration script is prepared to verify the actual RPC HTTP path and database result, but remains unexecuted.
+- Deno type-check and 17/17 handler unit tests pass, including real HMAC valid/tampered body cases. Local PostgREST integration workflow run #12 passed 2/2 tests: a signed subscription event was processed through the real local RPC, redelivery was acknowledged as duplicate, and an unknown signed event was recorded as ignored. This validates a disposable local PostgreSQL/PostgREST stack, not a hosted Supabase project.
 - Validate RPC parameter/result behavior against an isolated Supabase schema (not production); test real Stripe test-mode signed events only after explicit test-environment approval.
 - Confirm the intended STRIPE_EXPECT_LIVEMODE value and test/live key pairing in a separately approved environment. Do not read or modify production secrets as part of this candidate work.
 - Integrate only after the candidate SQL migration, Stripe-side subscription inventory, legacy reconciliation, staging advisors/schema diff, and invoice failure policy are reviewed.
