@@ -1,16 +1,13 @@
 -- REPUTIX STAGING-ONLY BASELINE CANDIDATE
 -- Generated from read-only production catalogs on 2026-11-11.
 -- TARGET: isolated staging project lzcyulncvjjxsyyivlty ONLY.
--- DO NOT APPLY TO PRODUCTION. DO NOT RUN UNTIL THE REVIEW GATES IN THE COMPANION
--- DOCUMENT ARE SIGNED OFF. This file intentionally does not copy any production data,
--- Auth users, Storage objects, Stripe secrets, or cron schedule.
+-- DO NOT APPLY TO PRODUCTION. Review companion document before use.
 
 BEGIN;
 SET LOCAL search_path = public, extensions;
 
--- First remove broad future-object grants for the postgres role used by migrations.
--- Staging's current default ACLs are also broad for postgres. This does not modify
--- Supabase-managed supabase_admin defaults.
+-- Staging's postgres migration owner has broad default ACLs. Tighten only this
+-- owner in the isolated staging project; do not alter Supabase-managed roles.
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE ALL ON TABLES FROM anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
@@ -18,500 +15,19 @@ ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC, anon, authenticated, service_role;
 
--- 20 production public tables: columns, defaults, identity behavior, and nullability.
-CREATE TABLE public.ad_campaigns (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  title text NOT NULL,
-  description text,
-  destination_url text,
-  placement text DEFAULT 'business_carousel'::text NOT NULL,
-  status text DEFAULT 'draft'::text NOT NULL,
-  budget_cents integer DEFAULT 0 NOT NULL,
-  starts_at timestamp with time zone,
-  ends_at timestamp with time zone,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);
+-- 20 tables, including the two GENERATED ALWAYS identity columns.
+undefined
 
-CREATE TABLE public.ad_clicks (\n  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  campaign_id uuid NOT NULL,
-  occurred_at timestamp with time zone DEFAULT now() NOT NULL,
-  placement text\n);
+-- 93 validated constraints.
+undefined
 
-CREATE TABLE public.ad_impressions (\n  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
-  campaign_id uuid NOT NULL,
-  occurred_at timestamp with time zone DEFAULT now() NOT NULL,
-  placement text\n);
+-- 25 additional indexes; primary/unique indexes are created by constraints.
+undefined
 
-CREATE TABLE public.business_conversations (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  customer_id uuid NOT NULL,
-  subject text NOT NULL,
-  status text DEFAULT 'open'::text NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);
+-- Enable RLS on all 20 public base tables.
+undefined
 
-CREATE TABLE public.business_messages (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  conversation_id uuid NOT NULL,
-  sender_id uuid NOT NULL,
-  body text NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  read_at timestamp with time zone\n);
-
-CREATE TABLE public.business_monthly_history (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  month_start date NOT NULL,
-  total_published_reviews integer DEFAULT 0 NOT NULL,
-  avg_cleanliness numeric(3,2),
-  avg_service_quality numeric(3,2),
-  avg_product_quality numeric(3,2),
-  avg_speed numeric(3,2),
-  avg_value_for_money numeric(3,2),
-  calculated_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-CREATE TABLE public.business_owner_claims (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  user_id uuid NOT NULL,
-  evidence_note text,
-  status text DEFAULT 'pending'::text NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  reviewed_at timestamp with time zone,
-  relationship_type text DEFAULT 'owner'::text NOT NULL,
-  verification_level text DEFAULT 'activity'::text NOT NULL,
-  evidence_type text DEFAULT 'written_statement'::text NOT NULL,
-  evidence_links text[] DEFAULT '{}'::text[] NOT NULL,
-  reviewer_note text\n);
-
-CREATE TABLE public.business_photos (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id text NOT NULL,
-  storage_path text NOT NULL,
-  original_filename text,
-  content_type text,
-  file_size bigint,
-  status text DEFAULT 'pending'::text NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  reviewed_at timestamp with time zone\n);
-
-CREATE TABLE public.business_promotions (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  title text NOT NULL,
-  description text,
-  promo_code text,
-  starts_at timestamp with time zone,
-  ends_at timestamp with time zone,
-  status text DEFAULT 'pending_review'::text NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-CREATE TABLE public.business_subscriptions (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  plan_code text NOT NULL,
-  status text DEFAULT 'pending'::text NOT NULL,
-  billing_interval text DEFAULT 'month'::text NOT NULL,
-  provider text DEFAULT 'stripe'::text NOT NULL,
-  provider_customer_id text,
-  provider_subscription_id text,
-  current_period_start timestamp with time zone,
-  current_period_end timestamp with time zone,
-  cancel_at_period_end boolean DEFAULT false NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-CREATE TABLE public.business_verification_documents (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  document_type text DEFAULT 'address_proof'::text NOT NULL,
-  storage_path text,
-  original_filename text,
-  content_type text,
-  file_size bigint,
-  status text DEFAULT 'awaiting_upload'::text NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  reviewed_at timestamp with time zone,
-  review_note text\n);
-
-CREATE TABLE public.businesses (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  name text NOT NULL,
-  description text,
-  address text,
-  category text,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  status text DEFAULT 'pending'::text NOT NULL,
-  phone text,
-  hours text,
-  city text,
-  zip text,
-  instagram_url text,
-  facebook_url text,
-  tiktok_url text\n);
-
-CREATE TABLE public.complaints (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  complaint text NOT NULL,
-  original_language text,
-  status text DEFAULT 'pending'::text NOT NULL,
-  business_response text,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL,
-  user_id uuid\n);
-
-CREATE TABLE public.monetization_plans (\n  code text NOT NULL,
-  name text NOT NULL,
-  monthly_price_cents integer NOT NULL,
-  currency text DEFAULT 'usd'::text NOT NULL,
-  description text,
-  features jsonb DEFAULT '[]'::jsonb NOT NULL,
-  is_active boolean DEFAULT true NOT NULL,
-  display_order integer DEFAULT 0 NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-CREATE TABLE public.payment_events (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  provider text DEFAULT 'stripe'::text NOT NULL,
-  provider_event_id text NOT NULL,
-  event_type text NOT NULL,
-  business_id uuid,
-  processed_at timestamp with time zone,
-  processing_status text DEFAULT 'received'::text NOT NULL,
-  error_message text,
-  created_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-CREATE TABLE public.review_ai_moderation (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  review_id uuid NOT NULL,
-  outcome text NOT NULL,
-  reasons text[] DEFAULT '{}'::text[] NOT NULL,
-  confidence numeric(4,3),
-  model text,
-  created_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-CREATE TABLE public.reviews (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  business_id uuid NOT NULL,
-  visit_date date DEFAULT CURRENT_DATE NOT NULL,
-  visit_time time without time zone NOT NULL,
-  cleanliness integer,
-  service_quality integer,
-  product_quality integer,
-  speed integer,
-  value_for_money integer,
-  comment text,
-  status text DEFAULT 'pending'::text NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  original_language text,
-  translated_comment text,
-  translated_language text,
-  staff_name text,
-  user_id uuid\n);
-
-CREATE TABLE public.user_profiles (\n  user_id uuid NOT NULL,
-  display_name text,
-  bio text,
-  avatar_url text,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-CREATE TABLE public.user_publications (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  user_id uuid NOT NULL,
-  body text NOT NULL,
-  status text DEFAULT 'published'::text NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-CREATE TABLE public.user_subscriptions (\n  id uuid DEFAULT gen_random_uuid() NOT NULL,
-  user_id uuid NOT NULL,
-  plan_code text NOT NULL,
-  status text DEFAULT 'incomplete'::text NOT NULL,
-  provider text DEFAULT 'stripe'::text NOT NULL,
-  provider_customer_id text,
-  provider_subscription_id text NOT NULL,
-  current_period_start timestamp with time zone,
-  current_period_end timestamp with time zone,
-  cancel_at_period_end boolean DEFAULT false NOT NULL,
-  created_at timestamp with time zone DEFAULT now() NOT NULL,
-  updated_at timestamp with time zone DEFAULT now() NOT NULL\n);
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_placement_check CHECK (placement = ANY (ARRAY['business_carousel'::text, 'discovery_feed'::text, 'category_featured'::text]));
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_budget_cents_check CHECK (budget_cents >= 0);
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_check CHECK (ends_at IS NULL OR starts_at IS NULL OR ends_at > starts_at);
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_description_check CHECK (description IS NULL OR char_length(description) <= 1000);
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_title_check CHECK (char_length(btrim(title)) >= 3 AND char_length(btrim(title)) <= 120);
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_status_check CHECK (status = ANY (ARRAY['draft'::text, 'pending_review'::text, 'approved'::text, 'active'::text, 'paused'::text, 'completed'::text, 'rejected'::text]));
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.ad_clicks ADD CONSTRAINT ad_clicks_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.ad_clicks ADD CONSTRAINT ad_clicks_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES ad_campaigns(id) ON DELETE CASCADE;
-
-ALTER TABLE public.ad_impressions ADD CONSTRAINT ad_impressions_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES ad_campaigns(id) ON DELETE CASCADE;
-
-ALTER TABLE public.ad_impressions ADD CONSTRAINT ad_impressions_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_status_check CHECK (status = ANY (ARRAY['open'::text, 'closed'::text]));
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_subject_check CHECK (char_length(btrim(subject)) >= 1 AND char_length(btrim(subject)) <= 160);
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_business_id_customer_id_subject_key UNIQUE (business_id, customer_id, subject);
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES business_conversations(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_body_check CHECK (char_length(btrim(body)) >= 1 AND char_length(btrim(body)) <= 5000);
-
-ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_business_id_month_start_key UNIQUE (business_id, month_start);
-
-ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_total_published_reviews_check CHECK (total_published_reviews >= 0);
-
-ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_business_id_user_id_key UNIQUE (business_id, user_id);
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_verification_level_check CHECK (verification_level = ANY (ARRAY['activity'::text, 'business_responsible'::text, 'owner'::text]));
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_evidence_type_check CHECK (evidence_type = ANY (ARRAY['work_photos'::text, 'customer_references'::text, 'business_social'::text, 'phone_or_email'::text, 'storefront_photos'::text, 'business_documents'::text, 'written_statement'::text, 'multiple'::text]));
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_relationship_type_check CHECK (relationship_type = ANY (ARRAY['owner'::text, 'partner'::text, 'manager'::text, 'independent_worker'::text, 'new_entrepreneur'::text]));
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_status_check CHECK (status = ANY (ARRAY['pending'::text, 'activity_verified'::text, 'responsible_verified'::text, 'verified'::text, 'rejected'::text]));
-
-ALTER TABLE public.business_photos ADD CONSTRAINT business_photos_storage_path_key UNIQUE (storage_path);
-
-ALTER TABLE public.business_photos ADD CONSTRAINT business_photos_status_check CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text]));
-
-ALTER TABLE public.business_photos ADD CONSTRAINT business_photos_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_check CHECK (ends_at IS NULL OR starts_at IS NULL OR ends_at > starts_at);
-
-ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_description_check CHECK (description IS NULL OR char_length(description) <= 1000);
-
-ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_status_check CHECK (status = ANY (ARRAY['draft'::text, 'pending_review'::text, 'approved'::text, 'active'::text, 'expired'::text, 'rejected'::text]));
-
-ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_title_check CHECK (char_length(btrim(title)) >= 3 AND char_length(btrim(title)) <= 120);
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_billing_interval_check CHECK (billing_interval = ANY (ARRAY['month'::text, 'year'::text]));
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_status_check CHECK (status = ANY (ARRAY['pending'::text, 'trialing'::text, 'active'::text, 'past_due'::text, 'canceled'::text, 'incomplete'::text, 'unpaid'::text]));
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_plan_code_fkey FOREIGN KEY (plan_code) REFERENCES monetization_plans(code);
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_provider_check CHECK (provider = 'stripe'::text);
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_provider_subscription_id_key UNIQUE (provider_subscription_id);
-
-ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_storage_path_key UNIQUE (storage_path);
-
-ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_status_check CHECK (status = ANY (ARRAY['awaiting_upload'::text, 'pending_review'::text, 'verified'::text, 'rejected'::text]));
-
-ALTER TABLE public.businesses ADD CONSTRAINT businesses_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE RESTRICT;
-
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_status_check CHECK (status = ANY (ARRAY['pending'::text, 'published'::text, 'rejected'::text, 'resolved'::text]));
-
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_complaint_check CHECK (char_length(TRIM(BOTH FROM complaint)) >= 10 AND char_length(TRIM(BOTH FROM complaint)) <= 5000);
-
-ALTER TABLE public.monetization_plans ADD CONSTRAINT monetization_plans_monthly_price_cents_check CHECK (monthly_price_cents >= 0);
-
-ALTER TABLE public.monetization_plans ADD CONSTRAINT monetization_plans_currency_check CHECK (currency = 'usd'::text);
-
-ALTER TABLE public.monetization_plans ADD CONSTRAINT monetization_plans_pkey PRIMARY KEY (code);
-
-ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_processing_status_check CHECK (processing_status = ANY (ARRAY['received'::text, 'processed'::text, 'failed'::text, 'ignored'::text]));
-
-ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL;
-
-ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_provider_event_id_key UNIQUE (provider_event_id);
-
-ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_outcome_check CHECK (outcome = ANY (ARRAY['clear'::text, 'needs_review'::text, 'high_risk'::text, 'unavailable'::text]));
-
-ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_review_id_fkey FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE;
-
-ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_review_id_key UNIQUE (review_id);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_product_quality_check CHECK (product_quality >= 1 AND product_quality <= 5);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_cleanliness_check CHECK (cleanliness >= 1 AND cleanliness <= 5);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_status_check CHECK (status = ANY (ARRAY['pending'::text, 'published'::text, 'rejected'::text]));
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_speed_check CHECK (speed >= 1 AND speed <= 5);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_service_quality_check CHECK (service_quality >= 1 AND service_quality <= 5);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_value_for_money_check CHECK (value_for_money >= 1 AND value_for_money <= 5);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-
-ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id);
-
-ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_bio_check CHECK (bio IS NULL OR char_length(bio) <= 500);
-
-ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_status_check CHECK (status = ANY (ARRAY['draft'::text, 'published'::text, 'hidden'::text]));
-
-ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_body_check CHECK (char_length(btrim(body)) >= 1 AND char_length(btrim(body)) <= 5000);
-
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_plan_code_fkey FOREIGN KEY (plan_code) REFERENCES monetization_plans(code);
-
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_provider_check CHECK (provider = 'stripe'::text);
-
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_provider_subscription_id_key UNIQUE (provider_subscription_id);
-
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_status_check CHECK (status = ANY (ARRAY['trialing'::text, 'active'::text, 'past_due'::text, 'canceled'::text, 'incomplete'::text, 'unpaid'::text, 'paused'::text]));
-
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-CREATE INDEX ad_campaigns_business_idx ON public.ad_campaigns USING btree (business_id);
-
-CREATE INDEX ad_campaigns_active_idx ON public.ad_campaigns USING btree (status, starts_at, ends_at);
-
-CREATE INDEX ad_clicks_campaign_time_idx ON public.ad_clicks USING btree (campaign_id, occurred_at);
-
-CREATE INDEX ad_impressions_campaign_time_idx ON public.ad_impressions USING btree (campaign_id, occurred_at);
-
-CREATE INDEX business_conversations_business_idx ON public.business_conversations USING btree (business_id, updated_at DESC);
-
-CREATE INDEX business_conversations_customer_idx ON public.business_conversations USING btree (customer_id, updated_at DESC);
-
-CREATE INDEX business_messages_conversation_idx ON public.business_messages USING btree (conversation_id, created_at);
-
-CREATE INDEX idx_business_monthly_history_business_month ON public.business_monthly_history USING btree (business_id, month_start DESC);
-
-CREATE UNIQUE INDEX one_verified_owner_per_business ON public.business_owner_claims USING btree (business_id) WHERE (status = 'verified'::text);
-
-CREATE INDEX business_promotions_active_idx ON public.business_promotions USING btree (status, starts_at, ends_at);
-
-CREATE INDEX business_promotions_business_idx ON public.business_promotions USING btree (business_id);
-
-CREATE INDEX business_subscriptions_business_idx ON public.business_subscriptions USING btree (business_id);
-
-CREATE INDEX business_subscriptions_plan_code_idx ON public.business_subscriptions USING btree (plan_code);
-
-CREATE INDEX business_subscriptions_status_idx ON public.business_subscriptions USING btree (status);
-
-CREATE UNIQUE INDEX businesses_active_proposal_unique ON public.businesses USING btree (lower(btrim(name)), lower(btrim(category)), lower(btrim(city)), COALESCE(lower(btrim(address)), ''::text)) WHERE (status = ANY (ARRAY['pending'::text, 'approved'::text]));
-
-CREATE INDEX complaints_user_created_idx ON public.complaints USING btree (user_id, created_at DESC);
-
-CREATE INDEX complaints_business_created_idx ON public.complaints USING btree (business_id, created_at DESC);
-
-CREATE INDEX payment_events_business_idx ON public.payment_events USING btree (business_id);
-
-CREATE INDEX payment_events_status_idx ON public.payment_events USING btree (processing_status, created_at);
-
-CREATE INDEX reviews_status_visit_date_idx ON public.reviews USING btree (status, visit_date DESC);
-
-CREATE INDEX reviews_user_created_idx ON public.reviews USING btree (user_id, created_at DESC);
-
-CREATE INDEX reviews_published_business_time_idx ON public.reviews USING btree (business_id, visit_time) WHERE (status = 'published'::text);
-
-CREATE INDEX reviews_business_visit_date_idx ON public.reviews USING btree (business_id, visit_date DESC);
-
-CREATE INDEX reviews_published_visit_date_idx ON public.reviews USING btree (visit_date, business_id) WHERE (status = 'published'::text);
-
-CREATE INDEX user_publications_user_created_idx ON public.user_publications USING btree (user_id, created_at DESC);
-
-ALTER TABLE public.ad_campaigns ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.ad_clicks ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.ad_impressions ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.business_conversations ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.business_messages ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.business_monthly_history ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.business_owner_claims ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.business_photos ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.business_promotions ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.business_subscriptions ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.business_verification_documents ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.businesses ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.complaints ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.monetization_plans ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.payment_events ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.review_ai_moderation ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.user_publications ENABLE ROW LEVEL SECURITY;
-
-ALTER TABLE public.user_subscriptions ENABLE ROW LEVEL SECURITY;
-
--- 93 constraints, 25 non-constraint indexes (29 PK/UNIQUE indexes are created by constraints).
-
-
-
-
--- Enable RLS on all 20 base tables before any data is added.
-
-
--- Five routines. Exact production definitions and security attributes are retained.
+-- Five exact production routines and security attributes.
 CREATE OR REPLACE FUNCTION public.is_reputix_admin()
  RETURNS boolean
  LANGUAGE sql
@@ -714,9 +230,8 @@ BEGIN
 END;
 $function$;
 
--- Five views. All are created as SECURITY INVOKER in this staging candidate.
--- The two owner views are intentionally changed from production's definer behavior;
--- validate their required grants and two-owner isolation before considering release.
+-- Five views as SECURITY INVOKER in staging. Owner views are intentionally
+-- hardened relative to production and require two-owner tests before sign-off.
 CREATE OR REPLACE VIEW public.business_hourly_patterns WITH (security_invoker=true) AS
 SELECT business_id,
     EXTRACT(hour FROM visit_time)::integer AS visit_hour,
@@ -811,7 +326,7 @@ WITH current_week AS (
     positive_reviews
    FROM scores;
 
--- Exact 35 PERMISSIVE public-schema RLS policies from the production catalog.
+-- Exact 35 permissive RLS policies.
 CREATE POLICY "Public can view active approved campaigns" ON public.ad_campaigns AS PERMISSIVE FOR SELECT TO anon, authenticated USING (((status = 'active'::text) AND ((starts_at IS NULL) OR (starts_at <= now())) AND ((ends_at IS NULL) OR (ends_at > now()))));
 
 CREATE POLICY "Reputix admins manage ad campaigns" ON public.ad_campaigns AS PERMISSIVE FOR ALL TO authenticated USING (is_reputix_admin()) WITH CHECK (is_reputix_admin());
@@ -916,11 +431,125 @@ CREATE POLICY "Users manage their own publications" ON public.user_publications 
 
 CREATE POLICY "Users can view their own subscription" ON public.user_subscriptions AS PERMISSIVE FOR SELECT TO authenticated USING ((( SELECT auth.uid() AS uid) = user_id));
 
--- Explicit ACLs; broad default grants are revoked first. Includes scoped messaging
--- column grants and function EXECUTE grants from the production ACL inventory.
+-- Explicit ACL recreation; grants are not inherited from broad defaults.
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon, authenticated, service_role;
+GRANT DELETE, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.businesses TO anon;
+GRANT DELETE, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.businesses TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.businesses TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_monthly_history TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, TRIGGER, TRUNCATE, UPDATE ON TABLE public.reviews TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, TRIGGER, TRUNCATE, UPDATE ON TABLE public.reviews TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.reviews TO service_role;
+GRANT INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.complaints TO anon;
+GRANT INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.complaints TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.complaints TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.weekly_business_rankings TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.weekly_business_rankings TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.weekly_business_rankings TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_photos TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_photos TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_photos TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.recent_review_highlights TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.recent_review_highlights TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.recent_review_highlights TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_hourly_patterns TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_hourly_patterns TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_hourly_patterns TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_verification_documents TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.business_owner_claims TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_owner_claims TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_owner_claims TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.user_profiles TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.user_profiles TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.user_profiles TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.user_publications TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.user_publications TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.user_publications TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_conversations TO service_role;
+GRANT SELECT ON TABLE public.business_conversations TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_messages TO service_role;
+GRANT SELECT ON TABLE public.business_messages TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.owner_business_dashboard TO service_role;
+GRANT SELECT ON TABLE public.owner_business_dashboard TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.owner_business_hourly_patterns TO service_role;
+GRANT SELECT ON TABLE public.owner_business_hourly_patterns TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_promotions TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_promotions TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_promotions TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.payment_events TO service_role;
+GRANT MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.monetization_plans TO anon;
+GRANT MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.monetization_plans TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.monetization_plans TO service_role;
+GRANT MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.business_subscriptions TO anon;
+GRANT MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.business_subscriptions TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.business_subscriptions TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.review_ai_moderation TO service_role;
+GRANT MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.ad_campaigns TO anon;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.ad_campaigns TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.ad_campaigns TO service_role;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.ad_impressions TO service_role;
+GRANT SELECT ON TABLE public.ad_impressions TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.ad_clicks TO service_role;
+GRANT SELECT ON TABLE public.ad_clicks TO authenticated;
+GRANT MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.user_subscriptions TO anon;
+GRANT MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE ON TABLE public.user_subscriptions TO authenticated;
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE public.user_subscriptions TO service_role;
+GRANT SELECT (id) ON TABLE public.reviews TO anon;
+GRANT SELECT (id) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (business_id) ON TABLE public.reviews TO anon;
+GRANT SELECT (business_id) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (visit_date) ON TABLE public.reviews TO anon;
+GRANT SELECT (visit_date) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (visit_time) ON TABLE public.reviews TO anon;
+GRANT SELECT (visit_time) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (cleanliness) ON TABLE public.reviews TO anon;
+GRANT SELECT (cleanliness) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (service_quality) ON TABLE public.reviews TO anon;
+GRANT SELECT (service_quality) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (product_quality) ON TABLE public.reviews TO anon;
+GRANT SELECT (product_quality) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (speed) ON TABLE public.reviews TO anon;
+GRANT SELECT (speed) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (value_for_money) ON TABLE public.reviews TO anon;
+GRANT SELECT (value_for_money) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (comment) ON TABLE public.reviews TO anon;
+GRANT SELECT (comment) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (status) ON TABLE public.reviews TO anon;
+GRANT SELECT (status) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (created_at) ON TABLE public.reviews TO anon;
+GRANT SELECT (created_at) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (original_language) ON TABLE public.reviews TO anon;
+GRANT SELECT (original_language) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (translated_comment) ON TABLE public.reviews TO anon;
+GRANT SELECT (translated_comment) ON TABLE public.reviews TO authenticated;
+GRANT SELECT (translated_language) ON TABLE public.reviews TO anon;
+GRANT SELECT (translated_language) ON TABLE public.reviews TO authenticated;
+GRANT UPDATE (status) ON TABLE public.complaints TO authenticated;
+GRANT UPDATE (business_response) ON TABLE public.complaints TO authenticated;
+GRANT UPDATE (updated_at) ON TABLE public.complaints TO authenticated;
+GRANT UPDATE (status) ON TABLE public.business_owner_claims TO authenticated;
+GRANT UPDATE (reviewed_at) ON TABLE public.business_owner_claims TO authenticated;
+GRANT INSERT (business_id) ON TABLE public.business_conversations TO authenticated;
+GRANT INSERT (customer_id) ON TABLE public.business_conversations TO authenticated;
+GRANT INSERT (subject) ON TABLE public.business_conversations TO authenticated;
+GRANT INSERT (status) ON TABLE public.business_conversations TO authenticated;
+GRANT INSERT (conversation_id) ON TABLE public.business_messages TO authenticated;
+GRANT INSERT (sender_id) ON TABLE public.business_messages TO authenticated;
+GRANT INSERT (body) ON TABLE public.business_messages TO authenticated;
+GRANT UPDATE (read_at) ON TABLE public.business_messages TO authenticated;
 REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated, service_role;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.refresh_business_monthly_history(date) TO service_role;
+GRANT EXECUTE ON FUNCTION public.reputix_publish_valid_reviews() TO service_role;
+GRANT EXECUTE ON FUNCTION public.is_reputix_admin() TO anon;
+GRANT EXECUTE ON FUNCTION public.is_reputix_admin() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_reputix_admin() TO service_role;
+GRANT EXECUTE ON FUNCTION public.owner_respond_to_complaint(uuid, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.owner_respond_to_complaint(uuid, text) TO service_role;
+GRANT EXECUTE ON FUNCTION public.submit_business_proposal(text, text, text, text, text, text, text, text, text, text, text) TO PUBLIC;
+GRANT EXECUTE ON FUNCTION public.submit_business_proposal(text, text, text, text, text, text, text, text, text, text, text) TO anon;
+GRANT EXECUTE ON FUNCTION public.submit_business_proposal(text, text, text, text, text, text, text, text, text, text, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.submit_business_proposal(text, text, text, text, text, text, text, text, text, text, text) TO service_role;
 
 COMMIT;
