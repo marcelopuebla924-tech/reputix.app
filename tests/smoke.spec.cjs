@@ -383,7 +383,7 @@ const { chromium } = require("playwright");
         await paidPage.locator("#privateProfileAction").click();
         await paidPage.locator("#privateProfileName").fill("QA Member Profile");
         await paidPage.locator("#privateProfileBio").fill("Synthetic profile editor validation only.");
-        await paidPage.locator("#privateProfileEditor").evaluate(form => form.requestSubmit());
+        await paidPage.locator("#privateProfileEditor button[type="submit"]").click();
         await paidPage.waitForFunction(() => {
           const editor = document.querySelector("#privateProfileEditor");
           return !editor && document.querySelector("#privateProfileContent")?.textContent.includes("QA Member Profile");
@@ -393,6 +393,10 @@ const { chromium } = require("playwright");
             profileSavePayload.bio !== "Synthetic profile editor validation only.") {
           throw new Error("Inline profile editor did not save the expected synthetic member payload");
         }
+        await paidPage.locator("#privateProfileAction").click();
+        await paidPage.locator("#privateProfileEditor").waitFor({ state: "visible", timeout: 8000 });
+        await paidPage.locator("#privateProfileEditor button.secondary").click();
+        await paidPage.locator("#privateProfileEditor").waitFor({ state: "detached", timeout: 8000 });
         await paidPage.locator("#privatePostBody").fill("QA-only community post; no real customer content.");
         await paidPage.locator("#privatePostSubmit").click();
         await paidPage.waitForFunction(() => /publicación guardada|post saved/i.test(document.querySelector("#privatePostMessage")?.textContent || ""), null, { timeout: 8000 });
