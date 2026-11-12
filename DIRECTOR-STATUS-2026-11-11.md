@@ -85,3 +85,21 @@
 
 ## Current launch assessment
 The front-end has a passing automated smoke suite and deployed backend functions, but Reputix is NOT yet verified as production-ready. Real account flows, ownership verification, Stripe test transactions/webhook delivery, ad delivery/billing, and the listed security findings remain open.
+
+
+## Update — 2026-11-12 (America/Los_Angeles)
+- Re-checked GitHub Actions for commit 9245f59e56f27ef7fe2917a3f468b84335738589: Browser QA run #30 passed; Pages deployment #271 passed.
+- Reviewed deployed Edge Function source (read-only):
+  - create-checkout-session v8 requires a valid Supabase user session, accepts only Basic/Pro plan identifiers, and creates Stripe subscription Checkout with user_id/plan metadata. Stripe credentials and price IDs are server-side secrets.
+  - stripe-webhook v3 has JWT verification disabled as expected for Stripe delivery, verifies the Stripe-Signature using the webhook secret before processing, retrieves subscription state from Stripe, and upserts subscription records using service-role access. Payment events are recorded with duplicate-ignore behavior.
+  - reputix-ai v21 requires a valid Supabase user session; the conversational assistant checks active/trialing Pro status server-side; admin moderation queue checks app_metadata.reputix_role; review moderation only assesses a pending review owned by the signed-in user and is advisory-only; it does not publish or reject the review.
+- Applied database least-privilege migration `restrict_owner_dashboard_view_privileges`:
+  - Removed all grants for anon on both owner analytics views.
+  - Removed broad grants for authenticated and granted SELECT only.
+  - Left postgres owner and service_role grants unchanged.
+  - Verified resulting grants via information_schema: authenticated has SELECT only; anon has no grants.
+  - No table rows, policies, view definitions, functions, or user data were changed.
+- Supabase security advisor still reports the two SECURITY DEFINER views. This is expected because the view execution mode was not changed; next step is evaluate switching to security_invoker only after checking underlying-table RLS and owner dashboard regression behavior.
+- Remaining security findings: four RLS-enabled/no-policy tables (likely backend-only; confirm service-role call paths), two SECURITY DEFINER RPCs with explicit authorization checks, public pending business proposal RPC (review rate-limiting), and leaked-password protection disabled (do not change without Auth config review).
+- Performance advisor still reports five foreign keys without covering indexes and multiple permissive policies. Do not add/remove indexes or consolidate policies without query/workload and behavior analysis.
+- Current status: P0 grant hardening completed and verified. P0 security review remains open for view execution mode, RPCs, backend-only tables, and Auth setting. Real account, Stripe test-mode, owner-claim, and live ads workflows remain unverified.
