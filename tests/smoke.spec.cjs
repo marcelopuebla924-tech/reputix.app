@@ -513,13 +513,30 @@ const { chromium } = require("playwright");
       let adPayload = null;
       let adCampaignReads = 0;
       let moderationListCalls = 0;
+      let campaignStatus = null;
+      const campaignPatches = [];
+      const campaignId = "00000000-0000-4000-8000-000000000701";
+      const campaignBusinessId = "00000000-0000-4000-8000-000000000004";
       await adminPage.route("**/rest/v1/**", async route => {
         const request = route.request();
         const url = new URL(request.url());
-        if (request.method() === "GET" && url.pathname.endsWith("/ad_campaigns")) adCampaignReads += 1;
-        if (request.method() === "POST" && url.pathname.endsWith("/ad_campaigns")) {
+        if (request.method() === "GET" && url.pathname.endsWith("/ad_campaigns")) {
+          adCampaignReads += 1;
+          const rows = campaignStatus ? [{
+            id: campaignId, business_id: campaignBusinessId, title: "QA Mock Campaign",
+            placement: "discovery_feed", budget_cents: 7500, status: campaignStatus,
+            destination_url: "https://example.invalid/qa-campaign"
+          }] : [];
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(rows) });
+        } else if (request.method() === "POST" && url.pathname.endsWith("/ad_campaigns")) {
           adPayload = request.postDataJSON();
+          campaignStatus = "pending_review";
           await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
+        } else if (request.method() === "PATCH" && url.pathname.endsWith("/ad_campaigns")) {
+          const patch = request.postDataJSON();
+          campaignPatches.push(patch.status);
+          campaignStatus = patch.status;
+          await route.fulfill({ status: 204, body: "" });
         } else {
           await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
         }
@@ -584,7 +601,7 @@ const { chromium } = require("playwright");
       await adPost;
       await adminPage.waitForFunction(() => /campaña creada y enviada a revisión/i.test(document.querySelector("#adsAdminMessage")?.textContent || ""), null, { timeout: 8000 });
       if (!adPayload ||
-          adPayload.business_id !== "00000000-0000-4000-8000-000000000004" ||
+          adPayload.business_id !== campaignBusinessId ||
           adPayload.title !== "QA Mock Campaign" ||
           adPayload.status !== "pending_review" ||
           adPayload.budget_cents !== 7500 ||
@@ -593,6 +610,20 @@ const { chromium } = require("playwright");
           !adPayload.starts_at || !adPayload.ends_at ||
           new Date(adPayload.ends_at) <= new Date(adPayload.starts_at)) {
         throw new Error("Admin campaign form did not submit the expected review-only campaign payload: " + JSON.stringify(adPayload));
+      }
+      const campaignCard = adminPage.locator("#reputixAdsCampaignList .admin-claim").filter({ hasText: "QA Mock Campaign" });
+      await campaignCard.waitFor({ state: "visible", timeout: 8000 });
+      adminPage.once("dialog", dialog => dialog.accept());
+      await campaignCard.getByRole("button", { name: "Activar" }).click();
+      await adminPage.waitForFunction(() => /Estado: active/i.test(document.querySelector("#reputixAdsCampaignList")?.textContent || ""), null, { timeout: 8000 });
+      adminPage.once("dialog", dialog => dialog.accept());
+      await campaignCard.getByRole("button", { name: "Pausar" }).click();
+      await adminPage.waitForFunction(() => /Estado: paused/i.test(document.querySelector("#reputixAdsCampaignList")?.textContent || ""), null, { timeout: 8000 });
+      adminPage.once("dialog", dialog => dialog.accept());
+      await campaignCard.getByRole("button", { name: "Finalizar" }).click();
+      await adminPage.waitForFunction(() => /Estado: completed/i.test(document.querySelector("#reputixAdsCampaignList")?.textContent || ""), null, { timeout: 8000 });
+      if (campaignPatches.join(",") !== "active,paused,completed") {
+        throw new Error("Admin campaign state buttons did not submit the expected transitions: " + campaignPatches.join(","));
       }
       await adminPage.close();
     });
