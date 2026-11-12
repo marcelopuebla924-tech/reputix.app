@@ -440,6 +440,13 @@ function setLanguage(value) {
   $("independentJoinBtn").innerHTML = lang === "es" ? 'Agregar mi servicio <span aria-hidden="true">→</span>' : 'Add my service <span aria-hidden="true">→</span>';
   $("ownerTitle").textContent = lang === "es" ? "◉ Tu cuenta Reputix" : "◉ Your Reputix account";
   $("ownerIntro").textContent = lang === "es" ? "Regístrate o inicia sesión para gestionar tu perfil, actividad, conversaciones y herramientas de Reputix." : "Create an account or sign in to manage your profile, activity, conversations, and Reputix tools.";
+  const privateAreaCopy = {
+    customerModulesTitle:["Espacio de cliente","Customer workspace"],
+    customerModulesIntro:["Tu perfil, conversaciones y actividad en Reputix.","Your profile, conversations, and Reputix activity."],
+    ownerModulesTitle:["Gestión de negocio","Business management"],
+    ownerModulesIntro:["Herramientas de propietarios y representantes verificados.","Tools for verified owners and representatives."]
+  };
+  Object.entries(privateAreaCopy).forEach(([id,values])=>{const el=$(id);if(el)el.textContent=lang==="es"?values[0]:values[1];});
   const customerCopy = {
     customerWorkspaceTitle:["Tu escritorio Reputix","Your Reputix workspace"],
     customerLinkProfile:["Mi perfil","My profile"],
