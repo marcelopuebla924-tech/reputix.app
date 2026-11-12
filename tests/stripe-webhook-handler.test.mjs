@@ -218,6 +218,20 @@ test("invoice.payment_failed preserves Stripe's retrieved active status", async 
   assert.equal(args.p_subscription_status, "active");
 });
 
+test("passes Stripe incomplete_expired through unchanged for terminal no-access state", async () => {
+  const calls = [];
+  const subscription = makeSubscription({ status: "incomplete_expired" });
+  const handler = createStripeWebhookHandler({
+    ...BASE_CONFIG,
+    stripe: makeStripe(event(), subscription),
+    fetchImpl: makeFetch("processed", calls),
+  });
+  const response = await handler(request());
+  assert.equal(response.status, 200);
+  const args = JSON.parse(calls[0].options.body);
+  assert.equal(args.p_subscription_status, "incomplete_expired");
+});
+
 test("unknown event is recorded as ignored without Stripe subscription retrieval", async () => {
   const calls = [];
   let retrieved = false;
