@@ -63,7 +63,7 @@ const { chromium } = require("playwright");
       if (await reviewForm.locator('select[name="cleanliness"]').count() !== 1) throw new Error("Review criteria form missing");
       if (await reviewForm.locator('input[name="visit_date"]').count() !== 1) throw new Error("Visit date field missing");
       await card.locator(".actions button.secondary").click();
-      await card.locator(".details").waitFor({ state: "visible" });
+      await card.locator("section.details").first().waitFor({ state: "visible" });
     });
 
     await check("Public Reputix AI opens and closes", async () => {
