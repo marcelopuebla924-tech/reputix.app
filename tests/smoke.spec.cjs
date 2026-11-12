@@ -366,6 +366,17 @@ const { chromium } = require("playwright");
         };
       });
       if (Object.values(separation).some(value => !value)) throw new Error("Customer/owner module separation failed: " + JSON.stringify(separation));
+      const messageBorders = await workspacePage.evaluate(() => {
+        const tile = document.querySelector("#privateMessagesTitle")?.closest("article.private-tile");
+        const wrappers = [...document.querySelectorAll("#privateMessagesContent > .message-compose, #privateMessagesContent > .message-inbox, #privateMessagesContent > .message-thread")];
+        return {
+          outerBorder: tile ? getComputedStyle(tile).borderTopWidth : "0px",
+          innerBorders: wrappers.map(node => getComputedStyle(node).borderTopWidth)
+        };
+      });
+      if (messageBorders.outerBorder === "0px" || messageBorders.innerBorders.some(width => width !== "0px")) {
+        throw new Error("Messages should retain only the outer card border: " + JSON.stringify(messageBorders));
+      }
       const desktopLayout = await workspacePage.evaluate(() => {
         const groups = document.querySelector("#privateSpace .private-area-groups");
         const customer = document.querySelector("#privateSpace .customer-module-group");
