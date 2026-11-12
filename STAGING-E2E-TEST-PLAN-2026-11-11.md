@@ -140,3 +140,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Commit: `babd87600f8471dc1f1dba69e264e7c28a86eb9d`.
 - Browser QA run #136 passed for the previous 28-check suite. Newer review and photo tests are still awaiting CI completion.
 - No production storage or database writes were performed.
+
+
+## Update — 2026-11-11 18:13 PST
+
+- Browser QA run #140 executed 29 named checks: 28 passed; the new review test failed only because its success-message matcher did not match the actual bilingual confirmation text.
+- Updated the test matcher to the actual "Opinión recibida" / "Review received" confirmation copy.
+- Fix commit: `53f3616c2c72e4cb3696d1da4fc37992ac5411b0`.
+- Browser QA runs #144 (photo upload) and #148 (corrected review test) are pending completion.
+- No application code or production data was changed for this test-only correction.
