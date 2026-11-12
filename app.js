@@ -1675,31 +1675,28 @@ function makeReviewForm(business) {
       // antigua; la moderación sigue dejando la opinión en estado pending.
       const reviewUserId = null;
 
-      const insertedReviews = await api("reviews",{
+      const insertedReviewId = await api("rpc/submit_review",{
         method:"POST",
-        headers:{Prefer:"return=representation"},
         body:JSON.stringify({
-          business_id:business.id,
-          user_id:reviewUserId,
-          visit_date:fd.get("visit_date"),
-          visit_time:fd.get("visit_time") || null,
-          staff_name:String(fd.get("staff_name") || "").trim() || null,
-          cleanliness:Number(fd.get("cleanliness")),
-          service_quality:Number(fd.get("service_quality")),
-          product_quality:Number(fd.get("product_quality")),
-          speed:Number(fd.get("speed")),
-          value_for_money:Number(fd.get("value_for_money")),
-          comment:comment.trim() ? comment : null,
-          original_language:originalLanguage,
-          translated_comment:translatedComment,
-          translated_language:translatedLanguage,
-          status:"pending"
+          p_business_id:business.id,
+          p_visit_date:fd.get("visit_date") || null,
+          p_visit_time:fd.get("visit_time") || null,
+          p_staff_name:String(fd.get("staff_name") || "").trim() || null,
+          p_cleanliness:Number(fd.get("cleanliness")),
+          p_service_quality:Number(fd.get("service_quality")),
+          p_product_quality:Number(fd.get("product_quality")),
+          p_speed:Number(fd.get("speed")),
+          p_value_for_money:Number(fd.get("value_for_money")),
+          p_comment:comment.trim() ? comment : null,
+          p_original_language:originalLanguage,
+          p_translated_comment:translatedComment,
+          p_translated_language:translatedLanguage
         })
       });
 
       // Moderación IA orientativa: nunca publica, rechaza ni modifica el estado pending.
       let moderationNote = "";
-      const insertedReview = Array.isArray(insertedReviews) ? insertedReviews[0] : null;
+      const insertedReview = insertedReviewId ? {id:insertedReviewId} : null;
       if (insertedReview?.id && ownerSession?.access_token) {
         try {
           let moderationResponse = await fetch(SUPABASE_URL + "/functions/v1/reputix-ai", {
