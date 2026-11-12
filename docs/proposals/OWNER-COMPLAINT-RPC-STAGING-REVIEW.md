@@ -30,7 +30,7 @@ Status: candidate only; no Supabase change has been applied.
 - Execute grants checked: anon=false, authenticated=true, service_role=true.
 
 ## Remaining release gates
-- Latest expanded test run must complete successfully on the exact candidate head after the additional test cases.
+- Latest expanded PostgreSQL 17 workflow run #4 passed on exact candidate head `68f3f2b87b97312e4cfc26f1f14f99931c1be62d` at 11:48 a.m. Pacific. Browser QA run #438 was still running at that checkpoint.
 - Review actual owner-claim and business verification workflows to ensure only the intended final state is 'verified' and the approved status remains the publication gate.
 - Review function owner/dependencies and migration ordering in a complete staging schema migration before any apply.
 - Do not merge or apply this candidate based only on isolated tests. No production or staging writes are authorized by this review.
