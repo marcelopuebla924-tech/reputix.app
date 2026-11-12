@@ -40,11 +40,11 @@ const { execFileSync } = require("node:child_process");
           getComputedStyle(el).visibility !== "hidden" &&
           getComputedStyle(el).display !== "none" &&
           !el.closest("[aria-hidden='true'],[hidden]");
-        const text = value => String(value || "").replace(/\\s+/g, " ").trim();
+        const text = value => String(value || "").replace(/\s+/g, " ").trim();
         const controls = [...document.querySelectorAll("button,a[href],[role='button'],input:not([type='hidden']),select,textarea")]
           .filter(visible);
         const missing = controls.filter(el => {
-          const labelledBy = (el.getAttribute("aria-labelledby") || "").split(/\\s+/)
+          const labelledBy = (el.getAttribute("aria-labelledby") || "").split(/\s+/)
             .filter(Boolean).map(id => document.getElementById(id)?.textContent || "").join(" ");
           const labels = el.labels ? [...el.labels].map(label => label.textContent).join(" ") : "";
           const ownText = /^(BUTTON|A)$/.test(el.tagName) || el.getAttribute("role") === "button"
@@ -78,11 +78,11 @@ const { execFileSync } = require("node:child_process");
           getComputedStyle(el).visibility !== "hidden" &&
           getComputedStyle(el).display !== "none" &&
           !el.closest("[aria-hidden='true'],[hidden]");
-        const text = value => String(value || "").replace(/\\s+/g, " ").trim();
+        const text = value => String(value || "").replace(/\s+/g, " ").trim();
         const controls = [...document.querySelectorAll("button,a[href],[role='button'],input:not([type='hidden']),select,textarea")]
           .filter(visible);
         const missing = controls.filter(el => {
-          const labelledBy = (el.getAttribute("aria-labelledby") || "").split(/\\s+/)
+          const labelledBy = (el.getAttribute("aria-labelledby") || "").split(/\s+/)
             .filter(Boolean).map(id => document.getElementById(id)?.textContent || "").join(" ");
           const labels = el.labels ? [...el.labels].map(label => label.textContent).join(" ") : "";
           const ownText = /^(BUTTON|A)$/.test(el.tagName) || el.getAttribute("role") === "button"
