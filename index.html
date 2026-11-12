@@ -126,6 +126,26 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 }
 @media(prefers-reduced-motion:reduce){.header-actions .independent-header-access,.header-actions .map-header-access,.header-actions .account-access{transition:none}}
 </style>
+
+<style id="reputix-customer-workspace">
+.customer-workspace{margin:18px 0 22px;padding:clamp(16px,3vw,24px);border:1px solid #168acb;border-radius:20px;background:linear-gradient(145deg,#071d35,#061224);box-shadow:0 0 22px rgba(0,153,255,.12);color:#eff9ff}
+.customer-workspace[hidden]{display:none!important}
+.customer-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.customer-workspace-kicker{font-size:10px;letter-spacing:1.8px;font-weight:900;color:#43ceff}
+.customer-workspace-head h3{margin:5px 0;color:#fff;font-size:clamp(22px,3vw,29px)}
+.customer-workspace-head p,.customer-workspace-foot{margin:0;color:#b7cde1;font-size:13px;line-height:1.5}
+.customer-plan-chip{padding:8px 12px;border:1px solid #43caff;border-radius:999px;background:#07375b;color:#dff8ff;font-size:12px;font-weight:800}
+.customer-workspace-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.customer-workspace-link{display:flex;min-height:108px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;padding:14px;border:1px solid #18517a;border-radius:14px;background:linear-gradient(145deg,#0c2a48,#08192c);color:#f4fbff;text-decoration:none;transition:transform .18s,border-color .18s,box-shadow .18s}
+.customer-workspace-link:hover{transform:translateY(-2px);border-color:#42cfff;box-shadow:0 0 14px #009cff35}
+.customer-workspace-link>span{color:#5bd9ff;font-size:20px}
+.customer-workspace-link strong{font-size:14px}
+.customer-workspace-link small{color:#b5cce0;font-size:11px;line-height:1.35}
+.customer-workspace-foot{margin-top:14px}
+@media(max-width:680px){.customer-workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.customer-workspace-link{min-height:98px;padding:12px}}
+@media(max-width:380px){.customer-workspace-grid{grid-template-columns:1fr}}
+</style>
+
 </head>
 
 <body id="pageTop">
@@ -370,6 +390,25 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       <h3 id="ownerSubscriptionTitle">Tu plan Reputix</h3>
       <p id="ownerSubscriptionDetails" class="owner-copy" aria-live="polite">Consultando tu suscripción…</p>
       <div class="owner-actions"><button type="button" class="secondary" id="ownerSubscriptionPlans">Ver planes</button></div>
+    </section>
+    <section id="customerWorkspace" class="customer-workspace" hidden aria-labelledby="customerWorkspaceTitle">
+      <div class="customer-workspace-head">
+        <div>
+          <span class="customer-workspace-kicker">REPUTIX · CUSTOMER WORKSPACE</span>
+          <h3 id="customerWorkspaceTitle">Tu escritorio Reputix</h3>
+          <p id="customerWorkspaceIntro">Tus herramientas y actividad en un solo lugar.</p>
+        </div>
+        <div class="customer-plan-chip" id="customerWorkspacePlan">Plan activo</div>
+      </div>
+      <div class="customer-workspace-grid">
+        <a class="customer-workspace-link" href="#privateProfileTitle"><span>◉</span><strong id="customerLinkProfile">Mi perfil</strong><small id="customerLinkProfileNote">Datos y preferencias</small></a>
+        <a class="customer-workspace-link" href="#privateMessagesTitle"><span>✉</span><strong id="customerLinkMessages">Mensajes</strong><small id="customerLinkMessagesNote">Conversaciones con negocios</small></a>
+        <a class="customer-workspace-link" href="#privateComplaintsTitle"><span>▤</span><strong id="customerLinkComplaints">Mis reclamos</strong><small id="customerLinkComplaintsNote">Seguimiento de solicitudes</small></a>
+        <a class="customer-workspace-link" href="#privatePostsTitle"><span>✎</span><strong id="customerLinkPosts">Publicaciones</strong><small id="customerLinkPostsNote">Comparte con la comunidad</small></a>
+        <a class="customer-workspace-link" href="#privateDiscoverTitle"><span>⌖</span><strong id="customerLinkDiscover">Descubrir negocios</strong><small id="customerLinkDiscoverNote">Explora Reputix</small></a>
+        <a class="customer-workspace-link" id="customerLinkAI" href="#reputixAiTitle" hidden><span>✦</span><strong id="customerLinkAITitle">Reputix AI</strong><small id="customerLinkAINote">Asistente inteligente Pro</small></a>
+      </div>
+      <p class="customer-workspace-foot" id="customerWorkspaceFoot">Las funciones se habilitan según tu suscripción activa. El acceso a negocios y estadísticas privadas requiere verificación de propiedad.</p>
     </section>
     <div class="private-grid">
         <article class="private-tile"><span class="private-icon">◉</span><h3 id="privateProfileTitle">Mi perfil</h3><p id="privateProfileDesc">Datos y configuración</p><div id="privateProfileContent"></div><button class="secondary private-action" type="button" id="privateProfileAction">Editar perfil</button></article>
