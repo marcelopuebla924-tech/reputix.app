@@ -394,3 +394,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Draft review: `SECURITY-REVIEW-MESSAGING-UPDATE-2026-11-11.md`. Proposed least-privilege direction: revoke table-level UPDATE from authenticated and grant UPDATE only on `read_at`, then validate the RLS policy with two synthetic users and negative tests.
 - This is a production messaging security blocker. No SQL, grants, policies, data, or protected settings were changed. Remediation requires explicit owner approval and a truly isolated backend; staging remains unavailable under the current Supabase plan/repository snapshot.
 - The current frontend sends only a `read_at` field when marking received messages as read. A mocked UI regression assertion is pending in run #256; it is not a substitute for the database fix.
+
+
+## Update — 2026-11-11 (messaging read-receipt UI guard)
+
+- Browser QA #256 passed 32/32 with zero failures/page errors.
+- Mocked customer and verified-owner conversation test now asserts read-receipt PATCH bodies contain exactly `read_at`, and target only messages received by the current participant; own sent messages are excluded.
+- Test commit: `ae999ac38f925d00c311e6c2ba6cfb83050ee7d5`.
+- This is a frontend regression guard only. It does not fix the production `business_messages` UPDATE privilege/RLS concern documented in `SECURITY-REVIEW-MESSAGING-UPDATE-2026-11-11.md`.
+- Server-side remediation and two-user positive/negative integration tests remain blocked on isolated staging and explicit approval. No production SQL or data changes occurred.
