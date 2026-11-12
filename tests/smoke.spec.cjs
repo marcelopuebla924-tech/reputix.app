@@ -483,6 +483,119 @@ const { chromium } = require("playwright");
       await proposalPage.close();
     });
 
+    await check("Verified business owners can read and reply to customer conversations", async () => {
+      const customerId = "00000000-0000-4000-8000-000000000201";
+      const ownerId = "00000000-0000-4000-8000-000000000202";
+      const businessId = "00000000-0000-4000-8000-000000000203";
+      const conversationId = "00000000-0000-4000-8000-000000000204";
+      const conversations = [];
+      const messages = [];
+      const business = { id: businessId, name: "QA Verified Business", city: "Los Angeles", status: "approved" };
+      const mockRest = async route => {
+        const request = route.request();
+        const url = new URL(request.url());
+        const table = url.pathname.split("/").pop();
+        const method = request.method();
+        const isOwner = (request.headers().authorization || "").includes("qa-owner-message-token");
+        const userId = isOwner ? ownerId : customerId;
+        const json = body => route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+        if (table === "businesses" && method === "GET") return json([business]);
+        if (table === "business_owner_claims" && method === "GET") {
+          return json(isOwner ? [{ id: "qa-owner-claim", business_id: businessId, status: "verified" }] : []);
+        }
+        if (table === "business_conversations" && method === "GET") {
+          const rows = conversations.filter(row =>
+            url.searchParams.has("business_id")
+              ? row.business_id === businessId
+              : row.customer_id === userId
+          );
+          return json(rows);
+        }
+        if (table === "business_conversations" && method === "POST") {
+          const payload = request.postDataJSON();
+          if (payload.customer_id !== customerId || payload.business_id !== businessId) {
+            return route.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ message: "Invalid synthetic participant" }) });
+          }
+          const row = { ...payload, id: conversationId, updated_at: new Date().toISOString() };
+          conversations.push(row);
+          return route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify([row]) });
+        }
+        if (table === "business_messages" && method === "GET") {
+          const id = url.searchParams.get("conversation_id")?.replace(/^eq\./, "");
+          return json(messages.filter(row => row.conversation_id === id));
+        }
+        if (table === "business_messages" && method === "POST") {
+          const payload = request.postDataJSON();
+          if (payload.sender_id !== userId || payload.conversation_id !== conversationId) {
+            return route.fulfill({ status: 403, contentType: "application/json", body: JSON.stringify({ message: "Invalid synthetic sender" }) });
+          }
+          messages.push({ ...payload, id: "qa-message-" + (messages.length + 1), created_at: new Date(Date.now() + messages.length).toISOString(), read_at: null });
+          return route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
+        }
+        if (table === "business_messages" && method === "PATCH") {
+          const ids = (url.searchParams.get("id") || "").replace(/^in\./, "").replace(/[()"]/g, "").split(",");
+          messages.forEach(row => { if (ids.includes(row.id)) row.read_at = request.postDataJSON().read_at; });
+          return route.fulfill({ status: 204, body: "" });
+        }
+        if (method === "OPTIONS") return route.fulfill({ status: 204, body: "" });
+        return json([]);
+      };
+
+      const customerPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      customerPage.on("pageerror", error => failures.push(error.stack || error.message));
+      await customerPage.route("**/rest/v1/**", mockRest);
+      await customerPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await customerPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await customerPage.evaluate(({ customerId }) => window.ownerSetSession({
+        access_token: "qa-customer-message-token",
+        refresh_token: "qa-customer-message-refresh",
+        user: { id: customerId, email: "customer-message-qa@example.invalid", app_metadata: {} }
+      }), { customerId });
+      await customerPage.locator("#privateMessagesAction").click();
+      await customerPage.locator("#messageBusiness option").nth(1).waitFor({ state: "attached", timeout: 8000 });
+      await customerPage.locator("#messageBusiness").selectOption(businessId);
+      await customerPage.locator("#messageSubject").fill("QA conversation");
+      await customerPage.locator("#messageFirstBody").fill("Hello from the synthetic customer account.");
+      await customerPage.locator("#messageStartButton").click();
+      await customerPage.waitForFunction(() => /mensaje enviado|message sent/i.test(document.querySelector("#messageStatus")?.textContent || ""), null, { timeout: 8000 });
+      if (conversations.length !== 1 || messages.length !== 1) throw new Error("Customer message did not create the expected synthetic conversation");
+
+      const ownerPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      ownerPage.on("pageerror", error => failures.push(error.stack || error.message));
+      await ownerPage.route("**/rest/v1/**", mockRest);
+      await ownerPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await ownerPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await ownerPage.evaluate(({ ownerId }) => window.ownerSetSession({
+        access_token: "qa-owner-message-token",
+        refresh_token: "qa-owner-message-refresh",
+        user: { id: ownerId, email: "owner-message-qa@example.invalid", app_metadata: {} }
+      }), { ownerId });
+      await ownerPage.waitForFunction(() => {
+        const panel = document.querySelector("#ownerToolsSection");
+        return !!panel && !panel.hidden;
+      }, null, { timeout: 8000 });
+      const ownerConversation = ownerPage.locator("#ownerMessageList .message-conversation").first();
+      await ownerConversation.waitFor({ state: "visible", timeout: 8000 });
+      await ownerConversation.click();
+      await ownerPage.waitForFunction(() => !document.querySelector("#ownerMessageThread")?.hidden, null, { timeout: 8000 });
+      if (!(await ownerPage.locator("#ownerMessageThreadItems").textContent()).includes("Hello from the synthetic customer account.")) {
+        throw new Error("Verified owner could not read the customer's message");
+      }
+      await ownerPage.locator("#ownerMessageReplyBody").fill("Hello from the synthetic verified business owner.");
+      await ownerPage.locator("#ownerMessageReplyForm").evaluate(form => form.requestSubmit());
+      await ownerPage.waitForFunction(() => /respuesta enviada|reply sent/i.test(document.querySelector("#ownerMessageReplyStatus")?.textContent || ""), null, { timeout: 8000 });
+      if (messages.length !== 2 || messages[1].sender_id !== ownerId) throw new Error("Owner reply was not saved as the verified synthetic owner");
+
+      await customerPage.locator("#messageConversationList .message-conversation").first().click();
+      await customerPage.waitForFunction(() =>
+        (document.querySelector("#messageThreadItems")?.textContent || "").includes("Hello from the synthetic verified business owner."),
+        null,
+        { timeout: 8000 }
+      );
+      await ownerPage.close();
+      await customerPage.close();
+    });
+
     await check("Reviews and statistics feature buttons open their sections", async () => {
       await page.locator("#featureReviews").click();
       await page.waitForFunction(() => {
