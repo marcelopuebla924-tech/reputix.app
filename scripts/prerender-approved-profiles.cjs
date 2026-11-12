@@ -10,6 +10,19 @@ function cleanText(value, maxLength = 500) {
   return String(value == null ? "" : value).replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
+function cleanPublicCity(value) {
+  const city = cleanText(value, 100);
+  // A two-character value is commonly a state abbreviation accidentally stored as a city.
+  return city.length >= 3 ? city : "";
+}
+
+function cleanPublicStreetAddress(value) {
+  const address = cleanText(value, 180);
+  // Do not publish concatenated house-number/street values such as "9233south gate".
+  if (/^\d{3,}[A-Za-z]/.test(address)) return "";
+  return address;
+}
+
 function escapeHtml(value) {
   return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;")
     .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -36,8 +49,8 @@ function normalizeApprovedBusinesses(rows) {
       id,
       name,
       category: cleanText(row.category, 120),
-      address: cleanText(row.address, 180),
-      city: cleanText(row.city, 100),
+      address: cleanPublicStreetAddress(row.address),
+      city: cleanPublicCity(row.city),
       state: cleanText(row.state, 80),
       country: cleanText(row.country, 80)
     });
