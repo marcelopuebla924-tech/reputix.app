@@ -423,7 +423,7 @@ const { chromium } = require("playwright");
               await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
             }
           });
-          await paidPage.locator("#customerComplaintForm").evaluate(form => form.requestSubmit());
+          await paidPage.locator("#customerComplaintSubmit").click();
           await paidPage.waitForFunction(() => /reclamo enviado|complaint submitted/i.test(document.querySelector("#customerComplaintStatus")?.textContent || ""), null, { timeout: 8000 });
           if (!complaintPayload || complaintPayload.status !== "pending" || complaintPayload.user_id !== "00000000-0000-4000-8000-000000000091") {
             throw new Error("Complaint form did not submit a pending complaint owned by the signed-in synthetic user");
@@ -431,6 +431,12 @@ const { chromium } = require("playwright");
         }
         await paidPage.locator("#customerLinkReviews").click();
         await paidPage.waitForFunction(() => location.hash === "#privateOwnReviewsTitle");
+        const ownReviewsResponse = paidPage.waitForResponse(response =>
+          response.url().includes("/rest/v1/reviews?") &&
+          response.url().includes("user_id=eq.00000000-0000-4000-8000-000000000091")
+        );
+        await paidPage.locator("#privateOwnReviewsAction").click();
+        await ownReviewsResponse;
         await paidPage.setViewportSize({ width: 390, height: 844 });
         const mobileFacts = await paidPage.evaluate(() => {
           const panel = document.querySelector("#customerWorkspace");
