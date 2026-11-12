@@ -322,6 +322,90 @@ const { chromium } = require("playwright");
       await page.locator("#claimBusinessModal").waitFor({ state: "hidden" });
     });
 
+    await check("Standalone map loads approved businesses, filters results, and safely renders untrusted names", async () => {
+      const mapPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      mapPage.on("pageerror", error => failures.push(error.stack || error.message));
+      await mapPage.route("**/leaflet.js", async route => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/javascript",
+          body: `
+            (() => {
+              const map = {
+                setView() { return this; },
+                flyTo() { return this; },
+                fitBounds() { return this; },
+                invalidateSize() { return this; }
+              };
+              window.L = {
+                map: () => map,
+                tileLayer: () => ({ addTo() { return this; } }),
+                divIcon: () => ({}),
+                marker: coords => ({
+                  coords,
+                  addTo() { return this; },
+                  bindPopup() { return this; },
+                  on() { return this; },
+                  getLatLng() { return { lat: coords[0], lng: coords[1] }; },
+                  openPopup() { return this; }
+                }),
+                featureGroup: () => ({ getBounds: () => ({}) })
+              };
+            })();
+          `
+        });
+      });
+      await mapPage.route("**/rest/v1/businesses?*", async route => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify([
+            {
+              id: "qa-map-1",
+              name: "<img src=x onerror=alert(1)>",
+              category: "Smoke Shop",
+              address: "100 Main Street",
+              city: "Los Angeles",
+              zip: "90001",
+              status: "approved"
+            },
+            {
+              id: "qa-map-2",
+              name: "QA Cafe",
+              category: "Restaurant",
+              address: "200 Main Street",
+              city: "Los Angeles",
+              zip: "90002",
+              latitude: 34.01,
+              longitude: -118.25,
+              status: "approved"
+            }
+          ])
+        });
+      });
+      await mapPage.route("**/nominatim.openstreetmap.org/search?*", async route => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify([{ lat: "34.00", lon: "-118.26" }])
+        });
+      });
+      await mapPage.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
+      await mapPage.waitForFunction(() => /2 de 2 negocios ubicados/i.test(document.querySelector("#status")?.textContent || ""), null, { timeout: 10000 });
+      const rows = mapPage.locator("#businessList .business");
+      if (await rows.count() !== 2) throw new Error("Approved businesses did not appear in the map list");
+      await mapPage.locator('#filters [data-category="smoke"]').click();
+      if (await rows.count() !== 1) throw new Error("Smoke shop filter returned an incorrect result count");
+      await rows.first().click();
+      const detail = mapPage.locator("#detail");
+      if (!(await detail.textContent()).includes("<img src=x onerror=alert(1)>")) {
+        throw new Error("Business name was not rendered as literal text");
+      }
+      if (await detail.locator("img").count()) throw new Error("Untrusted business name created an HTML image element");
+      await mapPage.locator("#resetView").click();
+      await mapPage.close();
+    });
+
     await page.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => !!window.L && !!document.querySelector("#map"), null, { timeout: 15000 });
 
