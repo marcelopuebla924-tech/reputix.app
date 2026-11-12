@@ -327,6 +327,7 @@ const { chromium } = require("playwright");
         let refreshProfileCalls = 0;
         let profileSavePayload = null;
         let publicationPayload = null;
+        let aiPayload = null;
         await paidPage.route("**/rest/v1/**", async route => {
           const url = route.request().url();
           if (url.includes("/user_publications") && route.request().method() === "POST") {
@@ -353,6 +354,10 @@ const { chromium } = require("playwright");
             return;
           }
           await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+        });
+        await paidPage.route("**/functions/v1/reputix-ai", async route => {
+          aiPayload = route.request().postDataJSON();
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ answer: "Synthetic Reputix AI response for QA." }) });
         });
         await paidPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
         await paidPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
@@ -398,15 +403,24 @@ const { chromium } = require("playwright");
             reviewsTarget: !!document.querySelector("#privateOwnReviewsTitle"),
             refreshButton: !!document.querySelector("#customerWorkspaceRefresh"),
             planText: document.querySelector("#customerWorkspacePlan")?.textContent || "",
-            aiVisible: !document.querySelector("#customerLinkAI")?.hidden
+            aiVisible: !document.querySelector("#customerLinkAI")?.hidden,
+            aiPanelVisible: !document.querySelector(".ai-assistant-panel")?.hidden
           };
         });
         if (workspaceFacts.width < 1200) throw new Error("Paid workspace is not using the available desktop width: " + workspaceFacts.width);
         for (const key of ["reviewLink","profileTarget","messagesTarget","complaintsTarget","postsTarget","discoverTarget","reviewsTarget","refreshButton"]) {
           if (!workspaceFacts[key]) throw new Error("Paid workspace navigation/control missing: " + key);
         }
-        if (plan === "pro" && !workspaceFacts.aiVisible) throw new Error("Pro workspace did not show the Reputix AI shortcut");
-        if (plan === "basic" && workspaceFacts.aiVisible) throw new Error("Basic workspace incorrectly exposed the Pro AI shortcut");
+        if (plan === "pro" && (!workspaceFacts.aiVisible || !workspaceFacts.aiPanelVisible)) throw new Error("Pro workspace did not show its Reputix AI shortcut and assistant panel");
+        if (plan === "basic" && (workspaceFacts.aiVisible || workspaceFacts.aiPanelVisible)) throw new Error("Basic workspace incorrectly exposed the Pro AI shortcut or assistant panel");
+        if (plan === "pro") {
+          await paidPage.locator("#reputixAiPrompt").fill("Summarize this synthetic QA business review.");
+          await paidPage.locator("#reputixAiSend").click();
+          await paidPage.waitForFunction(() => /respuesta generada|answer generated/i.test(document.querySelector("#reputixAiStatus")?.textContent || ""), null, { timeout: 8000 });
+          if (!aiPayload || aiPayload.mode !== "assistant" || aiPayload.message !== "Summarize this synthetic QA business review.") {
+            throw new Error("Pro AI send button did not call the assistant with the expected prompt");
+          }
+        }
         const before = refreshProfileCalls;
         await paidPage.locator("#customerWorkspaceRefresh").click();
         await paidPage.waitForFunction(() => /updated|actualizado/i.test(document.querySelector("#customerWorkspaceStatus")?.textContent || ""), null, { timeout: 8000 });
