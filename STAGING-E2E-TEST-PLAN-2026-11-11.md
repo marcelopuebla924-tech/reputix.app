@@ -354,3 +354,16 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Investigated local Supabase CLI staging. Repository tree has no `supabase/config.toml` and only one migration SQL file, so it lacks a complete schema snapshot needed to safely reconstruct the backend locally.
 - Decision: do not create an incomplete test schema, connect local stack to production, or incur a new project/upgrade cost without approval.
 - Continue mocked browser QA until an approved isolated backend can be prepared.
+
+
+## Update — 2026-11-11 (latest verified browser QA)
+
+- Browser QA #210 passed the 31-check suite after adding assertions that the admin review-moderation refresh and ad-campaign refresh buttons each trigger a new mocked data load (commit `d1bdeb7695d54b925915406589b9651e3d5a9cc5`).
+- Browser QA #220 passed 32 checks, including the public published-review translation toggle (commit `c1c66a826802539386dd0d710cb089fbb5e828a5`).
+- Browser QA #230 passed 32 checks, including claim-picker close/reopen behavior (commit `3614ae73a5a3764bb95b287d227fd1d14d6175e4`).
+- Browser QA #231 passed 32 checks, including campaign activation, pause, finish, and rejection (commit `f17a33b14429655795eddfba6b02428d49989463`).
+- Browser QA #235 passed 32 checks, including rejected-campaign resubmission to `pending_review` (commit `f888f4a45f32fe6c7adfcc524938218deaccfe01`).
+- Current suite count: 32 named checks. Static homepage control scan found 40 button IDs, all represented in the test source. This is source coverage plus the specific CI passes above, not certification of live backend integrations.
+- All interactions used synthetic data and mocked APIs; no production writes, real campaigns, or charges occurred.
+- Staging is still unavailable: the repository lacks a complete local Supabase schema snapshot and Supabase branching requires Pro. No upgrade or new paid project was created.
+- Continue mocked browser QA; live Auth/RLS/Stripe/Storage remains unverified until isolated staging is approved.
