@@ -1670,24 +1670,10 @@ function makeReviewForm(business) {
 
       if (!business.id) throw new Error(t("invalidBusiness"));
 
-      // Vincular la opinión a una cuenta solo cuando el JWT activo confirma
-      // exactamente el mismo usuario. Si no hay sesión válida, enviar como
-      // opinión pública anónima (la política RLS permite user_id IS NULL).
-      let reviewUserId = null;
-      try {
-        const accessToken = String(ownerSession?.access_token || "");
-        const tokenPayload = accessToken.split(".")[1];
-        if (tokenPayload) {
-          const normalizedPayload = tokenPayload.replace(/-/g, "+").replace(/_/g, "/");
-          const paddedPayload = normalizedPayload + "=".repeat((4 - normalizedPayload.length % 4) % 4);
-          const claims = JSON.parse(atob(paddedPayload));
-          if (claims.sub && claims.sub === ownerSession?.user?.id) {
-            reviewUserId = claims.sub;
-          }
-        }
-      } catch (tokenError) {
-        console.warn("No se pudo validar el usuario de la opinión; se enviará sin vincular a una cuenta.", tokenError);
-      }
+      // Las opiniones comunitarias públicas se guardan sin asociarlas a una cuenta.
+      // Esto evita atribuciones incorrectas cuando el navegador conserva una sesión
+      // antigua; la moderación sigue dejando la opinión en estado pending.
+      const reviewUserId = null;
 
       const insertedReviews = await api("reviews",{
         method:"POST",
