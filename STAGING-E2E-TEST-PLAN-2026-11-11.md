@@ -253,3 +253,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Test commit: `fbdc6741d095fa290f440dec9499358053a066ea`.
 - Browser QA run #194 is running for the latest form and CTA assertions.
 - No production AI, claim, or proposal records were created.
+
+
+## Update — 2026-11-11 18:30 PST
+
+- Browser QA run #194 passed the 31-check suite with zero page errors.
+- Extended advertising form QA to cover budget, destination, placement, start/end dates, and review-only `pending_review` state.
+- Test commit: `c097b2ae2c485f0a95fe3e63ab839778dcb93181`.
+- Browser QA run #198 is running for the expanded campaign payload assertions.
+- No actual campaign or billing operation occurred.
