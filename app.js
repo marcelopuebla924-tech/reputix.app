@@ -417,7 +417,7 @@ es: {
   proposalDuplicate:"Ya existe una propuesta igual para ese negocio y ciudad. No necesitas enviarla otra vez.",
   chooseCategory:"Elige una categoría",
   businessCategories:["Restaurante o cafetería","Tienda o supermercado","Smoke shop","Ropa y accesorios","Uber / transporte por aplicación","Otro comercio"],
-  proCategories:["Plomero","Electricista","Mecánico","Construcción","Pintor","Contratista","Limpieza","Conductor/a de Uber","Otro servicio"],
+  proCategories:["Plomero","Electricista","Mecánico","Construcción","Pintor","Contratista","Limpieza","Psicólogo/a o centro de salud mental","Conductor/a de Uber","Otro servicio"],
   proposalRequired:"Completa el nombre, la categoría y la ciudad.",
   proposalNotice:"Tu propuesta será revisada y el negocio aparecerá cuando sea aprobado."
 },
@@ -477,7 +477,7 @@ en: {
   proposalDuplicate:"A matching proposal already exists for this business and city. You do not need to submit it again.",
   chooseCategory:"Choose a category",
   businessCategories:["Restaurant or cafe","Store or supermarket","Smoke shop","Clothing and accessories","Uber / rideshare transportation","Other business"],
-  proCategories:["Plumber","Electrician","Mechanic","Construction","Painter","Contractor","Cleaning","Uber driver","Other service"],
+  proCategories:["Plumber","Electrician","Mechanic","Construction","Painter","Contractor","Cleaning","Psychologist / mental health center","Uber driver","Other service"],
   proposalRequired:"Enter the name, category, and city.",
   proposalNotice:"Businesses are published when submitted; please make sure the details are accurate."
 }
@@ -1471,7 +1471,13 @@ async function loadReviews(business,list,status,stats,ratingRow) {
 function makeReviewForm(business) {
   const f = node("form","form");
   f.append(node("h3","",t("share")),node("p","empty",t("pending")));
-  if (/uber|rideshare|transporte por aplicaci|conductor/i.test(String(business.category || "") + " " + String(business.name || ""))) {
+  const businessType = String(business.category || "") + " " + String(business.name || "");
+  if (/psycholog|psic[oó]log|salud mental|mental health|therap/i.test(businessType)) {
+    f.append(node("p","empty review-safety-note",lang === "es"
+      ? "Privacidad en psicología: comparte solo tu experiencia general sobre el trato, la comunicación, la puntualidad y la organización. No publiques diagnósticos, tratamientos, medicamentos, nombres de pacientes, datos de contacto ni detalles que permitan identificar a alguien. No solicites ni publiques resultados clínicos. Reputix no sustituye la atención profesional ni los servicios de emergencia."
+      : "Psychology privacy: share only your general experience with respect, communication, punctuality, and organization. Do not post diagnoses, treatments, medications, patient names, contact details, or information that could identify anyone. Do not request or publish clinical outcomes. Reputix does not replace professional care or emergency services."));
+  }
+  if (/uber|rideshare|transporte por aplicaci|conductor/i.test(businessType)) {
     f.append(node("p","empty review-safety-note",lang === "es"
       ? "Protección para viajes: describe tu experiencia real sin publicar teléfonos, direcciones particulares, datos de cuenta, placas completas ni información que identifique a terceros. Si existe un peligro inmediato, contacta a emergencias; Reputix no sustituye los canales de seguridad de Uber."
       : "Ride safety: describe your real experience without posting phone numbers, private addresses, account details, full license plates, or information identifying third parties. For immediate danger, contact emergency services; Reputix does not replace Uber safety channels."));
@@ -1791,6 +1797,128 @@ function makeComplaintSection(business) {
   return section;
 }
 
+/* Public business profiles: stable, shareable deep links + per-profile metadata. */
+function publicBusinessUrl(b) {
+  const url = new URL(window.location.pathname, window.location.origin);
+  url.searchParams.set("business", String(b.id));
+  return url.toString();
+}
+
+function updatePublicBusinessMetadata(b) {
+  const clean = value => String(value || "").replace(/\\s+/g," ").trim();
+  const title = clean(b.name) + " | Reputix";
+  const description = clean(b.description) ||
+    [b.category, b.address, b.city].filter(Boolean).join(" · ") ||
+    (lang === "es" ? "Consulta opiniones y descubre este negocio en Reputix." : "Read reviews and discover this business on Reputix.");
+  const url = publicBusinessUrl(b);
+  document.title = title;
+  const setMeta = (selector, attribute, value, create) => {
+    let element = document.head.querySelector(selector);
+    if (!element && create) {
+      element = document.createElement(create.tag);
+      if (create.key) element.setAttribute(create.key, create.value);
+      document.head.append(element);
+    }
+    if (element) element.setAttribute(attribute,value);
+  };
+  setMeta('meta[name="description"]',"content",description.slice(0,300),{tag:"meta",key:"name",value:"description"});
+  setMeta('meta[property="og:title"]',"content",title,{tag:"meta",key:"property",value:"og:title"});
+  setMeta('meta[property="og:description"]',"content",description.slice(0,300),{tag:"meta",key:"property",value:"og:description"});
+  setMeta('meta[property="og:url"]',"content",url,{tag:"meta",key:"property",value:"og:url"});
+  setMeta('link[rel="canonical"]',"href",url,{tag:"link",key:"rel",value:"canonical"});
+  setMeta('meta[name="twitter:title"]',"content",title,{tag:"meta",key:"name",value:"twitter:title"});
+  setMeta('meta[name="twitter:description"]',"content",description.slice(0,300),{tag:"meta",key:"name",value:"twitter:description"});
+  let structured = document.getElementById("reputix-business-structured-data");
+  if (!structured) {
+    structured = document.createElement("script");
+    structured.type = "application/ld+json";
+    structured.id = "reputix-business-structured-data";
+    document.head.append(structured);
+  }
+  const postalAddress = {
+    "@type":"PostalAddress",
+    ...(b.address ? {streetAddress:b.address} : {}),
+    ...(b.city ? {addressLocality:b.city} : {}),
+    ...(b.zip ? {postalCode:b.zip} : {}),
+    ...(b.state ? {addressRegion:b.state} : {}),
+    ...(b.country ? {addressCountry:b.country} : {"addressCountry":"US"})
+  };
+  structured.textContent = JSON.stringify({
+    "@context":"https://schema.org",
+    "@type":"LocalBusiness",
+    "name":clean(b.name),
+    "url":url,
+    ...(description ? {description:description.slice(0,300)} : {}),
+    ...(b.phone ? {telephone:b.phone} : {}),
+    ...(b.address || b.city ? {address:postalAddress} : {})
+  });
+}
+
+async function sharePublicBusiness(b, status) {
+  const url = publicBusinessUrl(b);
+  const title = String(b.name || "Reputix");
+  const text = lang === "es"
+    ? "Consulta la ficha y las opiniones de " + title + " en Reputix."
+    : "View " + title + "'s profile and reviews on Reputix.";
+  try {
+    if (typeof navigator.share === "function") {
+      await navigator.share({title:title + " | Reputix",text,url});
+      if (status) status.textContent = lang === "es" ? "Enlace compartido." : "Link shared.";
+      return;
+    }
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      await navigator.clipboard.writeText(url);
+      if (status) status.textContent = lang === "es" ? "Enlace copiado. Ya puedes compartirlo." : "Link copied. You can share it now.";
+      return;
+    }
+    window.prompt(lang === "es" ? "Copia el enlace del negocio:" : "Copy the business link:",url);
+  } catch (error) {
+    if (error && error.name === "AbortError") return;
+    if (status) status.textContent = lang === "es" ? "No se pudo compartir. Intenta copiar el enlace." : "Could not share. Try copying the link.";
+  }
+}
+
+async function loadPublicBusinessFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const businessId = params.get("business");
+  if (!businessId) return;
+  resultsBox.hidden = false;
+  resultsBox.replaceChildren();
+  notice.textContent = lang === "es" ? "Cargando ficha del negocio…" : "Loading business profile…";
+  try {
+    const query = new URLSearchParams({
+      select:"*",
+      id:"eq." + businessId,
+      status:"eq.approved",
+      limit:"1"
+    });
+    const rows = await api("businesses?" + query.toString());
+    const business = Array.isArray(rows) ? rows[0] : null;
+    if (!business || !business.id || !business.name) {
+      // El contenedor puede haber recibido datos del descubrimiento inicial antes de la respuesta.
+      // En una ficha no aprobada, siempre vaciarlo para evitar exposición accidental.
+      lastBusinesses = [];
+      resultsBox.replaceChildren();
+      notice.textContent = lang === "es"
+        ? "Esta ficha no está disponible públicamente."
+        : "This profile is not publicly available.";
+      const robots = document.querySelector('meta[name="robots"]');
+      if (robots) robots.content = "noindex,nofollow";
+      return;
+    }
+    lastBusinesses = [business];
+    updatePublicBusinessMetadata(business);
+    resultsBox.replaceChildren(renderBusiness(business));
+    notice.textContent = lang === "es" ? "Ficha pública del negocio" : "Public business profile";
+    resultsBox.scrollIntoView({behavior:"smooth",block:"start"});
+  } catch (error) {
+    console.error("Reputix public business profile:",error);
+    notice.textContent = lang === "es"
+      ? "No pudimos cargar esta ficha. Intenta nuevamente más tarde."
+      : "We could not load this profile. Please try again later.";
+  }
+}
+
 /* Perfil de negocio */
 function renderBusiness(b) {
   const card = node("article","business-card");
@@ -1863,10 +1991,15 @@ function renderBusiness(b) {
   const actions = node("div","actions");
   const profile = node("button","primary",t("profile"));
   const reviewsBtn = node("button","secondary",t("reviews"));
+  const shareBtn = node("button","secondary",lang === "es" ? "Compartir" : "Share");
+  const shareStatus = node("p","form-message","");
+  shareStatus.setAttribute("aria-live","polite");
   profile.type = "button";
   reviewsBtn.type = "button";
-  actions.append(profile,reviewsBtn);
-  card.append(actions);
+  shareBtn.type = "button";
+  shareBtn.addEventListener("click",() => sharePublicBusiness(b,shareStatus));
+  actions.append(profile,reviewsBtn,shareBtn);
+  card.append(actions,shareStatus);
 
   const details = node("section","details");
   details.hidden = true;
@@ -2142,6 +2275,7 @@ form.addEventListener("submit",async e => {
 
 setLanguage("es");
 loadApprovedBusinesses();
+loadPublicBusinessFromUrl();
 loadWeeklyRankings();
 loadReviewTicker();
 
@@ -3372,6 +3506,9 @@ window.reputixHandleOwnerClaimSubmit = async e => {
 if(ownerSession?.access_token) ownerSetSession(ownerSession);
 
 async function loadApprovedBusinesses() {
+  // Los enlaces directos se resuelven exclusivamente mediante loadPublicBusinessFromUrl.
+  // No permitir que el respaldo de descubrimiento pinte tarjetas mientras se valida el ID.
+  if (new URLSearchParams(window.location.search).has("business")) return;
   resultsBox.replaceChildren();
   lastBusinesses = [];
   notice.textContent = lang === "es" ? "Cargando negocios aprobados..." : "Loading approved businesses...";
