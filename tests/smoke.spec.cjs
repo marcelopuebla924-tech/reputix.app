@@ -366,6 +366,29 @@ const { chromium } = require("playwright");
         };
       });
       if (Object.values(separation).some(value => !value)) throw new Error("Customer/owner module separation failed: " + JSON.stringify(separation));
+      const desktopLayout = await workspacePage.evaluate(() => {
+        const groups = document.querySelector("#privateSpace .private-area-groups");
+        const customer = document.querySelector("#privateSpace .customer-module-group");
+        const owner = document.querySelector("#privateSpace #ownerToolsSection");
+        const messages = document.querySelector("#privateSpace #privateMessagesContent");
+        const rect = element => {
+          const box = element?.getBoundingClientRect();
+          return box ? { width: Math.round(box.width), left: Math.round(box.left), right: Math.round(box.right) } : null;
+        };
+        return {
+          viewportWidth: window.innerWidth,
+          groups: rect(groups),
+          customer: rect(customer),
+          owner: rect(owner),
+          messageColumns: messages ? getComputedStyle(messages).gridTemplateColumns.split(" ").length : 0
+        };
+      });
+      if (!desktopLayout.groups || desktopLayout.groups.width < 1000 ||
+          !desktopLayout.customer || desktopLayout.customer.width < desktopLayout.groups.width * .9 ||
+          !desktopLayout.owner || desktopLayout.owner.width < desktopLayout.groups.width * .9 ||
+          desktopLayout.messageColumns !== 2) {
+        throw new Error("Desktop customer/owner workspace should use the full content width and show a two-column message layout: " + JSON.stringify(desktopLayout));
+      }
       await workspacePage.locator("#privateBusinessAction").click();
       await workspacePage.waitForFunction(() => {
         const target = document.querySelector("#ownerClaimForm");
