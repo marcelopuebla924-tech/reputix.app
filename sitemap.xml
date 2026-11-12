@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.reputixapp.com/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
+  <url><loc>https://www.reputixapp.com/</loc></url>
+  <url><loc>https://www.reputixapp.com/business/69e31935-830c-4efe-9b42-e1565e481de1/</loc></url>
+  <url><loc>https://www.reputixapp.com/business/764e1139-38b2-494e-9b22-f81e8540c6bc/</loc></url>
+  <url><loc>https://www.reputixapp.com/business/82d23337-58b0-437e-8a80-ddb568d584b9/</loc></url>
+  <url><loc>https://www.reputixapp.com/business/a2861806-7e33-4eff-907f-f6206535fb7c/</loc></url>
+  <url><loc>https://www.reputixapp.com/business/b2a18a5d-2fca-44f2-aa62-038b972d1a2b/</loc></url>
 </urlset>
