@@ -396,7 +396,7 @@ const { chromium } = require("playwright");
         };
       });
       await mapPage.route("**/leaflet.js", route => route.abort());
-      await mapPage.route("**/rest/v1/businesses?*", async route => {
+      await mapPage.route(/\/rest\/v1\/businesses(?:\?|$)/, async route => {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
@@ -424,7 +424,7 @@ const { chromium } = require("playwright");
           ])
         });
       });
-      await mapPage.route("**/nominatim.openstreetmap.org/search?*", async route => {
+      await mapPage.route(/nominatim\.openstreetmap\.org\/search(?:\?|$)/, async route => {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
