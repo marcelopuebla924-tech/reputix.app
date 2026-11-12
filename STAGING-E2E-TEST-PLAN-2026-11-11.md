@@ -180,3 +180,13 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - App commit: `b05aba7c7ce3074f8f34471ef18f4ca0b8e297f5`.
 - Passing test commit: `007861f0b49008bee6f7a9d1f3d25a3e0adb6a01`.
 - These are isolated mocked browser tests, not live Supabase/Auth/RLS or production upload certification.
+
+
+## Update — 2026-11-11 18:18 PST
+
+- Added a dedicated verified-owner complaint response test for the authorized RPC path.
+- The test checks the exact synthetic complaint ID and response text, then verifies the updated response is rendered after workspace refresh.
+- Suite count: 31 named checks.
+- Commit: `f908e00f6ed44c8d37040ec7d6fea0750892ef94`.
+- Previous run #157 passed all 30 checks with zero page errors; run #165 is pending for the new complaint-response test.
+- Test data and RPC responses are mocked; no production complaint was changed.
