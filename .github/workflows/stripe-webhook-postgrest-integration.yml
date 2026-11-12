@@ -1,6 +1,9 @@
 name: Stripe webhook local PostgREST integration
 
 on:
+  push:
+    branches:
+      - feat/stripe-webhook-atomic-claim-candidate
   pull_request:
     paths:
       - "docs/proposals/stripe-webhook-atomic-claim-candidate.sql"
