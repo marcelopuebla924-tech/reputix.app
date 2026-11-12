@@ -3,7 +3,7 @@
 Status: isolated candidate only. The production stripe-webhook v3 function has not been changed, invoked, or redeployed.
 
 ## Candidate files
-- supabase/functions/stripe-webhook/index.ts: Deno/Supabase Edge Function adapter using Stripe SDK and environment-only credentials.
+- supabase/functions/stripe-webhook/index.ts: Deno/Supabase Edge Function adapter using pinned Stripe SDK 23.1.0 and environment-only credentials.
 - supabase/functions/stripe-webhook/core.mjs: dependency-injected request handler, separable from Deno for Node contract tests.
 - tests/stripe-webhook-handler.test.mjs: Node built-in tests with synthetic events and fake Stripe/Supabase transport.
 - .github/workflows/stripe-webhook-handler-tests.yml: runs contract tests and Deno type-check on relevant pull-request changes.
@@ -27,7 +27,7 @@ Status: isolated candidate only. The production stripe-webhook v3 function has n
 - only the atomic RPC endpoint is called; duplicate/processed/ignored results acknowledged; RPC failure returns 500.
 
 ## Remaining release gates
-- GitHub Actions handler contract workflow run #5 passed: Deno type-check succeeded and Node contract suite passed 15/15 tests. These use synthetic events and fake transports only; they do not invoke Supabase RPC or a real Stripe endpoint.
+- GitHub Actions handler contract workflow run #7 passed after pinning Stripe SDK 23.1.0: Deno type-check succeeded and Node contract suite passed 15/15 tests. These use synthetic events and fake transports only; they do not invoke Supabase RPC or a real Stripe endpoint.
 - Add a Deno typecheck/build step using the pinned Stripe SDK version and confirm import compatibility.
 - Validate RPC parameter/result behavior against an isolated Supabase schema (not production); test real Stripe test-mode signed events only after explicit test-environment approval.
 - Confirm the intended STRIPE_EXPECT_LIVEMODE value and test/live key pairing in a separately approved environment. Do not read or modify production secrets as part of this candidate work.
