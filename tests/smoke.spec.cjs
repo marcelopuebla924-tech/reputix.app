@@ -49,6 +49,23 @@ const { chromium } = require("playwright");
       }, null, { timeout: 20000 });
     });
 
+    await check("Business profile and reviews buttons open the review details", async () => {
+      await page.locator("#business").fill("Tamos Chelo Smoke Shop");
+      await page.locator("#searchButton").click();
+      await page.waitForFunction(() => {
+        const cards = document.querySelectorAll("#results .business-card");
+        return cards.length > 0 && [...cards].some(card => /Tamos Chelo Smoke Shop/i.test(card.textContent || ""));
+      }, null, { timeout: 15000 });
+      const card = page.locator("#results .business-card").filter({ hasText: "Tamos Chelo Smoke Shop" }).first();
+      await card.locator(".actions button.primary").click();
+      await card.locator(".details").waitFor({ state: "visible" });
+      const reviewForm = card.locator(".details form").first();
+      if (await reviewForm.locator('select[name="cleanliness"]').count() !== 1) throw new Error("Review criteria form missing");
+      if (await reviewForm.locator('input[name="visit_date"]').count() !== 1) throw new Error("Visit date field missing");
+      await card.locator(".actions button.secondary").click();
+      await card.locator(".details").waitFor({ state: "visible" });
+    });
+
     await check("Public Reputix AI opens and closes", async () => {
       await page.locator("#reputixAiFab").click();
       await page.locator("#reputixAiModal").waitFor({ state: "visible" });
