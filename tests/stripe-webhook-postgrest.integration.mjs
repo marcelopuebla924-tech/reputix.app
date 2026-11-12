@@ -119,6 +119,7 @@ test("unknown signed event reaches RPC and is persisted as ignored", async () =>
     supabaseUrl: postgrestUrl,
     serviceRoleKey: token,
     expectedLivemode: "false",
+    restBasePath: "",
     fetchImpl: fetch,
   });
   const event = {
