@@ -311,3 +311,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Commits: `25bc0b647720b06b87d9411d3730dd1746ead72d`, `f527464afceaf277fdbd42ef82fba8c73be71ac3`.
 - Browser QA run #219 is running for these latest dynamic controls.
 - No real campaigns, claims, or billing operations occurred.
+
+
+## Update — 2026-11-11 18:33 PST
+
+- Added a 32nd named Playwright check for the public review translation toggle: synthetic published review, translated text hidden by default, actual reveal-button click, hide-label update, and second click to hide the text again.
+- Commit: `c1c66a826802539386dd0d710cb089fbb5e828a5`.
+- Browser QA run #198 passed the previous 31-check suite only; run #219 was still in progress at its last recorded checkpoint and does not include this new test.
+- The new 32-check suite remains pending independent CI verification.
+- No production review or translation was created; REST responses are mocked.
