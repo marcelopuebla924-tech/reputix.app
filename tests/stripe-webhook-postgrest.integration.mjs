@@ -70,6 +70,7 @@ test("real Stripe-signed event reaches local PostgREST atomic RPC and duplicate 
     supabaseUrl: postgrestUrl,
     serviceRoleKey: token,
     expectedLivemode: "false",
+    restBasePath: "",
     fetchImpl: fetch,
   });
 
