@@ -70,3 +70,33 @@ Allow customers to open and share a direct public link to an approved business p
 - Category addition does not verify professional licensing or credentials and must not be represented as clinical endorsement.
 - Public profile metadata is still client-rendered; full static HTML prerendering and approved-only profile sitemap remain future work.
 - Next action: recheck run #373, inspect any failures, fix on this feature branch, rerun QA, then reassess integration readiness. Preserve main and existing user data.
+
+
+---
+
+## Director checkpoint — 12 November 2026, 9:56:57 a.m. PST (America/Los_Angeles)
+
+### Integration completed
+- Browser QA run #373 (run ID `43274223713`) completed successfully. The `browser-smoke` job and all its steps finished with conclusion `success`, including the Playwright test step.
+- PR #14 was merged successfully into `main` using squash merge.
+- PR: https://github.com/marcelopuebla924-tech/reputix.app/pull/14
+- Merge commit: `8a84afebfdadaf7fe57a80a5acb9ff1c2ee08e15`
+- GitHub reports PR #14 as closed and merged.
+- The main-branch `app.js` was fetched after merge and verified to contain both `loadPublicBusinessFromUrl` and the bilingual psychology category strings.
+- The repository's `CNAME` file still contains `www.reputixapp.com`; it was not changed.
+
+### Release verification
+- The code is integrated into `main`.
+- A fresh GitHub Pages deployment for this merge commit has NOT yet been independently verified. Do not claim the public site is updated until the deployment run and live behavior are checked.
+- The existing client-rendered metadata limitation remains: social crawlers that do not execute JavaScript may not receive business-specific previews from the initial HTML.
+
+### Safety
+- No production Supabase schema, policies, user accounts, reviews, business records, photos, secrets, Storage, Stripe settings, custom domain, or DNS settings were changed.
+- Approved-only direct business lookup and the psychology review privacy notice are now in the main-branch source.
+- No professional license verification or clinical endorsement is implied.
+
+### Next director actions
+1. Verify the Pages deployment associated with merge commit `8a84afebfdadaf7fe57a80a5acb9ff1c2ee08e15`.
+2. Verify the live homepage and a real approved business profile link without exposing unapproved records.
+3. Plan static pre-rendering and an approved-only profile sitemap so crawlers receive business-specific HTML.
+4. Continue regression QA for the rest of the user-facing flows; preserve existing data and the protected production settings.
