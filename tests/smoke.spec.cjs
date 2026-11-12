@@ -49,6 +49,79 @@ const { chromium } = require("playwright");
       }, null, { timeout: 20000 });
     });
 
+    await check("Approved business deep links load a public profile with SEO metadata and working share action", async () => {
+      const profilePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      profilePage.on("pageerror", error => failures.push(error.stack || error.message));
+      const businessId = "00000000-0000-4000-8000-000000000551";
+      const businessName = "QA Public Profile Business";
+      await profilePage.addInitScript(() => {
+        Object.defineProperty(navigator, "share", {
+          configurable: true,
+          value: async payload => { window.__reputixSharePayload = payload; }
+        });
+      });
+      await profilePage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = new URL(request.url());
+        const table = url.pathname.split("/").pop();
+        if (table === "businesses" && request.method() === "GET") {
+          const isDirectProfile = (url.searchParams.get("id") || "").includes(businessId);
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify(isDirectProfile ? [{
+              id: businessId,
+              name: businessName,
+              category: "Retail",
+              address: "100 QA Test Avenue",
+              city: "Los Angeles",
+              zip: "90001",
+              description: "A synthetic approved business used only for browser QA.",
+              status: "approved"
+            }] : [])
+          });
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await profilePage.goto("http://127.0.0.1:4173/?business=" + businessId, { waitUntil: "domcontentloaded" });
+      const card = profilePage.locator("#results .business-card").filter({ hasText: businessName }).first();
+      await card.waitFor({ state: "visible", timeout: 10000 });
+      if ((await profilePage.title()) !== businessName + " | Reputix") {
+        throw new Error("Direct profile did not set a business-specific page title");
+      }
+      const canonical = await profilePage.locator('link[rel="canonical"]').getAttribute("href");
+      if (!canonical || !canonical.includes("business=" + businessId)) {
+        throw new Error("Direct profile canonical URL is missing its stable business ID");
+      }
+      const structuredData = await profilePage.locator("#reputix-business-structured-data").textContent();
+      const schema = JSON.parse(structuredData || "{}");
+      if (schema["@type"] !== "LocalBusiness" || schema.name !== businessName || !schema.url.includes(businessId)) {
+        throw new Error("Business structured data is missing or incorrect");
+      }
+      await card.locator(".actions button").nth(2).click();
+      await profilePage.waitForFunction(() => !!window.__reputixSharePayload?.url);
+      const sharePayload = await profilePage.evaluate(() => window.__reputixSharePayload);
+      if (!sharePayload.url.includes("business=" + businessId) || !sharePayload.title.includes(businessName)) {
+        throw new Error("Share action did not provide the direct public business URL");
+      }
+      await profilePage.close();
+    });
+
+    await check("Unapproved or missing business IDs are not exposed by direct profile links", async () => {
+      const privatePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      privatePage.on("pageerror", error => failures.push(error.stack || error.message));
+      await privatePage.route("**/rest/v1/**", async route => {
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await privatePage.goto("http://127.0.0.1:4173/?business=00000000-0000-4000-8000-000000000552", { waitUntil: "domcontentloaded" });
+      await privatePage.waitForFunction(() => /no está disponible públicamente|not publicly available/i.test(document.querySelector("#notice")?.textContent || ""), null, { timeout: 10000 });
+      const robots = await privatePage.locator('meta[name="robots"]').getAttribute("content");
+      if (!robots || !robots.includes("noindex")) throw new Error("Unavailable business profile should be marked noindex");
+      if (await privatePage.locator("#results .business-card").count()) throw new Error("Unavailable business profile rendered a public card");
+      await privatePage.close();
+    });
+
     await check("Business profile and reviews buttons open the review details", async () => {
       await page.locator("#business").fill("Tamos Chelo Smoke Shop");
       await page.locator("#searchButton").click();
