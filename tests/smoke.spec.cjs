@@ -501,6 +501,14 @@ const { execFileSync } = require("node:child_process");
       await form.locator('button[type="submit"]').click();
       await photoPage.waitForFunction(() => /JPG, PNG o WebP/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
       if (storageUploads !== 0 || photoPayload) throw new Error("Unsupported file type reached storage or photo metadata API");
+      await fileInput.setInputFiles({
+        name: "too-large.png",
+        mimeType: "image/png",
+        buffer: Buffer.alloc(5 * 1024 * 1024 + 1)
+      });
+      await form.locator('button[type="submit"]').click();
+      await photoPage.waitForFunction(() => /5 MB o menos|5 MB or less/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
+      if (storageUploads !== 0 || photoPayload) throw new Error("Oversized photo reached storage or photo metadata API");
       await fileInput.setInputFiles({ name: "qa-business-photo.png", mimeType: "image/png", buffer: Buffer.from("synthetic-png-image-data") });
       await form.locator('button[type="submit"]').click();
       await photoPage.waitForFunction(() => /Foto enviada|Photo submitted/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 10000 });
