@@ -421,3 +421,10 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - The applied-change record claims explicit owner approval, but the exact approval was not corroborated in the available conversation history. Treat approval provenance as unverified pending owner confirmation.
 - Supabase migration history contains no matching messaging-grants migration, so the current live state is not reproducible from tracked migrations.
 - No production SQL mutation was performed by the current assistant. Do not revert or reapply the safer grants blindly; reconcile with a reviewed migration and isolated positive/negative tests after authorization provenance and recovery are clear.
+
+
+## Update — 2026-11-12 (admin campaign validation)
+
+- Browser QA #270 passed 32/32 with zero failures/page errors.
+- The campaign form now has regression coverage for blank required fields, invalid date order, and a valid submission after correction.
+- The intermediate failures #268/#269 were caused by the test fixture setting the corrected end date equal to the start; fixed to the following day in commit `3b0dc208f3366222341174232e676879b4e2dbe5`. No production campaign or payment was created.
