@@ -507,3 +507,21 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - CI verification for these new assertions is pending; do not count them as passed yet.
 - Exact active duration was not measured and is excluded from the official total.
 - Official cumulative tracked development time remains 43 minutes 28 seconds (0.724 hours).
+
+
+## Session 025 — 2026-11-11
+
+- Start: 18:30:06 PST
+- End: 18:30:52 PST
+- Active tracked time: 46 seconds (0.013 hours)
+- Cumulative tracked time since baseline: 45 minutes 58 seconds (0.766 hours)
+
+### Verification
+- Browser QA run #198: SUCCESS.
+- 31/31 named checks passed; zero failures and zero browser page errors.
+- Admin campaign test passed the full payload assertions: business ID, title, budget cents, destination URL, placement, start/end timestamps, and pending-review status.
+- Static interactive-control audit: all 62 actual interactive control IDs in the 66-ID scan are explicitly represented in tests; four remaining IDs are non-interactive containers/text/rails.
+
+### Safety
+- Campaign and billing calls remained mocked; no real ad campaign or charge was created.
+- Passing test commit: `c097b2ae2c485f0a95fe3e63ab839778dcb93181`.
