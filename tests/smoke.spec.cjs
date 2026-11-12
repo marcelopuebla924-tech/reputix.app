@@ -257,6 +257,49 @@ const { chromium } = require("playwright");
       if (professionalOptions.length < 2) throw new Error("Professional categories did not load");
     });
 
+    await check("Public business proposal honeypot blocks bots and duplicate submissions show a clear message", async () => {
+      const proposalPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      proposalPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let rpcCalls = 0;
+      let rpcMode = "success";
+      await proposalPage.route("**/rest/v1/rpc/submit_business_proposal", async route => {
+        rpcCalls += 1;
+        if (rpcMode === "duplicate") {
+          await route.fulfill({
+            status: 400,
+            contentType: "application/json",
+            body: JSON.stringify({ message: "A matching business proposal already exists and is pending or approved" })
+          });
+        } else {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify("00000000-0000-4000-8000-000000000007") });
+        }
+      });
+      await proposalPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await proposalPage.locator("#addBusinessChoice").click();
+      const form = proposalPage.locator("#communityFormWrap form");
+      await form.locator('input[name="name"]').fill("QA Proposal Test Business");
+      await form.locator("select[name='category']").selectOption({ index: 1 });
+      await form.locator('input[name="city"]').fill("QA Test City");
+      await form.locator('input[name="company_website"]').fill("https://spam.example");
+      await form.evaluate(el => el.requestSubmit());
+      await proposalPage.waitForFunction(() => /propuesta recibida|suggestion received/i.test(document.querySelector("#communityFormWrap .form-message")?.textContent || ""));
+      if (rpcCalls !== 0) throw new Error("Honeypot-filled submission reached the database RPC");
+      await form.locator('input[name="name"]').fill("QA Proposal Test Business");
+      await form.locator("select[name='category']").selectOption({ index: 1 });
+      await form.locator('input[name="city"]').fill("QA Test City");
+      await form.evaluate(el => el.requestSubmit());
+      await proposalPage.waitForFunction(() => /propuesta recibida|proposal received/i.test(document.querySelector("#communityFormWrap .form-message")?.textContent || ""));
+      if (rpcCalls !== 1) throw new Error("Valid proposal did not call the RPC exactly once");
+      rpcMode = "duplicate";
+      await form.locator('input[name="name"]').fill("QA Proposal Test Business");
+      await form.locator("select[name='category']").selectOption({ index: 1 });
+      await form.locator('input[name="city"]').fill("QA Test City");
+      await form.evaluate(el => el.requestSubmit());
+      await proposalPage.waitForFunction(() => /ya existe una propuesta igual|matching proposal already exists/i.test(document.querySelector("#communityFormWrap .form-message")?.textContent || ""), null, { timeout: 8000 });
+      if (rpcCalls !== 2) throw new Error("Duplicate attempt did not reach the server-side duplicate guard");
+      await proposalPage.close();
+    });
+
     await check("Reviews and statistics feature buttons open their sections", async () => {
       await page.locator("#featureReviews").click();
       await page.waitForFunction(() => {
