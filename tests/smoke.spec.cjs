@@ -410,7 +410,9 @@ const { chromium } = require("playwright");
       await authPage.locator("#ownerSignUp").click();
       await authPage.waitForFunction(() => /confirmar tu correo|email confirmation/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""), null, { timeout: 8000 });
       if (signupCalls !== 1) throw new Error("Registration request was not sent exactly once");
-      if (new URL(signupRedirect).origin !== "https://www.reputixapp.com") throw new Error("Registration confirmation redirect did not return to the Reputix domain");
+      if (new URL(signupRedirect).origin !== new URL(authPage.url()).origin || !new URL(signupRedirect).hash.includes("ownerArea")) {
+        throw new Error("Registration confirmation redirect did not return to the current Reputix app origin and owner area");
+      }
       if (!(await authPage.locator("#privateSpace").isHidden())) throw new Error("User received a private session before confirming email");
 
       await authPage.locator("#ownerSignIn").click();
