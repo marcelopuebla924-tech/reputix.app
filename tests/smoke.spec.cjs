@@ -1113,9 +1113,11 @@ const { chromium } = require("playwright");
       const reply = "We reviewed your concern and will contact you with an update.";
       await form.locator("textarea").fill(reply);
       await form.locator('button[type="submit"]').click();
-      await responsePage.waitForFunction(() => /respuesta publicada|response published/i.test(
-        document.querySelector("#privateComplaintsContent .owner-complaint-response .form-message")?.textContent || ""
-      ), null, { timeout: 10000 });
+      await responsePage.waitForFunction(reply =>
+        (document.querySelector("#privateComplaintsContent")?.textContent || "").includes(reply),
+        reply,
+        { timeout: 10000 }
+      );
       if (!responsePayload ||
           responsePayload.p_complaint_id !== complaintId ||
           responsePayload.p_response !== reply ||
