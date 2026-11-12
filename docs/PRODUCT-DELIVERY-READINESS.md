@@ -70,13 +70,13 @@ Do not collect or store a customer's password. The customer should create and re
 
 ## Launch blockers / validation still required
 
-1. End-to-end sign-up, email confirmation, sign-in, and password recovery using a dedicated test account. The browser smoke suite currently checks only safe empty-field validation, not a real account.
-2. End-to-end owner claim submission and authorized verification using a dedicated test business/account. The current browser suite checks only that the claim picker opens and closes.
-3. End-to-end customer review submission, publication moderation, and business response.
-4. End-to-end business photo upload, private storage, signed URL, and public card display.
+1. Real end-to-end sign-up, email confirmation, sign-in, session persistence, and password recovery using a dedicated isolated test account. The current browser suite covers these flows with synthetic identities and mocked Auth endpoints only.
+2. Real end-to-end owner claim submission, evidence handling, and authorized verification using a dedicated test business/account. Browser tests cover the UI and mocked submission; no real claim or owner verification is performed.
+3. End-to-end customer review submission, human publication moderation, and verified-owner response against an isolated backend. Browser tests cover request payloads and advisory AI behavior with mocks.
+4. End-to-end business photo upload, storage policy enforcement, signed/public URL behavior, and public card display against an isolated backend. Current upload coverage uses mocked Storage.
 5. Stripe test-mode checkout and signed webhook verification for both plans, including failed payment and cancellation. The active Edge Function code alone does not prove Stripe Dashboard configuration.
 6. A secure Stripe Billing Portal or an explicitly documented manual cancellation process.
-7. Privacy Policy, Terms of Service, review guidelines, contact/support information, and clear data-retention disclosures. These were not found in the current repository tree at this review.
+7. Publish and review Privacy Policy, Terms of Service, review guidelines, contact/support information, and clear data-retention disclosures before accepting paid customers.
 8. Protected public ad delivery/tracking and advertiser billing, before selling advertising campaigns.
 9. Complete responsive/accessibility review across supported mobile and desktop browsers, beyond automated accessible-name checks.
 
