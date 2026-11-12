@@ -28,3 +28,14 @@ Allow customers to open and share a direct public link to an approved business p
 2. Implement static pre-rendering for approved business pages so search and social crawlers receive profile metadata in the initial HTML.
 3. Generate a business-profile sitemap from approved records only, excluding pending, rejected, and private data.
 4. Verify the GitHub Pages deployment pipeline without changing the custom domain or DNS configuration.
+
+
+## Psychology / mental-health professional category
+**Date/time:** 12 November 2026, 9:53 a.m. PST (America/Los_Angeles)
+
+- Added the professional category "Psicólogo/a o centro de salud mental" in Spanish and "Psychologist / mental health center" in English.
+- Added a category-aware review privacy notice in Spanish and English. It asks users to discuss only general service experience and not publish diagnoses, treatments, medications, patient names, contact details, identifying information, or clinical outcomes.
+- The notice explicitly clarifies that Reputix does not replace professional care or emergency services.
+- Added Browser QA coverage for the category in both languages and for the privacy notice on a psychology professional profile.
+- Existing review database fields and policies were not changed. This is a category and user-guidance update only; it does not imply clinical verification, professional licensing validation, or medical advice.
+- Validation is pending the GitHub Actions run triggered by these commits.
