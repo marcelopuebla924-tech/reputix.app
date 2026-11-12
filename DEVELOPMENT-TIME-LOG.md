@@ -506,7 +506,7 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Commits: `8c7503f6095ccd5bc8b6a63f353653859b7fbfe7`, `3aab841f2d7015098a9633434e37928510c2787e`.
 - CI verification for these new assertions is pending; do not count them as passed yet.
 - Exact active duration was not measured and is excluded from the official total.
-- Official cumulative tracked development time remains 43 minutes 28 seconds (0.724 hours).
+- Official cumulative tracked development time remains 45 minutes 58 seconds (0.766 hours), including the separately recorded 46-second Session 025.
 
 
 ## Session 025 — 2026-11-11
@@ -527,7 +527,7 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Passing test commit: `c097b2ae2c485f0a95fe3e63ab839778dcb93181`.
 
 
-## Session 025 — 2026-11-11
+## Session 026 — 2026-11-11
 
 - Checkpoint: 18:31:36 PST.
 - Replaced three programmatic proposal form submissions with clicks on the actual visible submit button: honeypot, valid proposal, and duplicate-proposal paths.
@@ -535,3 +535,13 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Exact push-triggered CI status is not independently available through the current workflow-run connector; new assertions remain unverified.
 - Exact active duration not measured; excluded from official time.
 - Official cumulative tracked development time remains 43 minutes 28 seconds (0.724 hours).
+
+
+## Session 027 — 2026-11-11
+
+- Checkpoint: 18:32:18 PST.
+- Reconciled repository changes and verified Browser QA run #198: 31/31 checks, zero failures, zero page errors.
+- The passing run included admin advertising campaign payload assertions and a static scan showing all 62 actual interactive control IDs covered by tests.
+- Latest additional test commit: `25bc0b647720b06b87d9411d3730dd1746ead72d` (approved-business selection in claim picker).
+- Proposal real-submit-button commit `807609bab3d09fb3a84a55f00a1ee1aa572a33b5` still awaits independently verified push-triggered CI.
+- Exact active duration not measured; excluded. Official cumulative tracked time remains 45 minutes 58 seconds (0.766 hours).
