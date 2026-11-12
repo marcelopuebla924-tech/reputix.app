@@ -230,8 +230,10 @@ document.addEventListener("click", async event => {
       await loadPrivateSpace();
       document.getElementById("privateReviewsContent").scrollIntoView({behavior:"smooth",block:"center"});
     } else if (button.id === "ownerSignOut") {
-      ownerSetSession(null);
-      if (message) message.textContent=ownerText("Sesión cerrada.","Signed out.");
+      const result=await ownerSignOutCurrentSession();
+      if (message) message.textContent=result.revoked
+        ? ownerText("Sesión cerrada de forma segura en este dispositivo.","Signed out securely on this device.")
+        : ownerText("Sesión cerrada en este navegador, pero no pudimos confirmar la revocación remota. Comprueba tu conexión.","You are signed out in this browser, but we could not confirm server-side session revocation. Check your connection.");
     }
   } catch (error) {
     if (message) message.textContent=ownerText("No se pudo completar la acción: ","Could not complete action: ")+(error?.message||String(error));
@@ -2157,6 +2159,23 @@ async function ownerAuthRequest(path,payload) {
 }
 function ownerText(es,en){return lang==="es"?es:en;}
 
+async function ownerSignOutCurrentSession() {
+  const session=ownerSession;
+  // Clear this browser immediately; revoke only this session, not every device.
+  ownerSetSession(null);
+  if(!session?.access_token)return {revoked:true};
+  try {
+    const response=await fetch(SUPABASE_URL+"/auth/v1/logout?scope=local",{
+      method:"POST",
+      headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token}
+    });
+    if(response.ok||[401,403,404].includes(response.status))return {revoked:true};
+    return {revoked:false};
+  } catch (_) {
+    return {revoked:false};
+  }
+}
+
 async function ownerSendPasswordRecovery() {
   const email = $("ownerEmail").value.trim();
   const message = $("ownerAuthMessage");
@@ -3274,9 +3293,11 @@ $("ownerAuthForm").addEventListener("submit", event => {
   handleOwnerAuthAction("signin");
 });
 $("ownerSubscriptionPlans")?.addEventListener("click",()=>document.getElementById("reputixPlans")?.scrollIntoView({behavior:"smooth",block:"start"}));
-$("ownerSignOut").addEventListener("click",()=>{
-  ownerSetSession(null);
-  $("ownerAuthMessage").textContent=ownerText("Sesión cerrada.","Signed out.");
+$("ownerSignOut").addEventListener("click",async()=>{
+  const result=await ownerSignOutCurrentSession();
+  $("ownerAuthMessage").textContent=result.revoked
+    ? ownerText("Sesión cerrada de forma segura en este dispositivo.","Signed out securely on this device.")
+    : ownerText("Sesión cerrada en este navegador, pero no pudimos confirmar la revocación remota. Comprueba tu conexión.","You are signed out in this browser, but we could not confirm server-side session revocation.");
 });
 /* El listener delegado se registra al inicio del archivo: incluso si otro módulo falla,
    el formulario de reclamación nunca debe provocar una recarga nativa que pierda la sesión. */
