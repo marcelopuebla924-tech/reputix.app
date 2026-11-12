@@ -82,7 +82,7 @@ Do not collect or store a customer's password. The customer should create and re
 
 ## Browser QA completed
 
-The automated Playwright smoke suite passed 15 checks on 2026-11-11, including:
+The automated Playwright smoke suite passed 16 checks on 2026-11-11, including:
 - Homepage and unique DOM IDs.
 - Spanish/English language switching.
 - Business search and button recovery.
@@ -93,7 +93,7 @@ The automated Playwright smoke suite passed 15 checks on 2026-11-11, including:
 - Owner plan navigation.
 - Business/professional proposal forms.
 - Reviews/statistics feature navigation.
-- Business claim picker open/close (without submitting a claim).
+- Business claim picker open/close and a mocked claim submission that confirms the request while preserving the session (no real claim or database write).
 - Map filters and reset.
 - Mobile touch interactions for AI, account access, and map filters.
 
