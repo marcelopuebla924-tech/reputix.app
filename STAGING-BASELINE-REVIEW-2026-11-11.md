@@ -1,47 +1,44 @@
 # Reputix staging baseline candidate — review required
 
-**Generated:** 2026-11-11  
-**Source:** read-only PostgreSQL catalogs from production project `udvsrmfgjfinwbgvhchs`.  
-**Intended target:** isolated staging project `lzcyulncvjjxsyyivlty` only.  
-**Status:** candidate only — NOT applied to either project.
+**Generated:** 2026-11-11 (Los Angeles)  
+**Source:** read-only PostgreSQL catalogs from production `udvsrmfgjfinwbgvhchs`.  
+**Target:** isolated staging `lzcyulncvjjxsyyivlty` only.  
+**Status:** candidate only; NOT applied.
 
-## Reconciliation summary
+## Reconciliation
 - 20 public base tables.
-- 93 constraints.
-- 54 total indexes (29 primary/unique indexes are created by constraints; 25 additional indexes are emitted explicitly).
+- 93 validated constraints.
+- 54 total indexes: 29 primary/unique indexes created by constraints and 25 additional indexes.
 - 35 permissive RLS policies across 16 tables.
-- 5 public routines.
-- 5 public views.
+- 5 public routines and 5 public views.
 - 0 public triggers and 0 public custom enum/domain types.
-- Two bigint IDs (`ad_clicks.id`, `ad_impressions.id`) are `GENERATED ALWAYS AS IDENTITY`. Their internal identity sequences are created by PostgreSQL even though the earlier information_schema sequence inventory did not list standalone public sequences.
-- `business_photos.business_id` remains TEXT and has no FK.
+- `ad_clicks.id` and `ad_impressions.id` are `bigint GENERATED ALWAYS AS IDENTITY`; their internal identity sequences are managed by PostgreSQL.
+- `business_photos.business_id` remains TEXT with no FK.
 - Both partial/expression indexes are preserved.
 - No production records, Auth identities, Storage objects, Stripe secrets, or cron jobs are copied.
 
-## Intentional staging-only security candidate
-- All five views are created with `security_invoker=true`. This includes the two production owner views flagged by Security Advisor. Their query definitions are preserved, but their effective row visibility must be verified with two synthetic owners and least-privilege base-table grants.
-- Staging's broad default ACLs for the `postgres` migration owner are revoked for future public tables, sequences, and functions. Supabase-managed `supabase_admin` default ACLs are not altered.
-- The baseline recreates exact explicit table/view ACLs, column grants, routine grants, and RLS policies as extracted. It does not blindly inherit default grants.
-- Messaging grants remain column-scoped for conversation INSERT and message INSERT/read-receipt UPDATE.
-- The production anonymous proposal RPC remains callable according to its existing ACL pending abuse-control tests; do not revoke it until the public proposal flow has an approved replacement.
+## Intentional staging-only changes
+- All five views are created with `security_invoker=true`; this changes the two flagged owner views from production's default owner context. Preserve the definitions and test with two synthetic owners. Do not widen underlying grants to force tests to pass.
+- Only the `postgres` default privileges in staging are tightened. Supabase-managed `supabase_admin` defaults are untouched.
+- Existing explicit relation grants, column grants, routine EXECUTE grants, and all 35 RLS policies are recreated from production catalog evidence.
+- Messaging grants remain scoped: conversations INSERT limited to selected columns; messages INSERT limited to conversation_id/sender_id/body and UPDATE limited to read_at.
+- Anonymous business proposal RPC remains available per its current ACL; test abuse controls before launch.
 
-## Excluded by design
-- Storage buckets must be created/configured using Supabase Storage APIs; private verification bucket stays private. The two Storage object policies are documented separately and must be recreated only after the bucket/API setup is reviewed.
-- Production pg_cron and the five-minute review-publishing job are excluded from staging. No scheduled job is created.
-- No Edge Functions, Auth settings, SMTP, secrets, or Stripe configuration are copied.
-- No historical migration files are fabricated.
+## Excluded
+- Storage buckets/configuration must be created through Supabase Storage APIs. Preserve both private buckets and their exact MIME/size restrictions; verification bucket remains private. Storage object policies are documented in the separate inventory and require a separate staging API/SQL step.
+- Do not install pg_cron or create the production five-minute review publishing job in staging.
+- No Edge Functions, Auth configuration, SMTP, secrets, or Stripe configuration are copied.
+- No missing historical migrations are fabricated.
 
-## Mandatory pre-apply review
-1. Verify staging project ID is exactly `lzcyulncvjjxsyyivlty` and it remains empty.
-2. Review all 20 table definitions, 93 constraints, 54 indexes, 35 policies, 5 routines, 5 views, and effective grants.
-3. Confirm PostgreSQL version supports `security_invoker` views and `MAINTAIN` grants.
-4. Confirm all five required extensions are already installed in staging; keep pg_cron absent.
-5. Confirm the `postgres` role owns/runs the migration and default privilege revokes apply to that owner.
-6. Run baseline in a disposable clone or transactionally isolated staging, capture rollback/rebuild procedure, then apply only after approval.
-7. After apply, run the two-owner matrix and positive/negative RLS/API tests. Do not promote to production based only on DDL success.
+## Mandatory pre-apply checks
+1. Verify exact staging project ID and empty state.
+2. Review generated SQL for all objects and confirm role names exist.
+3. Confirm staging PostgreSQL version supports `security_invoker` and `MAINTAIN`.
+4. Confirm migrations execute as `postgres`; default privilege changes apply only to that owner.
+5. Confirm extensions already present: plpgsql, supabase_vault, pg_stat_statements, pgcrypto, uuid-ossp. Keep pg_cron absent.
+6. Validate ACLs using `has_table_privilege`, `has_column_privilege`, and `has_function_privilege` after applying.
+7. Apply only to isolated staging after review and rollback/rebuild plan.
+8. Run the full synthetic positive/negative RLS matrix, especially cross-owner dashboard isolation, before any launch-readiness claim.
 
-## Important limitations
-- Storage configuration is a separate API operation and not part of this SQL file.
-- This candidate mirrors production relation and column ACLs except for the explicitly documented invoker-view and default-privilege hardening.
-- A DDL baseline is not a full application deployment; frontend, Edge Functions, Auth flows, Storage and Stripe test-mode behavior require separate validation.
-
+## Known limitation
+This is a database schema/security baseline candidate, not a full product deployment. Storage setup, Edge Functions, Auth behavior, frontend flows, and Stripe test-mode integration remain separate workstreams.
