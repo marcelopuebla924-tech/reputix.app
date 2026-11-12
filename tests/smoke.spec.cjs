@@ -159,6 +159,13 @@ const { chromium } = require("playwright");
       await card.waitFor({ state: "visible", timeout: 10000 });
       await card.locator(".actions button.primary").click();
       const form = card.locator(".details form").first();
+      if (await form.evaluate(form => form.checkValidity())) {
+        throw new Error("A blank review form should fail native required-field validation");
+      }
+      await form.locator('button[type="submit"]').click();
+      if (reviewPayload !== null || aiModes.length !== 0) {
+        throw new Error("Invalid review submission reached the API or AI endpoint");
+      }
       await form.locator('input[name="visit_date"]').fill("2026-11-10");
       await form.locator('input[name="visit_time"]').fill("13:30");
       for (const field of ["cleanliness", "service_quality", "product_quality", "speed", "value_for_money"]) {
