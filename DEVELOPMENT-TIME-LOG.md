@@ -122,3 +122,23 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - No Supabase production schema/data, grants, RLS, Auth settings, Stripe settings, payment records, domain, or DNS were changed.
 - No real users, messages, reviews, charges, or production writes were created.
 - No staging branch compute was started; no branch hourly compute charge was incurred.
+
+
+## Session 005 — 2026-11-11
+
+- Start: 18:02:40 PST
+- End: 18:05:16 PST
+- Active tracked time: 2 minutes 36 seconds (0.043 hours)
+- Cumulative tracked time since baseline: 19 minutes 21 seconds (0.323 hours)
+
+### Work performed
+1. Expanded the public Reputix AI browser test to verify all eight prompt shortcuts and ensure an unauthenticated visitor is asked to sign in without losing the typed question or calling the AI endpoint.
+2. Added an isolated mocked admin-claim test covering the owner-verification button, confirmation dialog, and expected PATCH payload.
+3. Reviewed the existing Playwright suite coverage: 27 checks before the latest additions, covering Auth, paid/free dashboards, owner/customer separation, messaging, claims, map filters, mobile controls, AI, checkout gating, and admin ads/moderation.
+4. Re-read the app's private-space, owner inbox, profile editor, statistics, and public AI event flows.
+
+### Verification and safety
+- Commits: `eebb436f50bdb5c0f8cfb74520109ff1c499769a` (public AI login-gate test) and `66ce065665161086a1869646b3b78ef7526f7875` (admin claim verification test).
+- Test code uses synthetic `.invalid` identities and mocked REST responses only.
+- GitHub Actions results for these commits are not yet independently verified.
+- No production database, data, Auth, Stripe, domain, DNS, or billing settings changed. No real claims or reviews were created or approved.
