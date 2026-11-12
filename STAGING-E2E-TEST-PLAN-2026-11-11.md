@@ -329,3 +329,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Admin ad campaign test passed pending-review creation, activation, pause, and completion through mocked API transitions.
 - Passing commit: `f527464afceaf277fdbd42ef82fba8c73be71ac3`.
 - No production claims, campaigns, or billing operations were performed.
+
+
+## Update — 2026-11-11 18:35 PST
+
+- Static homepage button comparison found one uncovered control: `claimBusinessClose`.
+- Added an actual click and modal-hidden assertion, then reopened the claim picker and continued the approved-business search/selection test.
+- Commit: `3614ae73a5a3764bb95b287d227fd1d14d6175e4`.
+- All 40 static homepage button IDs now have at least one reference in the Playwright test source. This is not a substitute for passing CI.
+- The 32-check suite remains pending independent verification; no real claim was submitted.
