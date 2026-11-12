@@ -146,6 +146,33 @@ test("verifies a real Stripe HMAC signature with the pinned SDK", async () => {
   assert.equal(args.p_apply_subscription, false);
 });
 
+test("rejects a tampered body against a real Stripe HMAC signature", async () => {
+  const secret = "whsec_tamper_fixture";
+  const rawBody = JSON.stringify(event({
+    id: "evt_tamper",
+    type: "customer.created",
+    data: { object: { id: "cus_tamper_fixture" } },
+  }));
+  const stripe = new Stripe("sk_test_reputix_fixture");
+  const cryptoProvider = Stripe.createSubtleCryptoProvider();
+  const signature = stripe.webhooks.generateTestHeaderString({
+    payload: rawBody,
+    secret,
+    timestamp: Math.floor(Date.now() / 1000),
+  });
+  const calls = [];
+  const handler = createStripeWebhookHandler({
+    ...BASE_CONFIG,
+    stripe,
+    cryptoProvider,
+    webhookSecret: secret,
+    fetchImpl: makeFetch("ignored", calls),
+  });
+  const response = await handler(request(rawBody + " ", signature));
+  assert.equal(response.status, 400);
+  assert.equal(calls.length, 0);
+});
+
 test("rejects invalid signatures and performs no database request", async () => {
   const calls = [];
   const stripe = makeStripe(event());
