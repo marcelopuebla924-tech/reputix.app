@@ -398,7 +398,7 @@ const { execFileSync } = require("node:child_process");
       await reviewPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
       await reviewPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
       await reviewPage.evaluate(({ userId }) => window.ownerSetSession({
-        access_token: "qa-review-token",
+        access_token: "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0." + btoa(JSON.stringify({ sub: userId, role: "authenticated" })).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_") + ".qa",
         refresh_token: "qa-review-refresh",
         user: { id: userId, email: "review-qa@example.invalid", app_metadata: {} }
       }), { userId });
