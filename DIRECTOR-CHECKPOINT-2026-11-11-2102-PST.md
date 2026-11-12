@@ -16,7 +16,7 @@ Three new repository documents committed after the 8:54 p.m. checkpoint:
 Latest commit: `1a2ffe628c30cc03c54bc9c9a2478eed4c50c2fd`.
 
 ## New verified findings
-- Production catalog: 0 public triggers, 0 public sequences, 0 public enum/domain types; 35 RLS policies on 16 tables.
+- Production catalog: 0 public triggers, 0 standalone public sequences reported by information_schema, 0 public enum/domain types; 35 RLS policies on 16 tables. Direct pg_attribute inspection confirms two identity columns: ad_clicks.id and ad_impressions.id are GENERATED ALWAYS AS IDENTITY.
 - Staging catalog: 0 public triggers, 0 public sequences, 0 public enum/domain types, 0 RLS policies; 0 public base tables and 0 public views.
 - Production default privileges in public schema are broad for future objects under both postgres and supabase_admin owners: anon/authenticated/service_role defaults include broad table privileges, EXECUTE on functions, and sequence privileges. Do not copy these defaults to staging. Do not modify production defaults. Staging baseline must use explicit least-privilege per-object grants and verify effective privileges.
 - ad_clicks.id and ad_impressions.id are bigint NOT NULL with no default; no public sequences exist. Do not add identity/serial behavior.
