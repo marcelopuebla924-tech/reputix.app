@@ -215,3 +215,23 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Commit: `a8550aae0186ebd037498c6383f93f0ee2fa33b4`.
 - GitHub Actions Browser QA run #136 was detected for this exact commit and was still in progress at the time of this log entry.
 - All requests use mocked REST responses and synthetic identities; no production records or settings were changed.
+
+
+## Session 010 — 2026-11-11
+
+- Start: 18:09:54 PST
+- End: 18:11:17 PST
+- Active tracked time: 1 minute 23 seconds (0.023 hours)
+- Cumulative tracked time since baseline: 25 minutes 22 seconds (0.423 hours)
+
+### Work performed
+1. Added an isolated mocked browser test for public review submission.
+2. Asserted the signed-in synthetic user and business IDs, visit date/time, all five numeric ratings, detected original language, and `pending` moderation state.
+3. Mocked translation and AI moderation calls and asserted both advisory paths are attempted.
+4. Increased the suite to 29 named checks.
+
+### Verification and safety
+- New test commit: `baeb06b0e0518ddb48b8843eda35964438bb3901`.
+- Browser QA run #136 passed for commit `a8550aae0186ebd037498c6383f93f0ee2fa33b4`, confirming the prior quick-action assertions.
+- Browser QA run #140 was still in progress for the new review-submission test at log time.
+- No real reviews, accounts, AI requests, or production writes were created. All responses are mocked.
