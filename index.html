@@ -392,6 +392,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
     <p class="insight-subtitle" id="tickerSubtitle">Experiencias recientes compartidas en Reputix.</p>
     <div class="review-ticker" id="reviewTicker"><p class="insight-empty">Cargando reseñas publicadas…</p></div>
   </section>
+</section>
 
 <section class="owner-area" id="ownerArea">
   <section class="owner-panel">
@@ -503,7 +504,14 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
             </form>
           </div>
         </div><button class="secondary private-action" type="button" id="privateMessagesAction">Abrir mensajes</button></article>
-        <article class="private-tile"><span class="private-icon">▤</span><h3 id="privateComplaintsTitle">Reclamos</h3><p id="privateComplaintsDesc">Seguimiento y respuestas</p><div id="privateComplaintsContent"></div><button class="secondary private-action" type="button" id="privateComplaintsAction">Ver mis reclamos</button></article>
+        <article class="private-tile private-wide"><span class="private-icon">▤</span><h3 id="privateComplaintsTitle">Reclamos</h3><p id="privateComplaintsDesc">Seguimiento de tus solicitudes y respuestas.</p>
+          <form id="customerComplaintForm" class="customer-complaint-form">
+            <label class="owner-field"><span id="customerComplaintBusinessLabel">Negocio</span><select id="customerComplaintBusiness" required><option value="">Cargando negocios aprobados…</option></select></label>
+            <label class="owner-field"><span id="customerComplaintTextLabel">Describe lo ocurrido</span><textarea id="customerComplaintText" rows="4" maxlength="5000" minlength="10" required placeholder="Cuéntanos qué sucedió y cuándo…"></textarea></label>
+            <button class="primary" type="submit" id="customerComplaintSubmit">Enviar reclamo</button>
+            <p class="owner-message" id="customerComplaintStatus" role="status" aria-live="polite"></p>
+          </form>
+          <div id="privateComplaintsContent"></div><button class="secondary private-action" type="button" id="privateComplaintsAction">Ver mis reclamos</button></article>
         
         <article class="private-tile private-wide"><h3 id="privateOwnReviewsTitle">Mis opiniones</h3><p id="privateOwnReviewsDesc">Consulta el estado de las opiniones que has enviado.</p><div id="privateOwnReviewsContent" aria-live="polite"></div><button class="secondary private-action" type="button" id="privateOwnReviewsAction">Actualizar opiniones</button></article>
         <article class="private-tile private-wide"><h3 id="privatePostsTitle">Mis publicaciones</h3><form id="privatePostForm"><label class="owner-field"><span id="privatePostLabel">Comparte algo con la comunidad</span><textarea id="privatePostBody" rows="3" maxlength="5000" required></textarea></label><button class="primary" type="submit" id="privatePostSubmit">Publicar</button><p class="owner-message" id="privatePostMessage" aria-live="polite"></p></form><div id="privatePostsList"></div></article>
@@ -639,7 +647,6 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       </section>
     </div>
   </section>
-</section>
 </section>
 </main>
 
