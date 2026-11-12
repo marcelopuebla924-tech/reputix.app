@@ -86,3 +86,41 @@ Read the deployed Edge Function source in production and staging, and compared b
 - Keep production `reputix-ai` v22 unchanged.
 - Keep staging v1 and GitHub `main` allowlist source as the candidate reference.
 - Do not call this a passing runtime test. The next step requires an approved staging request path with a valid synthetic test identity and a controlled OpenAI test budget, or a dedicated automated integration harness.
+
+
+## Director continuation — 12:30 p.m. PST, Nov 12 2026
+
+### Five-point security and launch-readiness pass
+
+#### 1. Reputix AI cost-abuse controls — design decision completed; implementation remains gated
+- Re-read the current main Edge Function source and staging deployment. Both use the approved CORS allowlist; staging deployment is active, version 1, with verify_jwt=true.
+- The AI handler authenticates the user, checks Pro entitlement server-side for assistant mode, and keeps moderation advisory-only. It has no visible per-user quota, concurrency cap, or durable rate limiter.
+- Safe implementation direction: durable server-side quota keyed to authenticated user and operation, enforced atomically before every billable OpenAI call; global emergency spend/circuit-breaker limit, bounded request sizes, and explicit 429/Retry-After responses. Admin bypass must be explicit and audited. Never trust client-supplied user IDs or IP headers.
+- Do not use in-memory Edge Function counters; instances are distributed/ephemeral. Do not add schema or change production secrets until quota window, retention, limits, and staging test identities/budget are agreed and integration-tested.
+- Hosted runtime tests remain blocked because connected actions provide no Edge Function invoke action and filtered staging logs had no invocation evidence. No request was sent and no runtime pass is claimed.
+
+#### 2. Owner complaint RPC — staging/production drift verified
+- Read-only catalog inspection confirms staging owner_respond_to_complaint(uuid,text) is SECURITY DEFINER, search_path empty, denies anon execution, grants authenticated execution, requires auth.uid(), bounds response to 3–3000 chars, and requires both a verified owner claim and businesses.status='approved'.
+- Production has an empty search_path, denies anon and grants authenticated, and checks verified owner claim, but does not require the business to be approved.
+- Staging candidate is stronger, but hosted Owner A / Owner B / unverified owner / unapproved business authorization tests are still incomplete. No real user or claim fixture was created; no constraints were weakened.
+- Decision: preserve staging candidate; do not change production until hosted authorization tests and rollback review pass.
+
+#### 3. Public business proposal abuse — risk and safe migration path documented
+- submit_business_proposal(...) is intentionally callable by anon and authenticated so public business submissions can work. It validates required fields and maximum lengths, detects matching pending/approved businesses, and inserts only pending records.
+- The RPC is SECURITY DEFINER with an empty search_path, but its direct public endpoint has no durable rate limit or server-verifiable anti-automation control. Client-side honeypots alone are bypassable.
+- Do not revoke anon EXECUTE blindly; that could break public add-business. Recommended path: move submissions behind a server-side Edge Function/API gateway with verified request context, durable IP/device and normalized-content throttles, bot challenge where appropriate, strict payload bounds, duplicate checks, and audit telemetry. Only after frontend cutover and end-to-end tests should direct anon RPC execution be reconsidered.
+- No proposal records, ACLs, or production objects were changed.
+
+#### 4. Security Advisor and private-data posture — rechecked on staging
+- Current staging Security Advisor reports four INFO rls_enabled_no_policy findings: business_monthly_history, business_verification_documents, payment_events, and review_ai_moderation.
+- Read-only information_schema.role_table_grants inspection shows these tables granted only to postgres and service_role; no anon/authenticated table grants appeared. Keep this server-only posture; do not add broad client RLS policies.
+- Advisor also reports SECURITY DEFINER warnings: anon and authenticated access to submit_business_proposal, and authenticated access to owner_respond_to_complaint. These require documented trust-boundary review, not blanket revocation.
+- The private verification-document bucket remains private; no user-facing upload/download path was established in inspected application/Edge Function sources. Owner-verification workflow remains a design item.
+- No database, storage, policy, Auth, payment, or user data changes occurred.
+
+#### 5. Checkpoint and release decision
+- This checkpoint records the five-point pass at 12:30 p.m. PST on Nov 12, 2026.
+- Completed: source/catalog/ACL/Advisor reinspection, environment comparison, risk identification, and safe implementation decisions.
+- Still open: AI durable quota implementation and hosted runtime tests; hosted owner-RPC authorization tests; proposal submission gateway/throttling; private verification-document workflow; AI CORS production release gate; Stripe PR #33 release gates.
+- No production deployment, migration, PR merge, Stripe operation, domain/DNS change, sensitive Auth change, or user-data write occurred.
+- Production reputix-ai remains v22 unchanged. Staging reputix-ai remains v1. PR #33 and PR #34 remain draft/unmerged.
