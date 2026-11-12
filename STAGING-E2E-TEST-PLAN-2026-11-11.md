@@ -375,3 +375,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Browser QA #244 passed 32 checks after adding positive-match assertions for all five standalone map filters (All, Smoke Shops, Restaurants, Shops, Services), using four synthetic businesses (commit `0904ae423c5d2dab0c5f849a3b685c845515e998`).
 - Added a map reset assertion that verifies **Ver todos** calls the mocked map's `fitBounds` again after filtering; commit `d839686cee1e6be5dce2e40ec03dc149caa16cd3`, run #245 pending.
 - Synthetic businesses and mocked endpoints only; no production writes or billing operations.
+
+
+## Update — 2026-11-11 (map filter behavior)
+
+- Browser QA #245 passed the map reset assertion for **Ver todos** (`fitBounds` invocation; test commit `d839686cee1e6be5dce2e40ec03dc149caa16cd3`).
+- Fixed `mapa.html` so category and text-search filters now synchronize the business list and visible map markers. Non-matching markers are removed from the map and matching markers are re-added (commit `bfc0f676664bb65ebf57c34fc856533dfafdd5d0`).
+- Browser QA #249 passed all 32 named checks with marker-visibility assertions across all five category filters, map search, and clearing the search (test commit `b1281cb7bd430ce9b29342cbe1a3e41e96053f2f`).
+- Intermediate run #248 failed because the test's mocked Leaflet marker lacked the `remove()` method now used by the app. The mock was corrected in the next test commit; run #249 passed.
+- Synthetic businesses and mocked services only; no production data or settings changed.
