@@ -379,9 +379,9 @@ const { execFileSync } = require("node:child_process");
           }]) });
           return;
         }
-        if (table === "reviews" && request.method() === "POST") {
+        if (url.pathname.endsWith("/rpc/submit_review") && request.method() === "POST") {
           reviewPayload = request.postDataJSON();
-          await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify([{ id: "qa-review-id" }]) });
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify("qa-review-id") });
           return;
         }
         await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
@@ -443,18 +443,16 @@ const { execFileSync } = require("node:child_process");
           "; submitted payload: " + JSON.stringify(reviewPayload) + "; AI modes: " + aiModes.join(","));
       }
       if (!reviewPayload ||
-          reviewPayload.business_id !== businessId ||
-          reviewPayload.user_id !== null ||
-          reviewPayload.visit_date !== "2026-11-10" ||
-          reviewPayload.visit_time !== "13:30" ||
-          reviewPayload.cleanliness !== 5 ||
-          reviewPayload.service_quality !== 5 ||
-          reviewPayload.product_quality !== 5 ||
-          reviewPayload.speed !== 5 ||
-          reviewPayload.value_for_money !== 5 ||
-          reviewPayload.status !== "pending" ||
-          reviewPayload.original_language !== "en") {
-        throw new Error("Review submission did not contain the expected signed-in user, visit details, five ratings, language, and pending status: " + JSON.stringify(reviewPayload));
+          reviewPayload.p_business_id !== businessId ||
+          reviewPayload.p_visit_date !== "2026-11-10" ||
+          reviewPayload.p_visit_time !== "13:30" ||
+          reviewPayload.p_cleanliness !== 5 ||
+          reviewPayload.p_service_quality !== 5 ||
+          reviewPayload.p_product_quality !== 5 ||
+          reviewPayload.p_speed !== 5 ||
+          reviewPayload.p_value_for_money !== 5 ||
+          reviewPayload.p_original_language !== "en") {
+        throw new Error("Review RPC did not receive the expected business, visit details, five ratings, and language: " + JSON.stringify(reviewPayload));
       }
       if (!aiModes.includes("translate") || !aiModes.includes("moderate")) {
         throw new Error("Optional translation and advisory moderation calls were not both attempted: " + aiModes.join(","));
