@@ -235,3 +235,22 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Browser QA run #136 passed for commit `a8550aae0186ebd037498c6383f93f0ee2fa33b4`, confirming the prior quick-action assertions.
 - Browser QA run #140 was still in progress for the new review-submission test at log time.
 - No real reviews, accounts, AI requests, or production writes were created. All responses are mocked.
+
+
+## Session 011 — 2026-11-11
+
+- Start: 18:11:17 PST
+- End: 18:12:13 PST
+- Active tracked time: 56 seconds (0.016 hours)
+- Cumulative tracked time since baseline: 26 minutes 18 seconds (0.438 hours)
+
+### Work performed
+1. Added a dedicated photo upload test using a synthetic PNG and mocked Storage/REST endpoints.
+2. Verified unsupported GIF files are rejected before upload.
+3. Asserted successful upload metadata includes the correct business, original filename, MIME type, byte size, generated storage path, and pending review status.
+4. Increased the suite to 30 named checks.
+
+### Verification and safety
+- Commit: `babd87600f8471dc1f1dba69e264e7c28a86eb9d`.
+- Browser QA run #136 passed for the previous 28-check suite. Browser QA run #140 (review submission) and #144 (photo upload) were in progress at log time.
+- All uploads and responses are synthetic/mocked; no real image, database row, or production storage object was created.
