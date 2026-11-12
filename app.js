@@ -2764,6 +2764,9 @@ function setupCustomerWorkspaceActions(){
 function ownerSetSession(session) {
   setupCustomerWorkspaceActions();
   ownerSession=session;
+  const countryDisplay=$("ownerCountryDisplay");
+  const accountCountry=String(session?.user?.user_metadata?.country_name || "").trim();
+  if(countryDisplay){countryDisplay.hidden=!accountCountry;countryDisplay.textContent=accountCountry?(lang==="es"?"País de tu cuenta: ":"Account country: ")+accountCountry:"";}
   if(session) sessionStorage.setItem("reputix_owner_session",JSON.stringify(session));
   else sessionStorage.removeItem("reputix_owner_session");
   $("ownerSignIn").hidden=!!session;
