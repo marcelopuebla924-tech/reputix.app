@@ -114,7 +114,7 @@ function renderProfileHtml(template, business) {
     (fallbackDetails ? '<p>' + escapeHtml(fallbackDetails) + '</p>' : '') +
     (business.description ? '<p>' + escapeHtml(business.description) + '</p>' : '') +
     '</main></noscript>';
-  html = replaceExactlyOne(html, /<\\/body>/i, noScript + "</body>", "body closing tag");
+  html = replaceExactlyOne(html, /<\/body>/i, noScript + "</body>", "body closing tag");
   return html;
 }
 
