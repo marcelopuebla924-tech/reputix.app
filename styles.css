@@ -2262,3 +2262,52 @@ select option, select optgroup {
     padding: 8px !important;
   }
 }
+
+/* Laptop browser zoom / Windows display scaling: keep a centered desktop hero
+   even when the CSS viewport becomes tablet-sized. Touch phones keep mobile UI. */
+@media (min-width: 541px) and (hover: hover) and (pointer: fine) {
+  .hero {
+    display:block !important;
+    width:100% !important;
+    max-width:1500px !important;
+    margin:0 auto !important;
+    padding:clamp(14px,2vw,28px) clamp(16px,3vw,36px) 26px !important;
+    text-align:center !important;
+  }
+  .hero-layout {
+    display:block !important;
+    width:100% !important;
+    min-width:0 !important;
+  }
+  .edge-rail { display:none !important; }
+  .hero-center {
+    display:block !important;
+    width:100% !important;
+    max-width:1050px !important;
+    min-width:0 !important;
+    margin:0 auto !important;
+    padding:clamp(12px,2vw,24px) 8px !important;
+    text-align:center !important;
+  }
+  .hero-center h1 {
+    margin:8px auto 6px !important;
+    font-size:clamp(48px,7vw,88px) !important;
+    letter-spacing:clamp(-4px,-.3vw,-2px) !important;
+    text-align:center !important;
+  }
+  .hero-center .intro {
+    width:100% !important;
+    max-width:650px !important;
+    margin:10px auto 16px !important;
+    text-align:center !important;
+    font-size:clamp(15px,1.7vw,20px) !important;
+  }
+  .hero-center .search {
+    width:min(100%,760px) !important;
+    margin:20px auto 10px !important;
+  }
+  .hero-center .google-discovery {
+    width:min(100%,700px) !important;
+    margin:18px auto 8px !important;
+  }
+}
