@@ -41,6 +41,7 @@ The first baseline attempt failed because a foreign key was added before its ref
 - Proposal was stored as pending and hidden from anon; synthetic row deleted.
 - Blank business name rejected.
 - Oversized business name rejected.
+- Duplicate pending business proposal rejected; its synthetic row was deleted.
 - `is_reputix_admin()` accepted trusted `app_metadata.reputix_role=admin` and rejected a role present only in `user_metadata`.
 - Anonymous pending review submission succeeded for a synthetic approved business; pending review was not publicly visible.
 - Anonymous attempt to insert a published review was rejected by RLS.
