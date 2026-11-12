@@ -674,7 +674,7 @@ const { chromium } = require("playwright");
         document.querySelector("#adsAdminMessage")?.textContent || ""
       ), null, { timeout: 3000 });
       if (adPayload !== null) throw new Error("Campaign with an end date before its start reached the mocked REST endpoint");
-      await adminPage.locator("#adsEnds").fill("2026-11-20T10:00");
+      await adminPage.locator("#adsEnds").fill("2026-11-21T10:00");
       const adPost = adminPage.waitForResponse(response =>
         response.url().includes("/rest/v1/ad_campaigns") && response.request().method() === "POST"
       );
