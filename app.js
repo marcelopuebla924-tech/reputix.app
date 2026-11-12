@@ -1473,13 +1473,13 @@ function makeReviewForm(business) {
   f.append(node("h3","",t("share")),node("p","empty",t("pending")));
   const grid = node("div","form-grid");
 
-  function addField(label,key,type,full=false) {
+  function addField(label,key,type,full=false,required=true) {
     const l = node("label","field" + (full ? " full" : ""),label);
     let el;
 
     if (type === "select") {
       el = node("select");
-      el.required = true;
+      el.required = required;
       el.append(new Option(t("choose"),""));
       for (let i=1;i<=5;i++) {
         el.append(new Option(i + " / 5 " + "★".repeat(i),String(i)));
@@ -1492,7 +1492,7 @@ function makeReviewForm(business) {
     } else {
       el = node("input");
       el.type = type;
-      el.required = true;
+      el.required = required;
       if (type === "date") el.max = new Date().toISOString().slice(0,10);
     }
 
@@ -1503,7 +1503,7 @@ function makeReviewForm(business) {
 
   addField(t("date"),"visit_date","date");
   addField(t("time"),"visit_time","time");
-  addField(lang === "es" ? "¿Quién te atendió? (opcional)" : "Who served you? (optional)","staff_name","text");
+  addField(lang === "es" ? "¿Quién te atendió? (opcional)" : "Who served you? (optional)","staff_name","text",false,false);
   const staffHint = node("p","staff-field-note",lang === "es"
     ? "Usaremos esta información para detectar patrones con suficientes opiniones. No publicaremos comparaciones individuales."
     : "We use this to detect patterns with enough reviews. Individual comparisons will not be public.");
