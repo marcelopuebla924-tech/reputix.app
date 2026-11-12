@@ -118,14 +118,103 @@ document.addEventListener("click", async event => {
   try {
     if (button.id === "privateProfileAction") {
       if (!ownerSession?.user?.id) throw new Error("La sesión no está activa. Vuelve a iniciar sesión.");
-      const current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
-      const name = window.prompt(ownerText("¿Cómo quieres que aparezca tu nombre?","What name should appear on your profile?"),current?.[0]?.display_name||"");
-      if (name === null) return;
-      const bio = window.prompt(ownerText("Escribe una breve descripción (opcional).","Write a short bio (optional)."),current?.[0]?.bio||"");
-      if (bio === null) return;
-      await api("user_profiles?on_conflict=user_id",{method:"POST",headers:{Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({user_id:ownerSession.user.id,display_name:name.trim(),bio:bio.trim()})});
-      document.getElementById("privateProfileContent").replaceChildren(node("div","private-entry",name.trim()||ownerSession.user.email),node("div","private-entry",bio.trim()));
-      document.getElementById("privateWelcome").textContent=ownerText("Hola, ","Hello, ")+(name.trim()||"");
+      const content = document.getElementById("privateProfileContent");
+      const action = document.getElementById("privateProfileAction");
+      if (content.querySelector("#privateProfileEditor")) {
+        content.querySelector("#privateProfileEditor").remove();
+        action.textContent = ownerText("Editar perfil","Edit profile");
+        return;
+      }
+      action.disabled = true;
+      action.textContent = ownerText("Cargando…","Loading…");
+      let current = [];
+      try {
+        current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id));
+      } catch (loadError) {
+        throw new Error(ownerText("No se pudo cargar tu perfil. Inténtalo de nuevo.","Your profile could not be loaded. Please try again."));
+      }
+      const profile = current?.[0] || {};
+      const editor = document.createElement("form");
+      editor.id = "privateProfileEditor";
+      editor.className = "profile-editor";
+      const nameLabel = document.createElement("label");
+      nameLabel.className = "owner-field";
+      nameLabel.append(document.createTextNode(ownerText("Nombre visible","Display name")));
+      const nameInput = document.createElement("input");
+      nameInput.id = "privateProfileName";
+      nameInput.name = "display_name";
+      nameInput.type = "text";
+      nameInput.maxLength = 80;
+      nameInput.required = true;
+      nameInput.autocomplete = "name";
+      nameInput.value = profile.display_name || "";
+      nameInput.placeholder = ownerText("Cómo te verá la comunidad","How the community will see you");
+      nameLabel.append(nameInput);
+      const bioLabel = document.createElement("label");
+      bioLabel.className = "owner-field";
+      bioLabel.append(document.createTextNode(ownerText("Sobre mí (opcional)","About me (optional)")));
+      const bioInput = document.createElement("textarea");
+      bioInput.id = "privateProfileBio";
+      bioInput.name = "bio";
+      bioInput.rows = 4;
+      bioInput.maxLength = 500;
+      bioInput.value = profile.bio || "";
+      bioInput.placeholder = ownerText("Cuéntale algo a la comunidad…","Tell the community a little about yourself…");
+      bioLabel.append(bioInput);
+      const status = document.createElement("p");
+      status.className = "owner-message profile-editor-status";
+      status.setAttribute("role","status");
+      status.setAttribute("aria-live","polite");
+      const actions = document.createElement("div");
+      actions.className = "profile-editor-actions";
+      const save = document.createElement("button");
+      save.type = "submit";
+      save.className = "primary";
+      save.textContent = ownerText("Guardar cambios","Save changes");
+      const cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.className = "secondary";
+      cancel.textContent = ownerText("Cancelar","Cancel");
+      actions.append(save,cancel);
+      editor.append(nameLabel,bioLabel,actions,status);
+      content.append(editor);
+      action.textContent = ownerText("Cerrar editor","Close editor");
+      action.disabled = false;
+      nameInput.focus();
+      cancel.addEventListener("click",()=>{
+        editor.remove();
+        action.textContent = ownerText("Editar perfil","Edit profile");
+      });
+      editor.addEventListener("submit",async submitEvent=>{
+        submitEvent.preventDefault();
+        const displayName = nameInput.value.trim();
+        const bio = bioInput.value.trim();
+        if(displayName.length < 2){
+          status.textContent = ownerText("El nombre debe tener al menos 2 caracteres.","Name must contain at least 2 characters.");
+          nameInput.focus();
+          return;
+        }
+        save.disabled = true;
+        cancel.disabled = true;
+        status.textContent = ownerText("Guardando tu perfil…","Saving your profile…");
+        try{
+          await api("user_profiles?on_conflict=user_id",{
+            method:"POST",
+            headers:{Prefer:"resolution=merge-duplicates,return=minimal"},
+            body:JSON.stringify({user_id:ownerSession.user.id,display_name:displayName,bio})
+          });
+          content.replaceChildren(
+            node("div","private-entry",displayName),
+            ...(bio ? [node("div","private-entry",bio)] : [])
+          );
+          document.getElementById("privateWelcome").textContent = ownerText("Hola, ","Hello, ")+displayName;
+          action.textContent = ownerText("Editar perfil","Edit profile");
+        }catch(saveError){
+          status.textContent = ownerText("No se pudieron guardar los cambios. Tu información sigue en el formulario; inténtalo otra vez.","Changes could not be saved. Your information is still in the form; please try again.");
+          save.disabled = false;
+          cancel.disabled = false;
+        }
+      });
     } else if (button.id === "privateBusinessAction") {
       document.getElementById("ownerClaimForm").scrollIntoView({behavior:"smooth",block:"center"});
       document.getElementById("claimBusiness").focus({preventScroll:true});
