@@ -1111,9 +1111,15 @@ const { chromium } = require("playwright");
       await page.locator("#addBusinessChoice").click();
       const businessOptions = await page.locator('#communityFormWrap select[name="category"] option').allTextContents();
       if (businessOptions.length < 2) throw new Error("Business categories did not load");
+      if (!businessOptions.some(option => /Uber|rideshare/i.test(option))) {
+        throw new Error("Uber rideshare category is missing from business proposals");
+      }
       await page.locator("#addProChoice").click();
       const professionalOptions = await page.locator('#communityFormWrap select[name="category"] option').allTextContents();
       if (professionalOptions.length < 2) throw new Error("Professional categories did not load");
+      if (!professionalOptions.some(option => /Uber driver|Conductor.*Uber/i.test(option))) {
+        throw new Error("Uber driver category is missing from professional proposals");
+      }
       await page.locator("#independentJoinBtn").click();
       await page.locator("#communityFormWrap form").waitFor({ state: "visible" });
       const joinOptions = await page.locator('#communityFormWrap select[name="category"] option').allTextContents();
