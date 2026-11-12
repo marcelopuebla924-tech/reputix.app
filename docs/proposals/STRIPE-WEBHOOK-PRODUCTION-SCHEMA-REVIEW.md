@@ -26,7 +26,7 @@ Status: read-only production review; candidate remains unmerged and unapplied.
 4. Keep current trusted metadata rules: require user_id and basic/pro; checkout completion may fall back to Checkout Session metadata, but later subscription/invoice events must use subscription metadata or a verified linkage lookup.
 5. Before routing legacy subscriptions through the timestamp guard, reconcile them from Stripe's authoritative current subscription object. Rows with NULL event timestamps must remain quarantined until reconciled.
 6. Decide the invoice.payment_failed product model: do not persist a synthetic past_due status while Stripe still reports active unless a separate explicit payment-issue state is designed and tested.
-7. Candidate proposal extends the status CHECK with incomplete_expired, preserving the raw Stripe state. Browser/server entitlements currently recognize only active/trialing; keep that deny-by-default behavior and test it. The candidate includes an isolated persistence test, but no production/staging migration is authorized.
+7. Candidate proposal extends the status CHECK with incomplete_expired, preserving the raw Stripe state. Browser/server entitlements currently recognize only active/trialing; keep that deny-by-default behavior. Isolated PostgreSQL workflow run #7 passed the terminal-status persistence test on the tested SQL/test-code revision. No production/staging migration is authorized.
 8. Consider checking event.livemode against an explicit environment expectation, but do not read or change secrets or environment configuration as part of this review.
 
 ## Remaining gates
