@@ -540,7 +540,12 @@ function setLanguage(value) {
     privateOwnReviewsDesc:["Consulta el estado de las opiniones que has enviado.","Check the status of reviews you have submitted."],
     privateOwnReviewsAction:["Actualizar opiniones","Refresh reviews"],
     ownerModulesTitle:["Gestión de negocio","Business management"],
-    ownerModulesIntro:["Herramientas de propietarios y representantes verificados.","Tools for verified owners and representatives."]
+    ownerModulesIntro:["Herramientas de propietarios y representantes verificados.","Tools for verified owners and representatives."],
+    ownerMessagesTitle:["Mensajes de clientes","Customer messages"],
+    ownerMessagesDesc:["Lee y responde conversaciones relacionadas con tus negocios verificados.","Read and reply to conversations about your verified businesses."],
+    ownerMessagesRefresh:["Actualizar bandeja","Refresh inbox"],
+    ownerMessageReplyLabel:["Tu respuesta","Your reply"],
+    ownerMessageReplyButton:["Responder","Reply"]
   };
   Object.entries(privateAreaCopy).forEach(([id,values])=>{const el=$(id);if(el)el.textContent=lang==="es"?values[0]:values[1];});
   const customerCopy = {
@@ -2930,6 +2935,73 @@ $("messageReplyForm").addEventListener("submit",async e=>{
   finally {$("messageReplyButton").disabled=false;}
 });
 
+let activeOwnerMessageConversation=null;
+async function loadOwnerMessageCenter() {
+  const list=$("ownerMessageList");
+  if(!list)return;
+  if(!ownerSession?.access_token||!ownerSession?.user?.id){
+    list.replaceChildren(node("small","",ownerText("Inicia sesión para consultar los mensajes.","Sign in to view messages.")));
+    return;
+  }
+  list.replaceChildren(node("small","",ownerText("Cargando conversaciones…","Loading conversations…")));
+  try{
+    const claims=await api("business_owner_claims?select=business_id&user_id=eq."+encodeURIComponent(ownerSession.user.id)+"&status=eq.verified");
+    const ids=[...new Set((claims||[]).map(x=>x.business_id).filter(Boolean))];
+    if(!ids.length){
+      list.replaceChildren(node("small","",ownerText("La bandeja estará disponible cuando tengas un negocio verificado.","The inbox becomes available when you have a verified business.")));
+      $("ownerMessageThread").hidden=true;
+      return;
+    }
+    const idsParam=ids.map(encodeURIComponent).join(",");
+    const [conversations,businesses]=await Promise.all([
+      api("business_conversations?select=id,business_id,customer_id,subject,status,updated_at&business_id=in.("+idsParam+")&order=updated_at.desc&limit=50"),
+      api("businesses?select=id,name&id=in.("+idsParam+")").catch(()=>[])
+    ]);
+    const names=new Map((businesses||[]).map(b=>[String(b.id),b.name]));
+    (lastBusinesses||[]).forEach(b=>{if(!names.has(String(b.id)))names.set(String(b.id),b.name);});
+    list.replaceChildren();
+    if(!conversations?.length){
+      list.append(node("small","",ownerText("Todavía no tienes mensajes de clientes.","You have no customer messages yet.")));
+      return;
+    }
+    conversations.forEach(conv=>{
+      const businessName=names.get(String(conv.business_id))||ownerText("Tu negocio","Your business");
+      const button=node("button","message-conversation"+(activeOwnerMessageConversation===conv.id?" active":""),businessName+" · "+conv.subject);
+      button.type="button";
+      button.addEventListener("click",()=>openOwnerMessageConversation(conv));
+      list.append(button);
+    });
+  }catch(error){
+    list.replaceChildren(node("small","",ownerText("No se pudo cargar la bandeja: ","Could not load inbox: ")+(error?.message||String(error))));
+  }
+}
+async function openOwnerMessageConversation(conv) {
+  activeOwnerMessageConversation=conv.id;
+  const thread=$("ownerMessageThread");
+  const items=$("ownerMessageThreadItems");
+  thread.hidden=false;
+  $("ownerMessageThreadTitle").textContent=conv.subject||ownerText("Conversación","Conversation");
+  items.replaceChildren(node("small","",ownerText("Cargando conversación…","Loading conversation…")));
+  $("ownerMessageReplyStatus").textContent="";
+  try{
+    const messages=await api("business_messages?select=id,sender_id,body,created_at,read_at&conversation_id=eq."+encodeURIComponent(conv.id)+"&order=created_at.asc&limit=100");
+    items.replaceChildren();
+    (messages||[]).forEach(message=>{
+      const mine=message.sender_id===ownerSession.user.id;
+      const bubble=node("div","message-bubble"+(mine?" mine":""));
+      bubble.append(node("div","",message.body),node("div","message-meta",(mine?ownerText("Tú · ","You · "):ownerText("Cliente · ","Customer · "))+(message.created_at?new Date(message.created_at).toLocaleString():"")));
+      items.append(bubble);
+    });
+    if(!items.childElementCount)items.append(node("small","",ownerText("Aún no hay mensajes.","No messages yet.")));
+    const unread=(messages||[]).filter(message=>message.sender_id!==ownerSession.user.id&&!message.read_at).map(message=>message.id);
+    if(unread.length){
+      await api("business_messages?id=in.("+unread.map(encodeURIComponent).join(",")+")",{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({read_at:new Date().toISOString()})}).catch(()=>{});
+    }
+    thread.dataset.conversationId=conv.id;
+  }catch(error){
+    items.replaceChildren(node("small","",ownerText("No se pudo abrir la conversación: ","Could not open conversation: ")+(error?.message||String(error))));
+  }
+}
 async function loadPrivateSpace() {
   if(!ownerSession?.access_token || !ownerSession?.user?.id) return;
   const userId=ownerSession.user.id;
@@ -3050,6 +3122,11 @@ async function loadPrivateSpace() {
   }
   if(!complaintList.childElementCount) complaintList.append(node("small","",ownerText("Aún no tienes reclamos enviados ni recibidos.","You have no submitted or received complaints yet.")));
   $("privateDiscoverContent").replaceChildren(node("div","private-entry",ownerText("Los negocios recomendados siguen disponibles en la página principal.","Recommended businesses remain available on the main page.")));
+  if(businessIds.length) await loadOwnerMessageCenter();
+  else {
+    $("ownerMessageList")?.replaceChildren(node("small","",ownerText("La bandeja estará disponible cuando tengas un negocio verificado.","The inbox becomes available when you have a verified business.")));
+    if($("ownerMessageThread"))$("ownerMessageThread").hidden=true;
+  }
 }
 $("privateProfileAction").addEventListener("click",async()=>{
   const current=await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id)).catch(()=>[]);
@@ -3065,6 +3142,25 @@ $("privateProfileAction").addEventListener("click",async()=>{
 });
 $("privateBusinessAction").addEventListener("click",()=>{$("ownerClaimForm").scrollIntoView({behavior:"smooth",block:"center"});$("claimBusiness").focus({preventScroll:true});});
 $("privateMessagesAction").addEventListener("click",()=>{$("privateMessagesContent").scrollIntoView({behavior:"smooth",block:"center"});loadMessageCenter();});
+$("ownerMessagesRefresh")?.addEventListener("click",()=>loadOwnerMessageCenter());
+$("ownerMessageReplyForm")?.addEventListener("submit",async event=>{
+  event.preventDefault();
+  const conversationId=$("ownerMessageThread").dataset.conversationId;
+  const body=$("ownerMessageReplyBody").value.trim();
+  const status=$("ownerMessageReplyStatus");
+  if(!conversationId||!body)return;
+  $("ownerMessageReplyButton").disabled=true;
+  status.textContent=ownerText("Enviando respuesta…","Sending reply…");
+  try{
+    await api("business_messages",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({conversation_id:conversationId,sender_id:ownerSession.user.id,body})});
+    $("ownerMessageReplyBody").value="";
+    status.textContent=ownerText("Respuesta enviada.","Reply sent.");
+    await openOwnerMessageConversation({id:conversationId,subject:$("ownerMessageThreadTitle").textContent});
+    await loadOwnerMessageCenter();
+  }catch(error){
+    status.textContent=ownerText("No se pudo enviar: ","Could not send: ")+(error?.message||String(error));
+  }finally{$("ownerMessageReplyButton").disabled=false;}
+});
 $("privateComplaintsAction").addEventListener("click",()=>$("privateComplaintsContent").scrollIntoView({behavior:"smooth",block:"center"}));
 $("privateReviewsAction").addEventListener("click",()=>loadPrivateSpace());
 
