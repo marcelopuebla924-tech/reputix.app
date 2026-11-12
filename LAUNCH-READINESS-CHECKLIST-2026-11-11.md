@@ -7,17 +7,18 @@ Supabase project: `udvsrmfgjfinwbgvhchs`
 
 ## Overall status
 
-**NOT READY for public paid launch yet.** The browser-facing experience has a substantial mocked QA suite, but server-side messaging permissions and several real production integrations remain unverified. Do not interpret passing browser tests as production security or billing certification.
+**NOT READY for public paid launch yet.** Browser-facing coverage is substantial, and messaging table grants have now been tightened in production with post-change privilege verification. However, live authenticated integration tests, real Auth/Storage, Stripe lifecycle, and ad serving/billing remain unverified. Do not interpret mocked browser tests as full production certification.
 
 ## Verified
 
-- Browser Playwright suite: **32/32 checks passed** in run #263, with zero failures and zero page errors.
+- Browser Playwright suite: **32/32 checks passed** in run #264 for commit `777d9bc0b0cc4e0b37dadebb13b7440710690360`, with zero failures and zero page errors. Run #264 includes the added empty-message checks.
 - Static homepage buttons: all 40 button IDs have an actual click represented in the test source.
 - Public Reputix AI: all eight shortcut prompts, close behavior, and sign-in gate covered with mocks.
 - Reviews: valid submission payload, pending moderation status, advisory AI behavior, translation toggle, and invalid blank-form blocking covered.
 - Complaints: valid pending submission and invalid blank-form blocking covered.
 - Messaging UI: synthetic customer/verified-owner conversation creation, replies, inbox refresh, empty-message validation, and read-receipt behavior covered.
 - Read-receipt UI guard: PATCH payload is exactly `read_at`, and each participant marks only messages received by them as read.
+- Production messaging grants: `anon` has no direct privileges on the two messaging tables; `authenticated` retains SELECT, scoped INSERT column grants, and UPDATE only on `business_messages.read_at`. Post-change privilege queries confirmed that `body` and `sender_id` cannot be updated by `authenticated`; existing RLS policies remain.
 - Ads admin controls: campaign creation payload plus activate, pause, finish, reject, and resubmit-to-review actions covered with mocked API responses.
 - Map: all five category filters, text search, marker visibility synchronization, reset viewport behavior, and untrusted business-name rendering covered.
 - GitHub Pages deployment #490 succeeded for the map marker/filter synchronization update.
@@ -27,13 +28,12 @@ Supabase project: `udvsrmfgjfinwbgvhchs`
 
 ### 1. Messaging database privileges — critical
 
-Read-only Supabase inspection found that `authenticated` has broad UPDATE privileges on `public.business_messages`, including `body`, `conversation_id`, `sender_id`, and `read_at`. The current RLS UPDATE `WITH CHECK` only enforces `sender_id <> auth.uid()`. A conversation participant may therefore be able to alter a received message beyond the intended read-receipt update.
+Earlier inspection found broad table-level grants. After explicit owner authorization, production grants were tightened on 2026-11-11. `anon` was revoked from both messaging tables. `authenticated` now has SELECT, scoped INSERT column grants, and UPDATE only on `business_messages.read_at`; no UPDATE on `body` or `sender_id`. The existing RLS policies were preserved.
 
-- Detailed draft: `SECURITY-REVIEW-MESSAGING-UPDATE-2026-11-11.md`.
-- Proposed least-privilege direction: revoke table-level UPDATE from `authenticated`; grant UPDATE only on `read_at`; review the row policy and test positive/negative cases with two synthetic users.
-- The frontend read-receipt test is only a client-side regression guard. It does not fix direct REST access.
-- **No production SQL, grants, or RLS policies have been changed.**
-- Remediation requires an approved isolated backend and explicit owner authorization.
+- Applied-change record: `SECURITY-MESSAGING-PERMISSIONS-APPLIED-2026-11-11.md`.
+- Pre-change proposal: `SECURITY-MESSAGING-LEAST-PRIVILEGE-PROPOSAL-2026-11-11.md`.
+- Post-change SQL privilege checks passed.
+- Remaining validation: perform authenticated positive/negative REST tests using two synthetic users in an isolated staging backend. The current browser suite uses mocked Supabase responses and is not a live RLS integration test.
 
 ### 2. Isolated backend unavailable
 
@@ -69,4 +69,4 @@ Read-only Supabase inspection found that `authenticated` has broad UPDATE privil
 
 ## Safety boundary
 
-All recent browser tests use synthetic identities and mocked API responses. Production data, accounts, reviews, businesses, photos, conversations, payment records, grants, RLS policies, Auth settings, Stripe live settings, and domain/DNS settings remain untouched.
+All recent browser tests use synthetic identities and mocked API responses. No production rows, accounts, reviews, businesses, photos, conversations, or payment records were changed. Messaging table grants were intentionally changed as documented above; RLS policies, Auth settings, Stripe live settings, and domain/DNS settings were not changed.
