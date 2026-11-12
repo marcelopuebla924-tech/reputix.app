@@ -22,7 +22,7 @@ CREATE TABLE public.businesses (
 CREATE TABLE public.business_owner_claims (
   business_id uuid NOT NULL REFERENCES public.businesses(id),
   user_id uuid NOT NULL,
-  status text NOT NULL
+  status text NOT NULL CHECK (status IN ('pending','activity_verified','responsible_verified','verified','rejected'))
 );
 CREATE TABLE public.complaints (
   id uuid PRIMARY KEY,
@@ -39,6 +39,8 @@ INSERT INTO public.business_owner_claims(business_id,user_id,status) VALUES
  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','11111111-1111-4111-8111-111111111111','verified'),
  ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb','22222222-2222-4222-8222-222222222222','verified'),
  ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','33333333-3333-4333-8333-333333333333','pending'),
+ ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','55555555-5555-4555-8555-555555555555','activity_verified'),
+ ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa','66666666-6666-4666-8666-666666666666','responsible_verified'),
  ('cccccccc-cccc-4ccc-8ccc-cccccccccccc','44444444-4444-4444-8444-444444444444','verified');
 INSERT INTO public.complaints(id,business_id) VALUES
  ('dddddddd-dddd-4ddd-8ddd-dddddddddddd','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),
