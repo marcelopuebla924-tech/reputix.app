@@ -244,3 +244,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Test commit: `fb5056416de0551e0db085fb44f95a093c6d5ece`.
 - Browser QA run #190 is pending for the Pro AI assistant assertions.
 - All AI and database interactions remain mocked.
+
+
+## Update — 2026-11-11 18:28 PST
+
+- Browser QA run #190 passed all 31 checks with zero page errors, including Pro AI prompt submission and Basic plan gating.
+- Added test coverage for the independent service join button and owner claim evidence/relationship selectors.
+- Test commit: `fbdc6741d095fa290f440dec9499358053a066ea`.
+- Browser QA run #194 is running for the latest form and CTA assertions.
+- No production AI, claim, or proposal records were created.
