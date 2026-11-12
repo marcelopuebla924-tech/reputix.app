@@ -66,6 +66,80 @@ const { chromium } = require("playwright");
       await card.locator("section.details").first().waitFor({ state: "visible" });
     });
 
+    await check("Public review submission saves the five ratings as pending and keeps AI moderation advisory", async () => {
+      const reviewPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      reviewPage.on("pageerror", error => failures.push(error.stack || error.message));
+      const businessId = "00000000-0000-4000-8000-000000000301";
+      const userId = "00000000-0000-4000-8000-000000000302";
+      let reviewPayload = null;
+      const aiModes = [];
+      await reviewPage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = new URL(request.url());
+        const table = url.pathname.split("/").pop();
+        if (table === "businesses" && request.method() === "GET") {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+            id: businessId, name: "QA Review Test Business", category: "Restaurant", city: "Los Angeles", status: "approved"
+          }]) });
+          return;
+        }
+        if (table === "reviews" && request.method() === "POST") {
+          reviewPayload = request.postDataJSON();
+          await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify([{ id: "qa-review-id" }]) });
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await reviewPage.route("**/functions/v1/reputix-ai", async route => {
+        const body = route.request().postDataJSON();
+        aiModes.push(body.mode);
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(body.mode === "translate" ? { translation: "Excelente servicio en este negocio de prueba." } : { outcome: "clear" })
+        });
+      });
+      await reviewPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await reviewPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await reviewPage.evaluate(({ userId }) => window.ownerSetSession({
+        access_token: "qa-review-token",
+        refresh_token: "qa-review-refresh",
+        user: { id: userId, email: "review-qa@example.invalid", app_metadata: {} }
+      }), { userId });
+      await reviewPage.locator("#business").fill("QA Review Test Business");
+      await reviewPage.locator("#searchButton").click();
+      const card = reviewPage.locator("#results .business-card").filter({ hasText: "QA Review Test Business" }).first();
+      await card.waitFor({ state: "visible", timeout: 10000 });
+      await card.locator(".actions button.primary").click();
+      const form = card.locator(".details form").first();
+      await form.locator('input[name="visit_date"]').fill("2026-11-10");
+      await form.locator('input[name="visit_time"]').fill("13:30");
+      for (const field of ["cleanliness", "service_quality", "product_quality", "speed", "value_for_money"]) {
+        await form.locator('select[name="' + field + '"]').selectOption("5");
+      }
+      await form.locator('textarea[name="comment"]').fill("Great service at this QA business.");
+      await form.locator('button[type="submit"]').click();
+      await reviewPage.waitForFunction(() => /enviada|submitted/i.test(document.querySelector("#results .business-card .form-message")?.textContent || ""), null, { timeout: 10000 });
+      if (!reviewPayload ||
+          reviewPayload.business_id !== businessId ||
+          reviewPayload.user_id !== userId ||
+          reviewPayload.visit_date !== "2026-11-10" ||
+          reviewPayload.visit_time !== "13:30" ||
+          reviewPayload.cleanliness !== 5 ||
+          reviewPayload.service_quality !== 5 ||
+          reviewPayload.product_quality !== 5 ||
+          reviewPayload.speed !== 5 ||
+          reviewPayload.value_for_money !== 5 ||
+          reviewPayload.status !== "pending" ||
+          reviewPayload.original_language !== "en") {
+        throw new Error("Review submission did not contain the expected signed-in user, visit details, five ratings, language, and pending status: " + JSON.stringify(reviewPayload));
+      }
+      if (!aiModes.includes("translate") || !aiModes.includes("moderate")) {
+        throw new Error("Optional translation and advisory moderation calls were not both attempted: " + aiModes.join(","));
+      }
+      await reviewPage.close();
+    });
+
     await check("Owner claim submission preserves the session and confirms the request", async () => {
       const claimPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       claimPage.on("pageerror", error => failures.push(error.stack || error.message));
