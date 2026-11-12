@@ -2198,3 +2198,67 @@ select option, select optgroup {
 .profile-editor-actions button{flex:1;min-width:120px;min-height:43px}
 .profile-editor-status{margin:0;min-height:18px}
 .profile-editor button:disabled{opacity:.6;cursor:wait}
+
+
+/* REPUTIX RESPONSIVE DESKTOP FIX — prevent laptop/tablet-width desktop browsers
+   from inheriting the narrow single-column mobile hero. Keep true phones stacked. */
+@media (min-width: 701px) {
+  .hero {
+    width: 100% !important;
+    max-width: 1500px !important;
+    margin-inline: auto !important;
+    padding: clamp(14px, 2vw, 28px) clamp(16px, 2.4vw, 36px) 26px !important;
+    text-align: center !important;
+  }
+  .hero-layout {
+    display: grid !important;
+    width: 100% !important;
+    grid-template-columns: minmax(0, .82fr) minmax(0, 2.45fr) minmax(0, .82fr) !important;
+    align-items: center !important;
+    gap: clamp(10px, 1.5vw, 22px) !important;
+  }
+  .hero-center {
+    width: 100% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+    padding: clamp(10px, 1.6vw, 22px) 8px !important;
+  }
+  .hero-center h1 {
+    font-size: clamp(46px, 6.2vw, 88px) !important;
+    letter-spacing: clamp(-4px, -.28vw, -2px) !important;
+    overflow-wrap: anywhere !important;
+  }
+  .hero-center .intro {
+    max-width: 650px !important;
+    margin: 10px auto 16px !important;
+    font-size: clamp(14px, 1.35vw, 19px) !important;
+  }
+  .hero-center .search {
+    width: min(100%, 760px) !important;
+    margin-inline: auto !important;
+  }
+  .edge-rail {
+    display: grid !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .edge-rail .business-tile {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}
+@media (min-width: 701px) and (max-width: 900px) {
+  .hero-layout {
+    grid-template-columns: minmax(0, .72fr) minmax(0, 2.6fr) minmax(0, .72fr) !important;
+    gap: 9px !important;
+  }
+  .hero-center h1 {
+    font-size: clamp(42px, 6vw, 58px) !important;
+    letter-spacing: -2.5px !important;
+  }
+  .edge-rail { gap: 7px !important; }
+  .edge-rail .business-tile {
+    min-height: 92px !important;
+    padding: 8px !important;
+  }
+}
