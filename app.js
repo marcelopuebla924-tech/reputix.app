@@ -2295,10 +2295,20 @@ async function loadOwnerSubscription() {
     if(card)card.hidden=false;
     if(details)details.textContent=ownerSubscription?((ownerSubscription.plan==="pro"?"Reputix Pro":"Reputix Basic")+" · "+ownerText("Suscripción activa","Active subscription")+(end?" · "+ownerText("Próxima renovación","Next renewal")+": "+end.toLocaleDateString(lang==="es"?"es-US":"en-US"):"")+(ownerSubscription.cancelAtPeriodEnd?" · "+ownerText("Cancelación al final del período","Cancels at period end"):"")):ownerText("No hay una suscripción activa. Basic activa herramientas esenciales; Pro añade estadísticas avanzadas y Reputix AI.","No active subscription. Basic unlocks essential tools; Pro adds advanced analytics and Reputix AI.");
     if(aiPanel)aiPanel.hidden=ownerSubscription?.plan!=="pro";
+    const customerWorkspace=$("customerWorkspace");
+    if(customerWorkspace)customerWorkspace.hidden=!ownerSubscription;
+    const customerPlan=$("customerWorkspacePlan");
+    if(customerPlan)customerPlan.textContent=ownerSubscription?.plan==="pro"?"REPUTIX PRO · $25 / MES":ownerSubscription?.plan==="basic"?"REPUTIX BASIC · $13 / MES":"";
+    const customerIntro=$("customerWorkspaceIntro");
+    if(customerIntro)customerIntro.textContent=ownerSubscription?.plan==="pro"
+      ?ownerText("Tu espacio Pro: herramientas de comunidad y acceso al asistente Reputix AI.","Your Pro space: community tools and access to Reputix AI.")
+      :ownerText("Tu espacio Basic: organiza tu actividad, conversaciones y herramientas de comunidad.","Your Basic space: organize your activity, conversations, and community tools.");
+    const aiShortcut=$("customerLinkAI");
+    if(aiShortcut)aiShortcut.hidden=ownerSubscription?.plan!=="pro";
     if(ownerSubscription?.plan==="pro")$("ownerDashboardNote").textContent=ownerText("Plan Pro: estadísticas y patrones por horario con opiniones publicadas.","Pro plan: analytics and time-of-day patterns using published reviews.");
     else if(ownerSubscription?.plan==="basic")$("ownerDashboardNote").textContent=ownerText("Plan Basic: estadísticas esenciales. Las tendencias y comparaciones por horario están incluidas en Pro.","Basic plan: essential analytics. Trends and time comparisons are included with Pro.");
     return ownerSubscription;
-  }catch(error){ownerSubscriptionLoaded=false;if(details)details.textContent=ownerText("No pudimos verificar tu suscripción. Vuelve a intentarlo.","We couldn't verify your subscription. Please try again.");if(aiPanel)aiPanel.hidden=true;console.error("Reputix subscription lookup:",error);return null;}
+  }catch(error){ownerSubscriptionLoaded=false;if(details)details.textContent=ownerText("No pudimos verificar tu suscripción. Vuelve a intentarlo.","We couldn't verify your subscription. Please try again.");if(aiPanel)aiPanel.hidden=true;const customerWorkspace=$("customerWorkspace");if(customerWorkspace)customerWorkspace.hidden=true;console.error("Reputix subscription lookup:",error);return null;}
 }
 
 function ownerSetSession(session) {
