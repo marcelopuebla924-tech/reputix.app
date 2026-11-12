@@ -1694,19 +1694,26 @@ const { chromium } = require("playwright");
     });
 
     await check("Desktop Reputix AI shortcut stays compact and keeps its accessible label", async () => {
-      const fab = page.locator("#reputixAiFab");
-      const box = await fab.boundingBox();
-      if (!box || box.width > 76 || box.height > 76) {
-        throw new Error("Desktop AI shortcut should stay compact; measured " + JSON.stringify(box));
-      }
-      if (await fab.locator(".reputix-ai-fab-copy").isVisible()) {
-        throw new Error("Desktop AI shortcut text should be collapsed to avoid covering business cards");
-      }
-      if ((await fab.getAttribute("aria-label")) !== "Abrir Reputix AI") {
-        throw new Error("Compact desktop shortcut lost its accessible name");
-      }
-      if (!(await fab.locator(".reputix-ai-fab-orb").isVisible())) {
-        throw new Error("Desktop AI shortcut icon is not visible");
+      const desktopAiPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      try {
+        await desktopAiPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+        await desktopAiPage.waitForFunction(() => typeof window.reputixStartCheckout === "function", null, { timeout: 15000 });
+        const fab = desktopAiPage.locator("#reputixAiFab");
+        const box = await fab.boundingBox();
+        if (!box || box.width > 76 || box.height > 76) {
+          throw new Error("Desktop AI shortcut should stay compact; measured " + JSON.stringify(box));
+        }
+        if (await fab.locator(".reputix-ai-fab-copy").isVisible()) {
+          throw new Error("Desktop AI shortcut text should be collapsed to avoid covering business cards");
+        }
+        if ((await fab.getAttribute("aria-label")) !== "Abrir Reputix AI") {
+          throw new Error("Compact desktop shortcut lost its accessible name");
+        }
+        if (!(await fab.locator(".reputix-ai-fab-orb").isVisible())) {
+          throw new Error("Desktop AI shortcut icon is not visible");
+        }
+      } finally {
+        await desktopAiPage.close();
       }
     });
 
