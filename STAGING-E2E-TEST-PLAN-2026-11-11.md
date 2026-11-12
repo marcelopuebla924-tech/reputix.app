@@ -216,3 +216,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Test commits: `89034e835576fcb585ef1d85265e41d4a58a0770`, `f8374dfdc89aec2556525bf73988b8364407a3ec`.
 - Suite remains at 31 named checks. Run #177 is pending completion for these button-level interactions.
 - All records remain synthetic/mocked.
+
+
+## Update — 2026-11-11 18:23 PST
+
+- Browser QA run #177 passed the actual customer and verified-owner reply button interactions; zero page errors.
+- Added explicit clicks for the customer complaint submit button and private reviews refresh button, including the expected user-scoped reviews read.
+- Test commit: `e241c7386685e94d3b617c4aebcb193bca30a644`.
+- Browser QA run #181 is running for the new button-level assertions.
+- All test data remains synthetic/mocked.
