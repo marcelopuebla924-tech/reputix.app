@@ -1156,17 +1156,41 @@ const { chromium } = require("playwright");
       await responsePage.close();
     });
 
-    await check("Reviews and statistics feature buttons open their sections", async () => {
+    await check("Reviews and statistics buttons open sections and the stats refresh button reloads data", async () => {
       await page.locator("#featureReviews").click();
       await page.waitForFunction(() => {
         const target = document.querySelector("#reviewTickerPanel");
         return !!target && Math.abs(target.getBoundingClientRect().top) < window.innerHeight;
       }, null, { timeout: 8000 });
+      let statsReads = 0;
+      await page.route("**/rest/v1/**", async route => {
+        const url = route.request().url();
+        if (url.includes("/rest/v1/reviews?") && url.includes("status=eq.published")) {
+          statsReads += 1;
+          await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+          return;
+        }
+        if (url.includes("/rest/v1/businesses?") && url.includes("status=eq.approved")) {
+          await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+          return;
+        }
+        await route.continue();
+      });
+      const firstStatsRead = page.waitForResponse(response =>
+        response.url().includes("/rest/v1/reviews?") && response.url().includes("status=eq.published")
+      );
       await page.locator("#featureStats").click();
       await page.waitForFunction(() => {
         const panel = document.querySelector("#advancedStatsDashboard");
         return !!panel && !panel.hidden;
       }, null, { timeout: 8000 });
+      await firstStatsRead;
+      const refreshRead = page.waitForResponse(response =>
+        response.url().includes("/rest/v1/reviews?") && response.url().includes("status=eq.published")
+      );
+      await page.locator("#advancedStatsRefresh").click();
+      await refreshRead;
+      if (statsReads < 2) throw new Error("Statistics refresh did not reload published reviews");
     });
 
     await check("Business claim picker opens and closes without submitting a claim", async () => {
