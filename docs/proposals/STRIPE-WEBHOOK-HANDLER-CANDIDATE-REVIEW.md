@@ -6,7 +6,7 @@ Status: isolated candidate only. The production stripe-webhook v3 function has n
 - supabase/functions/stripe-webhook/index.ts: Deno/Supabase Edge Function adapter using Stripe SDK and environment-only credentials.
 - supabase/functions/stripe-webhook/core.mjs: dependency-injected request handler, separable from Deno for Node contract tests.
 - tests/stripe-webhook-handler.test.mjs: Node built-in tests with synthetic events and fake Stripe/Supabase transport.
-- .github/workflows/stripe-webhook-handler-tests.yml: runs contract tests on relevant pull-request changes.
+- .github/workflows/stripe-webhook-handler-tests.yml: runs contract tests and Deno type-check on relevant pull-request changes.
 
 ## Security and event processing contract
 - Reject non-POST requests and missing signatures.
@@ -21,13 +21,13 @@ Status: isolated candidate only. The production stripe-webhook v3 function has n
 - The candidate requires verify_jwt=false at the Edge Function gateway because Stripe's signature verification is the authentication mechanism. This setting has not been deployed or changed.
 
 ## Isolated contract test coverage
-- method guard; missing and invalid signatures; exact raw-body preservation; explicit mode configuration and mismatch rejection;
+- method guard; missing and invalid signatures; exact raw-body preservation; explicit mode configuration and mismatch rejection; Stripe incomplete_expired status passthrough;
 - event.created timestamp conversion; metadata trust/fallback; unknown/missing-metadata events recorded as ignored;
 - invoice.payment_failed preserves retrieved active status;
 - only the atomic RPC endpoint is called; duplicate/processed/ignored results acknowledged; RPC failure returns 500.
 
 ## Remaining release gates
-- Latest GitHub Actions contract test workflow must pass on the exact candidate head.
+- Latest GitHub Actions contract tests and Deno type-check must pass on the exact candidate head. The earlier Node contract run passed 14 tests; the latest revision adds the incomplete_expired passthrough test and Deno check, which must be verified.
 - Add a Deno typecheck/build step using the pinned Stripe SDK version and confirm import compatibility.
 - Validate RPC parameter/result behavior against an isolated Supabase schema (not production); test real Stripe test-mode signed events only after explicit test-environment approval.
 - Confirm the intended STRIPE_EXPECT_LIVEMODE value and test/live key pairing in a separately approved environment. Do not read or modify production secrets as part of this candidate work.
