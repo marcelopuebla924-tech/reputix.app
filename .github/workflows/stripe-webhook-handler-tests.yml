@@ -15,5 +15,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - uses: denoland/setup-deno@v2
+      - name: Type-check the Deno Edge Function adapter
+        run: deno check supabase/functions/stripe-webhook/index.ts
       - name: Run isolated webhook handler contract tests
         run: node --test tests/stripe-webhook-handler.test.mjs
