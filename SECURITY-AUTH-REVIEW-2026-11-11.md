@@ -66,6 +66,20 @@ Read-only checks found no policies and no direct table grants to `anon` or `auth
 4. Explicitly authorize enabling leaked-password protection in Supabase Auth settings.
 5. Run isolated real Auth / RLS tests only when a safe staging project and synthetic test accounts are available.
 
+
+## Reputix AI Edge Function review and correction
+
+The deployed `reputix-ai` function was inspected read-only (before correction) and then received one narrowly scoped code fix:
+- The function is ACTIVE, `verify_jwt=true`, and validates the supplied user token against Supabase Auth before processing.
+- Conversational assistant mode checks the user's server-side subscription and requires an active/trialing Pro subscription; the admin exception uses trusted `app_metadata`.
+- Admin moderation queue mode requires the trusted `reputix_role=admin` claim.
+- Individual moderation mode checks that the requested review belongs to the signed-in user and is still pending. The AI result is explicitly advisory; it does not publish, reject, or alter the review's status.
+- Public business context is restricted to approved businesses and published review samples.
+
+**Correction deployed:** the `cleanText` helper contained double-escaped regular expressions. This meant it did not collapse whitespace or replace control characters as intended. Corrected the expressions, ran five local helper checks (control characters, whitespace, literal escape sequences, max length, non-string input), and deployed version 22 with `verify_jwt=true`. The function source, which was previously absent from the repository, is now tracked at `supabase/functions/reputix-ai/index.ts`. Read-after-deploy confirmed version 22 contains the corrected expressions and no longer contains the buggy pattern. No secrets or database settings were changed.
+
+**Remaining cost-abuse risk:** authenticated users can call `translate` with arbitrary text and can request advisory moderation for their own pending reviews. These modes do not currently enforce per-user rate limits or quotas in this function. This could permit excessive OpenAI usage. Rate limiting / abuse controls should be designed and tested before a broad public launch. No new database tables, policies, settings, or quotas were added.
+
 ## Supabase documentation consulted
 - Password security and leaked-password protection: https://supabase.com/docs/guides/auth/password-security
 - Production checklist: https://supabase.com/docs/guides/deployment/going-into-prod
