@@ -13,7 +13,8 @@ Allow customers to open and share a direct public link to an approved business p
 
 ## Validation status
 - Source changes are committed to `feature/organic-public-business-profiles`.
-- Browser checks are added but have not yet run in GitHub Actions. A pull request will trigger the repository's PR QA workflow.
+- GitHub Actions Browser QA run #368 completed successfully on 12 Nov 2026 (run ID `43272897516`). All 34 Playwright checks passed, including approved deep-link rendering, share payload, and unavailable/unapproved profile privacy. The run reported `pageErrors: []`.
+- Earlier run #367 failed; its findings were corrected in commits `e783a74624f342bd7c1c2c1c5324c7ffa5cacd05` and `1c89e8881b6910f2c44c5df2fbcb1d97df5fbf29`.
 - The current app is a client-rendered GitHub Pages app. Metadata is populated by JavaScript after the profile record loads. Search engines that render JavaScript may process it, but this is not equivalent to server-side rendered business pages. Social crawlers that do not execute JavaScript may only see the homepage's default share preview.
 - A future pre-rendering/SSR solution should generate crawlable HTML per approved business before claiming full search/social preview optimization.
 
@@ -23,7 +24,7 @@ Allow customers to open and share a direct public link to an approved business p
 - No ratings or review counts are fabricated or embedded in structured data.
 
 ## Next steps
-1. Run Browser QA on the pull request and fix any failures.
-2. Verify GitHub Pages deployment behavior before merging.
-3. Confirm a real approved business deep link in a browser and inspect its metadata.
-4. Plan static pre-rendering for approved business pages and a business-profile sitemap only after the URL and rendering architecture is finalized.
+1. Review the successful QA run and verify a real approved business deep link in a browser before release.
+2. Implement static pre-rendering for approved business pages so search and social crawlers receive profile metadata in the initial HTML.
+3. Generate a business-profile sitemap from approved records only, excluding pending, rejected, and private data.
+4. Verify the GitHub Pages deployment pipeline without changing the custom domain or DNS configuration.
