@@ -480,3 +480,20 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Commit: `fbdc6741d095fa290f440dec9499358053a066ea`.
 - Browser QA run #194 was in progress at log time.
 - All requests use synthetic identities and mocked services.
+
+
+## Session 024 — 2026-11-11
+
+- Start: 18:28:22 PST
+- End: 18:30:06 PST
+- Active tracked time: 1 minute 44 seconds (0.029 hours)
+- Cumulative tracked time since baseline: 45 minutes 12 seconds (0.753 hours)
+
+### Verification and work performed
+1. Browser QA run #194 passed all 31 checks with zero page errors, including the independent join CTA and claim relationship/evidence selectors.
+2. Expanded admin advertising scenario to fill and assert budget cents, destination URL, placement, start/end timestamps, and `pending_review` status.
+
+### Commit and pending verification
+- Commit: `c097b2ae2c485f0a95fe3e63ab839778dcb93181`.
+- Browser QA run #198 was in progress at log time.
+- No real ad campaign or billing event was created; the ad request is mocked.
