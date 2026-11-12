@@ -27,7 +27,7 @@ Status: isolated candidate only. The production stripe-webhook v3 function has n
 - only the atomic RPC endpoint is called; duplicate/processed/ignored results acknowledged; RPC failure returns 500.
 
 ## Remaining release gates
-- GitHub Actions handler contract workflow run #7 passed after pinning Stripe SDK 23.1.0: Deno type-check succeeded and Node contract suite passed 15/15 tests. The latest revision adds a real HMAC verification test using Stripe's pinned SDK plus fake Supabase transport; rerun CI before treating this expanded suite as passed. No Supabase RPC or real Stripe endpoint is invoked.
+- GitHub Actions handler contract workflow run #10 passed after pinning Stripe SDK 23.1.0: Deno type-check succeeded and Node contract suite passed 16/16 tests, including real HMAC signature verification using Stripe's pinned SDK. Supabase transport remains fake; no Supabase RPC or real Stripe endpoint is invoked.
 - Add a Deno typecheck/build step using the pinned Stripe SDK version and confirm import compatibility.
 - Validate RPC parameter/result behavior against an isolated Supabase schema (not production); test real Stripe test-mode signed events only after explicit test-environment approval.
 - Confirm the intended STRIPE_EXPECT_LIVEMODE value and test/live key pairing in a separately approved environment. Do not read or modify production secrets as part of this candidate work.
