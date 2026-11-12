@@ -254,3 +254,21 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 - Commit: `babd87600f8471dc1f1dba69e264e7c28a86eb9d`.
 - Browser QA run #136 passed for the previous 28-check suite. Browser QA run #140 (review submission) and #144 (photo upload) were in progress at log time.
 - All uploads and responses are synthetic/mocked; no real image, database row, or production storage object was created.
+
+
+## Session 012 — 2026-11-11
+
+- Start: 18:12:13 PST
+- End: 18:13:10 PST
+- Active tracked time: 57 seconds (0.016 hours)
+- Cumulative tracked time since baseline: 27 minutes 15 seconds (0.454 hours)
+
+### Work performed
+1. Retrieved the Browser QA run #140 log for the public review test.
+2. Confirmed 28 of 29 named checks passed; the new review scenario timed out because the test expected "enviada/submitted", while the actual UI confirmation uses "Opinión recibida" / "Review received".
+3. Corrected only the test's confirmation matcher; no app behavior change.
+4. Recorded fix commit `53f3616c2c72e4cb3696d1da4fc37992ac5411b0`.
+
+### Verification and safety
+- Browser QA run #144 for photo upload and run #148 for the corrected review test were in progress at log time.
+- No real review, account, photo, storage object, or production database write was created.
