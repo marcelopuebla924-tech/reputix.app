@@ -504,11 +504,11 @@ const { execFileSync } = require("node:child_process");
       await fileInput.setInputFiles({
         name: "too-large.png",
         mimeType: "image/png",
-        buffer: Buffer.alloc(26 * 1024 * 1024)
+        buffer: Buffer.alloc(41 * 1024 * 1024)
       });
       await form.locator('button[type="submit"]').click();
-      await photoPage.waitForFunction(() => /25 MB|25 MB/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
-      if (storageUploads !== 0 || photoPayload) throw new Error("Photo above the 25 MB source limit reached storage or metadata API");
+      await photoPage.waitForFunction(() => /40 MB|40 MB/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
+      if (storageUploads !== 0 || photoPayload) throw new Error("Photo above the 40 MB source limit reached storage or metadata API");
       const validPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j2ioAAAAASUVORK5CYII=", "base64");
       await fileInput.setInputFiles({ name: "qa-business-photo.png", mimeType: "image/png", buffer: validPng });
       await form.locator('button[type="submit"]').click();
