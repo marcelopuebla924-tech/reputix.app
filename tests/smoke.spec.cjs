@@ -1160,6 +1160,7 @@ const { chromium } = require("playwright");
       const conversationId = "00000000-0000-4000-8000-000000000204";
       const conversations = [];
       const messages = [];
+      const readReceiptPatches = [];
       const business = { id: businessId, name: "QA Verified Business", city: "Los Angeles", status: "approved" };
       const mockRest = async route => {
         const request = route.request();
@@ -1204,7 +1205,9 @@ const { chromium } = require("playwright");
         }
         if (table === "business_messages" && method === "PATCH") {
           const ids = (url.searchParams.get("id") || "").replace(/^in\./, "").replace(/[()"]/g, "").split(",");
-          messages.forEach(row => { if (ids.includes(row.id)) row.read_at = request.postDataJSON().read_at; });
+          const payload = request.postDataJSON();
+          readReceiptPatches.push({ userId, ids, payload });
+          messages.forEach(row => { if (ids.includes(row.id)) row.read_at = payload.read_at; });
           return route.fulfill({ status: 204, body: "" });
         }
         if (method === "OPTIONS") return route.fulfill({ status: 204, body: "" });
@@ -1287,6 +1290,25 @@ const { chromium } = require("playwright");
       );
       if (messages.length !== 3 || messages[2].sender_id !== customerId) {
         throw new Error("Customer reply button did not send a message from the signed-in synthetic customer");
+      }
+      if (readReceiptPatches.length !== 2) {
+        throw new Error("Expected exactly one read-receipt update from each conversation participant: " + JSON.stringify(readReceiptPatches));
+      }
+      for (const patch of readReceiptPatches) {
+        if (Object.keys(patch.payload).length !== 1 || !Object.prototype.hasOwnProperty.call(patch.payload, "read_at") ||
+            typeof patch.payload.read_at !== "string" || !Number.isFinite(Date.parse(patch.payload.read_at))) {
+          throw new Error("Messaging UI attempted to update columns beyond the read receipt: " + JSON.stringify(patch));
+        }
+        for (const id of patch.ids) {
+          const target = messages.find(message => message.id === id);
+          if (!target || target.sender_id === patch.userId) {
+            throw new Error("A participant attempted to mark their own or an unknown message as read: " + JSON.stringify(patch));
+          }
+        }
+      }
+      if (!readReceiptPatches.some(patch => patch.userId === ownerId && patch.ids.includes("qa-message-1")) ||
+          !readReceiptPatches.some(patch => patch.userId === customerId && patch.ids.includes("qa-message-2"))) {
+        throw new Error("Read-receipt updates did not target the messages received by each participant: " + JSON.stringify(readReceiptPatches));
       }
       await ownerPage.close();
       await customerPage.close();
