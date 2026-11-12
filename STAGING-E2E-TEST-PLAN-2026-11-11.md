@@ -190,3 +190,11 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Commit: `f908e00f6ed44c8d37040ec7d6fea0750892ef94`.
 - Previous run #157 passed all 30 checks with zero page errors; run #165 is pending for the new complaint-response test.
 - Test data and RPC responses are mocked; no production complaint was changed.
+
+
+## Update — 2026-11-11 18:19 PST
+
+- Browser QA run #165 passed all 31 named checks with zero page errors.
+- The verified-owner complaint response scenario passed, including the authorized RPC request and refreshed response display.
+- Passing test commit: `f908e00f6ed44c8d37040ec7d6fea0750892ef94`.
+- These are mocked browser checks only; live Supabase RLS/RPC integration remains unverified.
