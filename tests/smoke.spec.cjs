@@ -426,6 +426,55 @@ const { chromium } = require("playwright");
       await authPage.close();
     });
 
+    await check("Private member data requests explicitly scope records to the signed-in user", async () => {
+      const scopedPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      scopedPage.on("pageerror", error => failures.push(error.stack || error.message));
+      const userId = "00000000-0000-4000-8000-000000000314";
+      const requiredTables = new Set([
+        "user_profiles",
+        "user_publications",
+        "reviews",
+        "complaints",
+        "business_owner_claims",
+        "business_conversations"
+      ]);
+      const seen = new Map();
+      let resolveAll;
+      const allRequests = new Promise(resolve => { resolveAll = resolve; });
+      await scopedPage.route("**/rest/v1/**", async route => {
+        const url = new URL(route.request().url());
+        const table = url.pathname.split("/").pop();
+        if (requiredTables.has(table)) {
+          seen.set(table, {
+            userId: url.searchParams.get("user_id"),
+            customerId: url.searchParams.get("customer_id")
+          });
+          if (seen.size === requiredTables.size) resolveAll();
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await scopedPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await scopedPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await scopedPage.evaluate(({ userId }) => window.ownerSetSession({
+        access_token: "qa-private-scope-token",
+        refresh_token: "qa-private-scope-refresh",
+        user: { id: userId, email: "private-scope-qa@example.invalid", app_metadata: {} }
+      }), { userId });
+      await Promise.race([
+        allRequests,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Private data requests did not all complete")), 10000))
+      ]);
+      for (const table of requiredTables) {
+        const request = seen.get(table);
+        if (!request) throw new Error("Missing private request for " + table);
+        const actual = table === "business_conversations" ? request.customerId : request.userId;
+        if (actual !== "eq." + userId) {
+          throw new Error(table + " request was not explicitly scoped to the signed-in user: " + actual);
+        }
+      }
+      await scopedPage.close();
+    });
+
     await check("Password recovery explains that email is required", async () => {
       await page.locator("#ownerForgotPassword").click();
       await page.waitForFunction(() => /correo|email/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""));
