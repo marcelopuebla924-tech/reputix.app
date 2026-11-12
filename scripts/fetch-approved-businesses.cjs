@@ -45,7 +45,6 @@ async function fetchApprovedBusinesses({ supabaseUrl, apiKey, fetchImpl = global
       method: "GET",
       headers: {
         apikey: apiKey,
-        Authorization: "Bearer " + apiKey,
         Accept: "application/json"
       },
       cache: "no-store",
