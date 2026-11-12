@@ -5,7 +5,7 @@ const { chromium } = require("playwright");
   const failures = [];
   const results = [];
   const page = await browser.newPage({ viewport: { width: 1365, height: 900 } });
-  page.on("pageerror", error => failures.push(error.message));
+  page.on("pageerror", error => failures.push(error.stack || error.message));
 
   async function check(name, fn) {
     try {
@@ -28,6 +28,13 @@ const { chromium } = require("playwright");
       });
       if (data.total !== data.unique) throw new Error("Duplicate IDs detected");
       if (!(await page.locator("#searchForm").count())) throw new Error("Search form missing");
+    });
+
+    await check("Spanish and English language selector works without runtime errors", async () => {
+      await page.locator("#language").selectOption("en");
+      if (!(await page.locator("#plansTitle").textContent()).includes("plans")) throw new Error("English plan title did not update");
+      await page.locator("#language").selectOption("es");
+      if (!(await page.locator("#plansTitle").textContent()).includes("Planes")) throw new Error("Spanish plan title did not update");
     });
 
     await check("Business search handles a query and restores its button", async () => {
