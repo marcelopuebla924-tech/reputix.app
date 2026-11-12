@@ -216,10 +216,12 @@ const { chromium } = require("playwright");
     await check("Owner claim submission preserves the session and confirms the request", async () => {
       const claimPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       claimPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let claimPayload = null;
       await claimPage.route("**/rest/v1/**", async route => {
         const request = route.request();
         const url = request.url();
         if (request.method() === "POST" && url.includes("/business_owner_claims")) {
+          claimPayload = request.postDataJSON();
           await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify([{ id: "qa-claim-id" }]) });
         } else {
           await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
@@ -235,6 +237,9 @@ const { chromium } = require("playwright");
       await claimPage.locator("#claimBusinessOpen").waitFor({ state: "visible" });
       await claimPage.waitForTimeout(500);
       await claimPage.locator("#claimBusiness").evaluate(el => { el.value = "00000000-0000-4000-8000-000000000002"; });
+      await claimPage.locator("#claimRelationship").selectOption("owner");
+      await claimPage.locator("#claimLevel").selectOption("owner");
+      await claimPage.locator("#claimEvidenceType").selectOption("business_documents");
       await claimPage.locator("#claimEvidence").fill("QA simulation only. I am authorized to manage this test business.");
       const postResponse = claimPage.waitForResponse(response =>
         response.url().includes("/rest/v1/business_owner_claims") && response.request().method() === "POST"
@@ -248,6 +253,14 @@ const { chromium } = require("playwright");
       }
       const session = await claimPage.evaluate(() => JSON.parse(sessionStorage.getItem("reputix_owner_session") || "null"));
       if (session?.access_token !== "qa-mocked-access-token") throw new Error("Owner session was not preserved");
+      if (!claimPayload ||
+          claimPayload.business_id !== "00000000-0000-4000-8000-000000000002" ||
+          claimPayload.relationship_type !== "owner" ||
+          claimPayload.verification_level !== "owner" ||
+          claimPayload.evidence_type !== "business_documents" ||
+          claimPayload.status !== "pending") {
+        throw new Error("Owner claim form did not submit the selected relationship, verification level, evidence type, and pending status: " + JSON.stringify(claimPayload));
+      }
       await claimPage.close();
     });
 
@@ -928,6 +941,12 @@ const { chromium } = require("playwright");
       await page.locator("#addProChoice").click();
       const professionalOptions = await page.locator('#communityFormWrap select[name="category"] option').allTextContents();
       if (professionalOptions.length < 2) throw new Error("Professional categories did not load");
+      await page.locator("#independentJoinBtn").click();
+      await page.locator("#communityFormWrap form").waitFor({ state: "visible" });
+      const joinOptions = await page.locator('#communityFormWrap select[name="category"] option').allTextContents();
+      if (joinOptions.length < 2 || joinOptions.join("|") !== professionalOptions.join("|")) {
+        throw new Error("Independent service join button did not open the professional proposal form");
+      }
     });
 
     await check("Public business proposal honeypot blocks bots and duplicate submissions show a clear message", async () => {
