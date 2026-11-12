@@ -85,10 +85,20 @@ const { chromium } = require("playwright");
         refresh_token: "qa-mocked-refresh-token",
         user: { id: "00000000-0000-4000-8000-000000000001", email: "qa@example.invalid", app_metadata: {} }
       }));
+      await claimPage.locator("#claimBusinessOpen").waitFor({ state: "visible" });
+      await claimPage.waitForTimeout(500);
       await claimPage.locator("#claimBusiness").evaluate(el => { el.value = "00000000-0000-4000-8000-000000000002"; });
       await claimPage.locator("#claimEvidence").fill("QA simulation only. I am authorized to manage this test business.");
+      const postResponse = claimPage.waitForResponse(response =>
+        response.url().includes("/rest/v1/business_owner_claims") && response.request().method() === "POST"
+      );
       await claimPage.locator("#ownerClaimForm").evaluate(form => form.requestSubmit());
-      await claimPage.waitForFunction(() => /solicitud recibida|request received/i.test(document.querySelector("#ownerClaimMessage")?.textContent || ""), null, { timeout: 8000 });
+      await postResponse;
+      await claimPage.waitForTimeout(300);
+      const claimMessage = (await claimPage.locator("#ownerClaimMessage").textContent()) || "";
+      if (!/solicitud recibida|request received/i.test(claimMessage)) {
+        throw new Error("Unexpected claim confirmation message: " + claimMessage);
+      }
       const session = await claimPage.evaluate(() => JSON.parse(sessionStorage.getItem("reputix_owner_session") || "null"));
       if (session?.access_token !== "qa-mocked-access-token") throw new Error("Owner session was not preserved");
       await claimPage.close();
