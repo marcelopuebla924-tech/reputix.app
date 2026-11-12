@@ -731,6 +731,12 @@ header>.header-actions{display:flex;align-items:center;justify-content:flex-end;
       </section>
       <section id="adminClaimsPanel" hidden>
         <div class="divider"></div>
+        <h3>Revisión inteligente de negocios</h3>
+        <p class="admin-warning">La IA analiza integridad y consistencia de las propuestas. No verifica existencia, identidad ni propiedad y nunca aprueba automáticamente.</p>
+        <button class="secondary" id="adminBusinessModerationRefresh" type="button">Actualizar negocios pendientes</button>
+        <p id="adminBusinessModerationStatus" class="owner-message" aria-live="polite"></p>
+        <div id="adminBusinessModerationList"></div>
+        <div class="divider"></div>
         <h3 id="adminClaimsTitle">🛡️ Revisión administrativa</h3>
         <p class="admin-warning" id="adminClaimsWarning">Solo verifica una solicitud cuando hayas comprobado la identidad y una prueba válida de relación con el negocio. No aceptes únicamente una declaración escrita.</p>
         <div id="adminClaimsList"></div>
