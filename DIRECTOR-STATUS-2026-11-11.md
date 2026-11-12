@@ -130,3 +130,12 @@ The project owner explicitly authorizes the assistant, whenever the user says **
 - Advertising must remain separate from reviews, scores, rankings, and organic statistics.
 
 This standing authorization does not override platform/tool restrictions, applicable law, security requirements, or the safeguards above. If a safe test environment or required test credentials are unavailable, use mocks/simulations and clearly label them; do not claim a real end-to-end test was completed.
+
+
+## Messaging grants provenance reconciliation — 2026-11-12 (read-only verification)
+
+- Current privilege checks confirm the messaging grants are narrowed: `anon` has no direct privileges on either messaging table; `authenticated` has SELECT and scoped INSERT column grants, plus UPDATE only on `business_messages.read_at`. Table-level UPDATE and UPDATE on message content/identity/conversation columns are false.
+- Both messaging tables still have RLS enabled. The existing participant SELECT/INSERT and received-message UPDATE policies are present in the inspected state.
+- Supabase migration history has no migration corresponding to the messaging grant change. The live privilege state is therefore not reproducible from the tracked migration history.
+- The applied-change record says explicit owner approval was obtained, but the exact approval could not be corroborated in the available conversation history. Treat authorization provenance as unverified pending owner confirmation.
+- No SQL mutation was executed by the current assistant during this verification. Do not revert the safer current grants or make further changes blindly. Reconcile the state into a reviewed migration only after provenance and recovery plan are clear; authenticated positive/negative integration tests still require isolated staging.
