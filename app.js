@@ -588,6 +588,8 @@ function setLanguage(value) {
   const customerHeading=$("customerWorkspaceTitle");if(customerHeading)customerHeading.textContent=lang==="es"?"Tu escritorio Reputix":"Your Reputix workspace";
   $("ownerEmailLabel").textContent = lang === "es" ? "Correo electrónico" : "Email address";
   $("ownerPasswordLabel").textContent = lang === "es" ? "Contraseña" : "Password";
+  if ($("ownerCountryLabel")) $("ownerCountryLabel").textContent = lang === "es" ? "País" : "Country";
+  if ($("ownerCountryHelp")) $("ownerCountryHelp").textContent = lang === "es" ? "Detectamos tu país aproximadamente por tu conexión. Puedes corregirlo." : "We estimate your country from your connection. You can correct it.";
   $("ownerSignIn").textContent = lang === "es" ? "Ya tengo cuenta · Iniciar sesión" : "I already have an account · Sign in";
   $("ownerSignUp").textContent = lang === "es" ? "Crear cuenta" : "Create account";
   if ($("ownerForgotPassword")) $("ownerForgotPassword").textContent = lang === "es" ? "¿Olvidaste tu contraseña?" : "Forgot your password?";
@@ -2835,6 +2837,43 @@ $("reputixAiForm").addEventListener("submit", async e => {
   }
 });
 
+async function detectRegistrationCountry() {
+  const input = $("ownerCountry");
+  const current = input?.value?.trim();
+  if (current) return { country: current, country_code: window.reputixDetectedCountryCode || null };
+  try {
+    const response = await fetch("https://ipwho.is/", { method:"GET", headers:{Accept:"application/json"}, cache:"no-store" });
+    if (!response.ok) throw new Error("Country lookup unavailable");
+    const data = await response.json();
+    if (!data?.success || !data.country) throw new Error("Country lookup unavailable");
+    const country = String(data.country).trim().slice(0,80);
+    const code = /^[A-Z]{2}$/.test(String(data.country_code || "").toUpperCase()) ? String(data.country_code).toUpperCase() : null;
+    if (input) input.value = country;
+    window.reputixDetectedCountryCode = code;
+    return { country, country_code: code };
+  } catch (_) {
+    return { country: current || "", country_code: window.reputixDetectedCountryCode || null };
+  }
+}
+async function syncOwnerCountryProfile(session) {
+  const meta = session?.user?.user_metadata || {};
+  const country = String(meta.country_name || $("ownerCountry")?.value || "").trim().slice(0,80);
+  const code = /^[A-Z]{2}$/.test(String(meta.country_code || "")) ? String(meta.country_code) : null;
+  if (!session?.access_token || !session?.user?.id || !country) return;
+  try {
+    const response = await fetch(SUPABASE_URL + "/rest/v1/user_profiles?on_conflict=user_id", {
+      method:"POST",
+      headers:{
+        apikey:SUPABASE_KEY,
+        Authorization:"Bearer " + session.access_token,
+        "Content-Type":"application/json",
+        Prefer:"resolution=merge-duplicates,return=minimal"
+      },
+      body:JSON.stringify({user_id:session.user.id,country_name:country,country_code:code})
+    });
+    if (!response.ok) throw new Error("Country profile save failed: " + response.status);
+  } catch (error) { console.warn("Reputix country profile:", error); }
+}
 async function ownerSignIn() {
   $("ownerAuthMessage").textContent=ownerText("Ingresando…","Signing in…");
   try {
@@ -2845,6 +2884,7 @@ async function ownerSignIn() {
       throw new Error(ownerText("Supabase no confirmó una sesión válida. Intenta nuevamente.","Supabase did not return a valid session. Please try again."));
     }
     ownerSetSession(session);
+    await syncOwnerCountryProfile(session);
     history.replaceState(null,"",window.location.pathname+window.location.search+"#ownerArea");
     $("ownerAuthMessage").textContent=ownerText("Sesión iniciada correctamente. Tu espacio privado está abierto más abajo.","Signed in successfully. Your private workspace is open below.");
     requestAnimationFrame(()=> $("privateSpace").scrollIntoView({behavior:"smooth",block:"start"}));
@@ -2856,16 +2896,18 @@ async function ownerSignUp() {
   const email = $("ownerEmail").value.trim();
   $("ownerAuthMessage").textContent = ownerText("Enviando registro…","Submitting registration…");
   try {
+    const countryInfo = await detectRegistrationCountry();
     // La confirmación del correo comercial debe regresar al panel de propietarios,
     // no al inicio de la página. El correo personal no se modifica.
     const returnTo = window.location.origin + window.location.pathname + "#ownerArea";
     const result = await ownerAuthRequest(
       "signup?redirect_to=" + encodeURIComponent(returnTo),
-      { email, password:$("ownerPassword").value }
+      { email, password:$("ownerPassword").value, data: { country_name: countryInfo.country || null, country_code: countryInfo.country_code || null } }
     );
 
     if (result.access_token && result.user) {
       ownerSetSession(result);
+      await syncOwnerCountryProfile(result);
       $("ownerAuthMessage").textContent = ownerText(
         "¡Cuenta creada y sesión iniciada! Ya puedes completar tu perfil y solicitar acceso a tu negocio.",
         "Account created and signed in! You can now complete your profile and request access to your business."
