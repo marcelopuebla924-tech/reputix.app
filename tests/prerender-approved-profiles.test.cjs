@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { build, normalizeApprovedBusinesses } = require("../scripts/prerender-approved-profiles.cjs");
+const { build, normalizeApprovedBusinesses, renderProfileHtml } = require("../scripts/prerender-approved-profiles.cjs");
 
 const approvedId = "00000000-0000-4000-8000-000000000551";
 const pendingId = "00000000-0000-4000-8000-000000000552";
@@ -88,4 +88,32 @@ test("unapproved records are ignored even when their other fields are populated"
     { id: pendingId, status: "pending", name: "Not public" },
     { id: "00000000-0000-4000-8000-000000000553", status: "rejected", name: "Also not public" }
   ]), []);
+});
+
+test("obviously malformed locality values are omitted from public SEO metadata without changing source records", () => {
+  const business = normalizeApprovedBusinesses([{
+    id: "00000000-0000-4000-8000-000000000554",
+    status: "approved",
+    name: "Quick Cleaning Services",
+    address: "9233south gate",
+    city: "Ca",
+    state: "CA",
+    country: "US"
+  }])[0];
+
+  assert.equal(business.address, "");
+  assert.equal(business.city, "");
+  assert.equal(business.state, "CA");
+  assert.equal(business.country, "US");
+
+  const template = '<head><title>Home</title><meta name="description" content="Home">' +
+    '<link rel="canonical" href="https://www.reputixapp.com/">' +
+    '<meta property="og:title" content="Home"><meta property="og:description" content="Home">' +
+    '<meta property="og:url" content="https://www.reputixapp.com/">' +
+    '<meta name="twitter:title" content="Home"><meta name="twitter:description" content="Home">' +
+    '<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite"}</script></head><body></body>';
+  const html = renderProfileHtml(template, business);
+  assert.doesNotMatch(html, /9233south gate|addressLocality|streetAddress/);
+  assert.match(html, /"addressRegion":"CA"/);
+  assert.match(html, /"addressCountry":"US"/);
 });
