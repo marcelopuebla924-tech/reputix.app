@@ -465,6 +465,9 @@ function setLanguage(value) {
     customerStatComplaintsNote:["Solicitudes enviadas","Requests submitted"],
     customerLinkReviews:["Mis opiniones","My reviews"],
     customerLinkReviewsNote:["Consulta tus reseñas","Check your reviews"],
+    customerComplaintBusinessLabel:["Negocio","Business"],
+    customerComplaintTextLabel:["Describe lo ocurrido","Describe what happened"],
+    customerComplaintSubmit:["Enviar reclamo","Submit complaint"],
     customerLinkProfile:["Mi perfil","My profile"],
     customerLinkProfileNote:["Datos y preferencias","Details and preferences"],
     customerLinkMessages:["Mensajes","Messages"],
@@ -2710,11 +2713,24 @@ async function reviewOwnerClaim(id,status,approve,reject) {
 let activeMessageConversation=null;
 async function loadMessageCenter() {
   if(!ownerSession?.access_token || !ownerSession?.user?.id) return;
+  let approvedBusinesses=lastBusinesses.filter(b=>b.status==="approved");
+  if(!approvedBusinesses.length){
+    const fetched=await api("businesses?select=id,name,city,address,status&status=eq.approved&order=name.asc&limit=100").catch(()=>[]);
+    if(Array.isArray(fetched))approvedBusinesses=fetched.filter(b=>b.status==="approved");
+  }
   const select=$("messageBusiness");
   const keep=select.value;
-  select.replaceChildren(new Option("Selecciona un negocio aprobado",""));
-  lastBusinesses.filter(b=>b.status==="approved").forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+  select.replaceChildren(new Option(ownerText("Selecciona un negocio aprobado","Select an approved business"),""));
+  approvedBusinesses.forEach(b=>select.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
   if(keep) select.value=keep;
+  const complaintSelect=$("customerComplaintBusiness");
+  if(complaintSelect){
+    const complaintKeep=complaintSelect.value;
+    complaintSelect.replaceChildren(new Option(ownerText("Selecciona el negocio","Select the business"),""));
+    approvedBusinesses.forEach(b=>complaintSelect.append(new Option(b.name+" · "+(b.city||b.address||""),b.id)));
+    if(complaintKeep)complaintSelect.value=complaintKeep;
+    if(!approvedBusinesses.length)complaintSelect.append(new Option(ownerText("No hay negocios disponibles","No businesses available"),""));
+  }
   const list=$("messageConversationList");list.replaceChildren();
   try {
     const conversations=await api("business_conversations?select=id,business_id,customer_id,subject,status,updated_at&order=updated_at.desc&limit=50");
@@ -2776,6 +2792,38 @@ $("messageStartButton").addEventListener("click",async()=>{
   } catch(err) {status.textContent=ownerText("No se pudo enviar: ","Could not send: ")+err.message;}
   finally {$("messageStartButton").disabled=false;}
 });
+$("customerComplaintForm")?.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const status=$("customerComplaintStatus");
+  const button=$("customerComplaintSubmit");
+  const businessId=$("customerComplaintBusiness").value;
+  const complaint=$("customerComplaintText").value.trim();
+  if(!ownerSession?.user?.id||!ownerSession?.access_token){
+    status.textContent=ownerText("Inicia sesión para enviar un reclamo.","Sign in to submit a complaint.");
+    return;
+  }
+  if(!businessId||complaint.length<10){
+    status.textContent=ownerText("Selecciona un negocio y escribe al menos 10 caracteres.","Choose a business and enter at least 10 characters.");
+    return;
+  }
+  button.disabled=true;
+  status.textContent=ownerText("Enviando tu reclamo para revisión…","Submitting your complaint for review…");
+  try{
+    await api("complaints",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({
+      business_id:businessId,
+      user_id:ownerSession.user.id,
+      complaint,
+      original_language:detectLanguage(complaint)||lang,
+      status:"pending"
+    })});
+    $("customerComplaintText").value="";
+    status.textContent=ownerText("Reclamo enviado. Quedará pendiente de revisión.","Complaint submitted. It will remain pending review.");
+    await loadPrivateSpace();
+  }catch(error){
+    status.textContent=ownerText("No se pudo enviar el reclamo: ","Could not submit complaint: ")+(error?.message||String(error));
+  }finally{button.disabled=false;}
+});
+
 $("messageReplyForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const conversationId=$("messageThread").dataset.conversationId;
