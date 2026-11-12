@@ -604,6 +604,7 @@ function setLanguage(value) {
   $("reputixAiPrompt").placeholder = lang === "es" ? "Escribe tu pregunta..." : "Type your question...";
   $("reputixAiSend").textContent = lang === "es" ? "Preguntar a Reputix AI" : "Ask Reputix AI";
   input.placeholder = t("placeholder");
+  input.setAttribute("aria-label", lang === "es" ? "Buscar negocios, servicios o categorías" : "Search businesses, services, or categories");
   searchButton.textContent = t("search");
 
   ["f2","fd2","f3","fd3",
