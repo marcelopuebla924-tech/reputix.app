@@ -290,3 +290,26 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 ### Verification and safety
 - Browser QA run #152 was in progress for the diagnostic test.
 - No production review, photo, account, Storage object, or database write was created; all test services remain mocked.
+
+
+## Session 014 — 2026-11-11
+
+- Start: 18:14:44 PST
+- End: 18:16:35 PST
+- Active tracked time: 1 minute 51 seconds (0.031 hours)
+- Cumulative tracked time since baseline: 31 minutes 41 seconds (0.528 hours)
+
+### Work performed
+1. Inspected diagnostic CI output and found the review form had no submitted payload or AI calls because native form validation blocked submission.
+2. Traced the cause to the review form helper setting every text/date/time input as required, including the field labeled "Who served you? (optional)".
+3. Corrected the helper to accept an explicit required flag and set `staff_name` optional.
+4. Added a regression assertion proving the review form is valid when the optional staff field is blank.
+
+### Commits
+- `b05aba7c7ce3074f8f34471ef18f4ca0b8e297f5` — app fix.
+- `007861f0b49008bee6f7a9d1f3d25a3e0adb6a01` — regression assertion.
+
+### Verification and safety
+- Browser QA run #152 failed as expected before the fix and exposed the root cause.
+- Browser QA runs #156 and #157 were in progress after the fix.
+- All tests use synthetic data and mocked services; no production review or other record was written.
