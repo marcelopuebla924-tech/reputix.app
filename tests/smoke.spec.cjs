@@ -39,6 +39,24 @@ const { chromium } = require("playwright");
       if ((await page.locator("#ownerSubscriptionPlans").textContent()).trim() !== "Ver planes") throw new Error("Spanish plan button label did not update");
     });
 
+    await check("Psychology is available as a professional category in Spanish and English", async () => {
+      await page.locator("#addProChoice").click();
+      let category = page.locator("#communityFormWrap select[name='category']");
+      await category.waitFor({ state: "visible" });
+      let labels = await category.locator("option").allTextContents();
+      if (!labels.some(label => /Psicólogo\/a o centro de salud mental/.test(label))) {
+        throw new Error("Spanish psychology category is missing");
+      }
+      await page.locator("#language").selectOption("en");
+      await page.locator("#addProChoice").click();
+      category = page.locator("#communityFormWrap select[name='category']");
+      labels = await category.locator("option").allTextContents();
+      if (!labels.some(label => /Psychologist \/ mental health center/.test(label))) {
+        throw new Error("English psychology category is missing");
+      }
+      await page.locator("#language").selectOption("es");
+    });
+
     await check("Business search handles a query and restores its button", async () => {
       await page.locator("#business").fill("reputix-smoke-test-no-match-2026");
       await page.locator("#searchButton").click();
@@ -72,7 +90,7 @@ const { chromium } = require("playwright");
             body: JSON.stringify(isDirectProfile ? [{
               id: businessId,
               name: businessName,
-              category: "Retail",
+              category: "Profesional / servicio: Psicólogo/a",
               address: "100 QA Test Avenue",
               city: "Los Angeles",
               zip: "90001",
@@ -104,6 +122,12 @@ const { chromium } = require("playwright");
       const sharePayload = await profilePage.evaluate(() => window.__reputixSharePayload);
       if (!sharePayload.url.includes("business=" + businessId) || !sharePayload.title.includes(businessName)) {
         throw new Error("Share action did not provide the direct public business URL");
+      }
+      await card.locator(".actions button").first().click();
+      const privacyNotice = card.locator(".review-safety-note");
+      await privacyNotice.waitFor({ state: "visible", timeout: 10000 });
+      if (!/diagnósticos|tratamientos|medicamentos/i.test(await privacyNotice.textContent())) {
+        throw new Error("Psychology review privacy guidance is missing");
       }
       await profilePage.close();
     });
