@@ -38,6 +38,7 @@ The first baseline attempt failed because a foreign key was added before its ref
 2. The new proposal was stored as `pending`; anon could not SELECT it. The synthetic row was deleted.
 3. Blank business name was rejected with `Business name is required`.
 4. Oversized business name was rejected by field-length validation.
+5. A duplicate proposal matching an existing pending business was rejected; the synthetic proposal was deleted afterward.
 5. `is_reputix_admin()` returned true for trusted JWT `app_metadata.reputix_role=admin` and false when the role was present only in user_metadata.
 6. Anon could submit a pending review for a synthetic approved business; pending review was not publicly visible.
 7. Anon could not insert a review with status `published`; RLS rejected it.
