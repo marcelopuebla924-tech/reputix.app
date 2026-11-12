@@ -5,7 +5,7 @@ const path = require("node:path");
 
 const PAGE_SIZE = 500;
 const MAX_PAGES = 100;
-const PUBLIC_SELECT = "id,name,category,description,address,city,status";
+const PUBLIC_SELECT = "id,name,category,address,city,status";
 
 function extractPublicSupabaseConfig(appSource) {
   const urlMatch = appSource.match(/const\s+SUPABASE_URL\s*=\s*["']([^"']+)["'];/);
