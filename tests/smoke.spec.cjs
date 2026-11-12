@@ -504,22 +504,23 @@ const { execFileSync } = require("node:child_process");
       await fileInput.setInputFiles({
         name: "too-large.png",
         mimeType: "image/png",
-        buffer: Buffer.alloc(5 * 1024 * 1024 + 1)
+        buffer: Buffer.alloc(26 * 1024 * 1024)
       });
       await form.locator('button[type="submit"]').click();
-      await photoPage.waitForFunction(() => /5 MB o menos|5 MB or less/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
-      if (storageUploads !== 0 || photoPayload) throw new Error("Oversized photo reached storage or photo metadata API");
-      await fileInput.setInputFiles({ name: "qa-business-photo.png", mimeType: "image/png", buffer: Buffer.from("synthetic-png-image-data") });
+      await photoPage.waitForFunction(() => /25 MB|25 MB/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
+      if (storageUploads !== 0 || photoPayload) throw new Error("Photo above the 25 MB source limit reached storage or metadata API");
+      const validPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j2ioAAAAASUVORK5CYII=", "base64");
+      await fileInput.setInputFiles({ name: "qa-business-photo.png", mimeType: "image/png", buffer: validPng });
       await form.locator('button[type="submit"]').click();
       await photoPage.waitForFunction(() => /Foto enviada|Photo submitted/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 10000 });
       if (storageUploads !== 1 || !photoPayload ||
           photoPayload.business_id !== businessId ||
           photoPayload.original_filename !== "qa-business-photo.png" ||
-          photoPayload.content_type !== "image/png" ||
-          photoPayload.file_size !== Buffer.byteLength("synthetic-png-image-data") ||
+          !["image/webp","image/jpeg"].includes(photoPayload.content_type) ||
+          !(photoPayload.file_size > 0 && photoPayload.file_size < validPng.length) ||
           photoPayload.status !== "pending" ||
           !String(photoPayload.storage_path || "").startsWith("proposals/" + businessId + "/")) {
-        throw new Error("Photo upload did not send the expected storage object and pending review metadata: " + JSON.stringify({ storageUploads, photoPayload }));
+        throw new Error("Photo upload did not optimize and send the expected storage object and pending review metadata: " + JSON.stringify({ storageUploads, photoPayload }));
       }
       await photoPage.close();
     });
