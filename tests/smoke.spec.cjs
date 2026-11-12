@@ -940,6 +940,60 @@ const { chromium } = require("playwright");
       await authPage.close();
     });
 
+    await check("Owner authentication errors remain visible and controls recover", async () => {
+      const errorPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      errorPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let signInCalls = 0;
+      let signUpCalls = 0;
+      let recoveryCalls = 0;
+      await errorPage.route("**/auth/v1/token?grant_type=password", async route => {
+        signInCalls += 1;
+        await route.fulfill({
+          status: 400,
+          contentType: "application/json",
+          body: JSON.stringify({ msg: "Invalid login credentials" })
+        });
+      });
+      await errorPage.route("**/auth/v1/signup*", async route => {
+        signUpCalls += 1;
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            user: { id: "00000000-0000-4000-8000-000000000214", email: "duplicate-owner-qa@example.invalid", identities: [] },
+            session: null
+          })
+        });
+      });
+      await errorPage.route("**/auth/v1/recover*", async route => {
+        recoveryCalls += 1;
+        await route.fulfill({
+          status: 500,
+          contentType: "application/json",
+          body: JSON.stringify({ msg: "Synthetic recovery service unavailable" })
+        });
+      });
+      await errorPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await errorPage.locator("#ownerEmail").fill("duplicate-owner-qa@example.invalid");
+      await errorPage.locator("#ownerPassword").fill("QA-only-invalid-password");
+      await errorPage.locator("#ownerSignIn").click();
+      await errorPage.waitForFunction(() => /invalid login credentials/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""), null, { timeout: 8000 });
+      if (signInCalls !== 1 || await errorPage.locator("#ownerSignIn").isDisabled()) {
+        throw new Error("Invalid sign-in did not show the server error and restore the sign-in button");
+      }
+      await errorPage.locator("#ownerSignUp").click();
+      await errorPage.waitForFunction(() => /ya podría estar registrado|may already be registered/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""), null, { timeout: 8000 });
+      if (signUpCalls !== 1 || await errorPage.locator("#ownerSignUp").isDisabled()) {
+        throw new Error("Duplicate registration did not show a clear message and restore the registration button");
+      }
+      await errorPage.locator("#ownerForgotPassword").click();
+      await errorPage.waitForFunction(() => /synthetic recovery service unavailable/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""), null, { timeout: 8000 });
+      if (recoveryCalls !== 1 || await errorPage.locator("#ownerForgotPassword").isDisabled()) {
+        throw new Error("Recovery service failure did not show its error and restore the recovery button");
+      }
+      await errorPage.close();
+    });
+
     await check("Private member data requests explicitly scope records to the signed-in user", async () => {
       const scopedPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       scopedPage.on("pageerror", error => failures.push(error.stack || error.message));
