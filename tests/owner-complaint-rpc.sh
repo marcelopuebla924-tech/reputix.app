@@ -40,7 +40,7 @@ if call_as 44444444-4444-4444-8444-444444444444 eeeeeeee-eeee-4eee-8eee-eeeeeeee
 fi
 
 # Anonymous/null identity cannot respond.
-if psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -c "SELECT public.owner_respond_to_complaint('dddddddd-dddd-4ddd-8ddd-dddddddddddd','Anonymous attempt')"; then
+if psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -c "BEGIN; SET LOCAL ROLE anon; SELECT public.owner_respond_to_complaint('dddddddd-dddd-4ddd-8ddd-dddddddddddd','Anonymous attempt'); COMMIT;"; then
   echo "Unauthenticated call was incorrectly allowed"
   exit 1
 fi
