@@ -290,3 +290,14 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - The suite remains at 31 named checks; these are additional button-level assertions in an existing scenario.
 - Push-triggered CI result is not independently retrievable through the currently available workflow-run connector. Keep the new assertions marked pending.
 - Synthetic/mocked only; no production proposal or record was created.
+
+
+## Update — 2026-11-11 18:32 PST
+
+- Reconciled additional repository QA work.
+- Browser QA run #198 passed all 31 named checks with zero failures and zero page errors.
+- Admin advertising test verifies the synthetic campaign payload including business, title, budget cents, destination URL, placement, schedule, and pending-review state.
+- Static control audit: 62 actual interactive control IDs are covered by tests; remaining four scanned IDs are non-interactive containers/text/rails.
+- Claim picker test now searches for and selects an approved synthetic business without submitting a claim (commit `25bc0b647720b06b87d9411d3730dd1746ead72d`).
+- The latest proposal form submit-button test (`807609bab3d09fb3a84a55f00a1ee1aa572a33b5`) remains pending independent push-run verification.
+- No production campaign, proposal, or billing action occurred.
