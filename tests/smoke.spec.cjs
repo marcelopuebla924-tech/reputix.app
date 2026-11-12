@@ -858,6 +858,11 @@ const { chromium } = require("playwright");
       await customerPage.locator("#messageStartButton").click();
       await customerPage.waitForFunction(() => /mensaje enviado|message sent/i.test(document.querySelector("#messageStatus")?.textContent || ""), null, { timeout: 8000 });
       if (conversations.length !== 1 || messages.length !== 1) throw new Error("Customer message did not create the expected synthetic conversation");
+      await customerPage.locator("#privateComplaintsAction").click();
+      await customerPage.waitForFunction(() => {
+        const target = document.querySelector("#privateComplaintsContent");
+        return !!target && target.getBoundingClientRect().top < window.innerHeight && target.getBoundingClientRect().bottom > 0;
+      }, null, { timeout: 8000 });
 
       const ownerPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       ownerPage.on("pageerror", error => failures.push(error.stack || error.message));
@@ -889,6 +894,12 @@ const { chromium } = require("playwright");
       await ownerPage.locator("#ownerMessageReplyForm").evaluate(form => form.requestSubmit());
       await ownerPage.waitForFunction(() => /respuesta enviada|reply sent/i.test(document.querySelector("#ownerMessageReplyStatus")?.textContent || ""), null, { timeout: 8000 });
       if (messages.length !== 2 || messages[1].sender_id !== ownerId) throw new Error("Owner reply was not saved as the verified synthetic owner");
+      await ownerPage.locator("#ownerMessagesRefresh").click();
+      await ownerPage.waitForFunction(() =>
+        [...document.querySelectorAll("#ownerMessageList .message-conversation")].some(button => button.textContent.includes("QA Verified Business")),
+        null,
+        { timeout: 8000 }
+      );
 
       await customerPage.locator("#messageConversationList .message-conversation").first().click();
       await customerPage.waitForFunction(() =>
