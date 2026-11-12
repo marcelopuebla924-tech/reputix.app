@@ -26,3 +26,5 @@ jobs:
         run: deno check supabase/functions/reputix-ai/index.ts
       - name: Run AI authorization and CORS source-contract tests
         run: node --test tests/reputix-ai-source-contract.test.mjs
+
+# Director validation trigger: 2026-11-12; no production deployment is performed by this workflow.
