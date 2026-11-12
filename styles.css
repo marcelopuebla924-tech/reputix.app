@@ -2363,3 +2363,19 @@ select option, select optgroup {
     width:100% !important;
   }
 }
+
+/* Message area visual cleanup: keep one outer card border only.
+   Form controls retain their own outline so they remain easy to identify. */
+#privateSpace .customer-module-group #privateMessagesContent > .message-compose,
+#privateSpace .customer-module-group #privateMessagesContent > .message-inbox,
+#privateSpace .customer-module-group #privateMessagesContent > .message-thread {
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+  background:transparent !important;
+}
+#privateSpace .customer-module-group #privateMessagesContent .message-bubble {
+  border:0 !important;
+  box-shadow:none !important;
+}
