@@ -1889,6 +1889,10 @@ async function loadPublicBusinessFromUrl() {
     const rows = await api("businesses?" + query.toString());
     const business = Array.isArray(rows) ? rows[0] : null;
     if (!business || !business.id || !business.name) {
+      // El contenedor puede haber recibido datos del descubrimiento inicial antes de la respuesta.
+      // En una ficha no aprobada, siempre vaciarlo para evitar exposición accidental.
+      lastBusinesses = [];
+      resultsBox.replaceChildren();
       notice.textContent = lang === "es"
         ? "Esta ficha no está disponible públicamente."
         : "This profile is not publicly available.";
@@ -3496,6 +3500,9 @@ window.reputixHandleOwnerClaimSubmit = async e => {
 if(ownerSession?.access_token) ownerSetSession(ownerSession);
 
 async function loadApprovedBusinesses() {
+  // Los enlaces directos se resuelven exclusivamente mediante loadPublicBusinessFromUrl.
+  // No permitir que el respaldo de descubrimiento pinte tarjetas mientras se valida el ID.
+  if (new URLSearchParams(window.location.search).has("business")) return;
   resultsBox.replaceChildren();
   lastBusinesses = [];
   notice.textContent = lang === "es" ? "Cargando negocios aprobados..." : "Loading approved businesses...";
