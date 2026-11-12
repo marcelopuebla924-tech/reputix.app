@@ -168,8 +168,14 @@ const { chromium } = require("playwright");
         paidPage.on("pageerror", error => failures.push(error.stack || error.message));
         let refreshProfileCalls = 0;
         let profileSavePayload = null;
+        let publicationPayload = null;
         await paidPage.route("**/rest/v1/**", async route => {
           const url = route.request().url();
+          if (url.includes("/user_publications") && route.request().method() === "POST") {
+            publicationPayload = route.request().postDataJSON();
+            await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
+            return;
+          }
           if (url.includes("/user_profiles") && route.request().method() === "POST") {
             profileSavePayload = route.request().postDataJSON();
             await route.fulfill({ status: 204, body: "" });
@@ -210,6 +216,15 @@ const { chromium } = require("playwright");
             profileSavePayload.display_name !== "QA Member Profile" ||
             profileSavePayload.bio !== "Synthetic profile editor validation only.") {
           throw new Error("Inline profile editor did not save the expected synthetic member payload");
+        }
+        await paidPage.locator("#privatePostBody").fill("QA-only community post; no real customer content.");
+        await paidPage.locator("#privatePostSubmit").click();
+        await paidPage.waitForFunction(() => /publicación guardada|post saved/i.test(document.querySelector("#privatePostMessage")?.textContent || ""), null, { timeout: 8000 });
+        if (!publicationPayload ||
+            publicationPayload.user_id !== "00000000-0000-4000-8000-000000000091" ||
+            publicationPayload.body !== "QA-only community post; no real customer content." ||
+            publicationPayload.status !== "published") {
+          throw new Error("Community post button did not submit the expected signed-in user's synthetic post");
         }
         const workspaceFacts = await paidPage.evaluate(() => {
           const panel = document.querySelector("#customerWorkspace");
