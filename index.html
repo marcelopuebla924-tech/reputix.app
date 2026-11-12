@@ -128,22 +128,44 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 </style>
 
 <style id="reputix-customer-workspace">
-.customer-workspace{margin:18px 0 22px;padding:clamp(16px,3vw,24px);border:1px solid #168acb;border-radius:20px;background:linear-gradient(145deg,#071d35,#061224);box-shadow:0 0 22px rgba(0,153,255,.12);color:#eff9ff}
+.owner-area{max-width:1500px;width:100%;padding-left:clamp(12px,2.5vw,30px);padding-right:clamp(12px,2.5vw,30px)}
+.owner-panel{padding:clamp(16px,2.5vw,30px)}
+.private-space{width:100%;max-width:none;padding:clamp(18px,2.8vw,36px)}
+.customer-workspace{width:100%;margin:22px 0 30px;padding:clamp(20px,3.2vw,38px);border:1px solid #168acb;border-radius:24px;background:radial-gradient(ellipse at 5% 0%,rgba(0,163,255,.17),transparent 36%),linear-gradient(145deg,#071d35,#061224 68%,#07182b);box-shadow:0 0 28px rgba(0,153,255,.15),inset 0 1px 0 rgba(123,220,255,.08);color:#eff9ff}
 .customer-workspace[hidden]{display:none!important}
-.customer-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
-.customer-workspace-kicker{font-size:10px;letter-spacing:1.8px;font-weight:900;color:#43ceff}
-.customer-workspace-head h3{margin:5px 0;color:#fff;font-size:clamp(22px,3vw,29px)}
-.customer-workspace-head p,.customer-workspace-foot{margin:0;color:#b7cde1;font-size:13px;line-height:1.5}
-.customer-plan-chip{padding:8px 12px;border:1px solid #43caff;border-radius:999px;background:#07375b;color:#dff8ff;font-size:12px;font-weight:800}
-.customer-workspace-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
-.customer-workspace-link{display:flex;min-height:108px;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;padding:14px;border:1px solid #18517a;border-radius:14px;background:linear-gradient(145deg,#0c2a48,#08192c);color:#f4fbff;text-decoration:none;transition:transform .18s,border-color .18s,box-shadow .18s}
-.customer-workspace-link:hover{transform:translateY(-2px);border-color:#42cfff;box-shadow:0 0 14px #009cff35}
-.customer-workspace-link>span{color:#5bd9ff;font-size:20px}
-.customer-workspace-link strong{font-size:14px}
-.customer-workspace-link small{color:#b5cce0;font-size:11px;line-height:1.35}
-.customer-workspace-foot{margin-top:14px}
-@media(max-width:680px){.customer-workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.customer-workspace-link{min-height:98px;padding:12px}}
-@media(max-width:380px){.customer-workspace-grid{grid-template-columns:1fr}}
+.customer-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.customer-workspace-kicker{font-size:10px;letter-spacing:2px;font-weight:900;color:#43ceff}
+.customer-workspace-head h3{margin:7px 0;color:#fff;font-size:clamp(26px,3.3vw,36px);letter-spacing:-.5px}
+.customer-workspace-head p{margin:0;color:#b7cde1;font-size:14px;line-height:1.55;max-width:760px}
+.customer-plan-chip{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:10px 17px;border:1px solid #43caff;border-radius:999px;background:linear-gradient(135deg,#075083,#07375b);color:#dff8ff;font-size:12px;font-weight:900;letter-spacing:.7px;box-shadow:0 0 18px #009dff24}
+.customer-workspace-overview{display:grid;grid-template-columns:minmax(230px,1.35fr) repeat(3,minmax(135px,.7fr));gap:12px;margin:0 0 24px}
+.customer-plan-summary,.customer-stat-card{min-width:0;min-height:112px;padding:17px 18px;border:1px solid #18517a;border-radius:16px;background:linear-gradient(145deg,rgba(12,42,72,.95),rgba(6,23,41,.98))}
+.customer-plan-summary{border-color:#238ec2;background:linear-gradient(135deg,rgba(7,68,105,.65),rgba(6,23,41,.98))}
+.customer-summary-label{display:block;margin-bottom:9px;color:#61d9ff;font-size:10px;font-weight:900;letter-spacing:1.5px}
+.customer-plan-summary strong{display:block;color:#fff;font-size:17px}
+.customer-plan-summary p{margin:7px 0 0;color:#b7cde1;font-size:11px;line-height:1.5}
+.customer-stat-card{display:flex;flex-direction:column;justify-content:center;gap:5px}
+.customer-stat-card>span{color:#b8d0e6;font-size:11px;font-weight:700}
+.customer-stat-card strong{color:#65d8ff;font-size:29px;line-height:1.1;font-variant-numeric:tabular-nums}
+.customer-stat-card small{color:#88a9c4;font-size:10px}
+.customer-workspace-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 0 14px;padding-bottom:14px;border-bottom:1px solid rgba(83,166,210,.2)}
+.customer-workspace-toolbar h4{margin:0 0 4px;color:#f4fbff;font-size:16px}
+.customer-workspace-toolbar p{margin:0;color:#9fbad0;font-size:11px;line-height:1.45}
+.customer-workspace-refresh-wrap{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
+.customer-refresh-button{min-height:40px;padding:9px 14px;border:1px solid #238ec2;border-radius:11px;background:#082d4b;color:#dff8ff;font:inherit;font-size:12px;font-weight:800;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+.customer-refresh-button:hover{background:#0b4168;border-color:#56d7ff;transform:translateY(-1px)}
+.customer-refresh-button:disabled{opacity:.6;cursor:wait;transform:none}
+#customerWorkspaceStatus{min-width:110px;text-align:right}
+.customer-workspace-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.customer-workspace-link{display:flex;min-width:0;min-height:118px;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;padding:17px;border:1px solid #18517a;border-radius:16px;background:linear-gradient(145deg,#0c2a48,#08192c);color:#f4fbff;text-decoration:none;transition:transform .18s,border-color .18s,box-shadow .18s,background .18s}
+.customer-workspace-link:hover,.customer-workspace-link:focus-visible{transform:translateY(-2px);border-color:#42cfff;background:linear-gradient(145deg,#103b60,#09213a);box-shadow:0 0 18px #009cff35;outline:none}
+.customer-workspace-link>span{display:grid;place-items:center;width:34px;height:34px;border:1px solid #236c98;border-radius:11px;background:#07395b;color:#72e0ff;font-size:19px}
+.customer-workspace-link strong{font-size:13px;line-height:1.3}
+.customer-workspace-link small{color:#b5cce0;font-size:10px;line-height:1.4}
+.customer-workspace-link[hidden]{display:none!important}
+@media(max-width:1100px){.customer-workspace-overview{grid-template-columns:repeat(4,minmax(0,1fr))}.customer-plan-summary{grid-column:1/-1}.customer-workspace-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.owner-area{padding-left:10px;padding-right:10px}.private-space{padding:15px}.customer-workspace{padding:17px;border-radius:19px}.customer-workspace-head{align-items:flex-start}.customer-plan-chip{min-height:36px}.customer-workspace-overview{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.customer-plan-summary{grid-column:1/-1}.customer-stat-card{min-height:98px;padding:12px}.customer-stat-card strong{font-size:24px}.customer-workspace-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.customer-workspace-link{min-height:105px;padding:13px}.customer-workspace-toolbar{align-items:flex-start}.customer-workspace-refresh-wrap{width:100%;align-items:center;justify-content:space-between}.customer-refresh-button{flex:1}#customerWorkspaceStatus{max-width:48%;font-size:10px}}
+@media(max-width:380px){.customer-workspace-overview{grid-template-columns:1fr 1fr}.customer-plan-summary{grid-column:1/-1}.customer-workspace-grid{grid-template-columns:1fr}.customer-workspace-link{min-height:86px;display:grid;grid-template-columns:36px minmax(0,1fr);align-content:center;column-gap:10px}.customer-workspace-link>span{grid-row:span 2}.customer-workspace-link small{grid-column:2}}
 </style>
 
 
@@ -409,22 +431,51 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
     </section>
     <section id="customerWorkspace" class="customer-workspace" hidden aria-labelledby="customerWorkspaceTitle">
       <div class="customer-workspace-head">
-        <div>
-          <span class="customer-workspace-kicker">REPUTIX · CUSTOMER WORKSPACE</span>
+        <div class="customer-workspace-heading">
+          <span class="customer-workspace-kicker">REPUTIX · MEMBER CENTER</span>
           <h3 id="customerWorkspaceTitle">Tu escritorio Reputix</h3>
-          <p id="customerWorkspaceIntro">Tus herramientas y actividad en un solo lugar.</p>
+          <p id="customerWorkspaceIntro">Tu centro personal para administrar tu actividad y tus herramientas.</p>
         </div>
-        <div class="customer-plan-chip" id="customerWorkspacePlan">Plan activo</div>
+        <div class="customer-plan-chip" id="customerWorkspacePlan">PLAN ACTIVO</div>
       </div>
-      <div class="customer-workspace-grid">
-        <a class="customer-workspace-link" href="#privateProfileTitle"><span>◉</span><strong id="customerLinkProfile">Mi perfil</strong><small id="customerLinkProfileNote">Datos y preferencias</small></a>
-        <a class="customer-workspace-link" href="#privateMessagesTitle"><span>✉</span><strong id="customerLinkMessages">Mensajes</strong><small id="customerLinkMessagesNote">Conversaciones con negocios</small></a>
-        <a class="customer-workspace-link" href="#privateComplaintsTitle"><span>▤</span><strong id="customerLinkComplaints">Mis reclamos</strong><small id="customerLinkComplaintsNote">Seguimiento de solicitudes</small></a>
-        <a class="customer-workspace-link" href="#privatePostsTitle"><span>✎</span><strong id="customerLinkPosts">Publicaciones</strong><small id="customerLinkPostsNote">Comparte con la comunidad</small></a>
-        <a class="customer-workspace-link" href="#privateDiscoverTitle"><span>⌖</span><strong id="customerLinkDiscover">Descubrir negocios</strong><small id="customerLinkDiscoverNote">Explora Reputix</small></a>
-        <a class="customer-workspace-link" id="customerLinkAI" href="#reputixAiTitle" hidden><span>✦</span><strong id="customerLinkAITitle">Reputix AI</strong><small id="customerLinkAINote">Asistente inteligente Pro</small></a>
+      <div class="customer-workspace-overview">
+        <section class="customer-plan-summary" aria-label="Estado de suscripción">
+          <span class="customer-summary-label" id="customerPlanSummaryLabel">TU MEMBRESÍA</span>
+          <strong id="customerWorkspacePlanDetail">Suscripción activa</strong>
+          <p id="customerWorkspaceRenewal">Tu acceso se verifica con el estado de tu suscripción.</p>
+        </section>
+        <article class="customer-stat-card">
+          <span id="customerStatReviewsLabel">Mis opiniones</span>
+          <strong id="customerStatReviews">—</strong>
+          <small id="customerStatReviewsNote">Opiniones enviadas</small>
+        </article>
+        <article class="customer-stat-card">
+          <span id="customerStatPostsLabel">Publicaciones</span>
+          <strong id="customerStatPosts">—</strong>
+          <small id="customerStatPostsNote">Actividad comunitaria</small>
+        </article>
+        <article class="customer-stat-card">
+          <span id="customerStatComplaintsLabel">Mis reclamos</span>
+          <strong id="customerStatComplaints">—</strong>
+          <small id="customerStatComplaintsNote">Solicitudes enviadas</small>
+        </article>
       </div>
-      <p class="customer-workspace-foot" id="customerWorkspaceFoot">Las funciones se habilitan según tu suscripción activa. El acceso a negocios y estadísticas privadas requiere verificación de propiedad.</p>
+      <div class="customer-workspace-toolbar">
+        <div><h4 id="customerWorkspaceActionsTitle">Accesos rápidos</h4><p id="customerWorkspaceFoot">Tus herramientas se habilitan según tu suscripción activa.</p></div>
+        <div class="customer-workspace-refresh-wrap">
+          <button type="button" class="customer-refresh-button" id="customerWorkspaceRefresh">↻ <span id="customerWorkspaceRefreshLabel">Actualizar escritorio</span></button>
+          <p id="customerWorkspaceStatus" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <nav class="customer-workspace-grid" aria-label="Accesos del escritorio Reputix">
+        <a class="customer-workspace-link" href="#privateProfileTitle"><span aria-hidden="true">◉</span><strong id="customerLinkProfile">Mi perfil</strong><small id="customerLinkProfileNote">Datos y preferencias</small></a>
+        <a class="customer-workspace-link" href="#privateOwnReviewsTitle"><span aria-hidden="true">★</span><strong id="customerLinkReviews">Mis opiniones</strong><small id="customerLinkReviewsNote">Consulta tus reseñas</small></a>
+        <a class="customer-workspace-link" href="#privateMessagesTitle"><span aria-hidden="true">✉</span><strong id="customerLinkMessages">Mensajes</strong><small id="customerLinkMessagesNote">Conversaciones con negocios</small></a>
+        <a class="customer-workspace-link" href="#privateComplaintsTitle"><span aria-hidden="true">▤</span><strong id="customerLinkComplaints">Mis reclamos</strong><small id="customerLinkComplaintsNote">Seguimiento de solicitudes</small></a>
+        <a class="customer-workspace-link" href="#privatePostsTitle"><span aria-hidden="true">✎</span><strong id="customerLinkPosts">Publicaciones</strong><small id="customerLinkPostsNote">Comparte con la comunidad</small></a>
+        <a class="customer-workspace-link" href="#searchForm"><span aria-hidden="true">⌖</span><strong id="customerLinkDiscover">Descubrir negocios</strong><small id="customerLinkDiscoverNote">Buscar y explorar negocios</small></a>
+        <a class="customer-workspace-link" id="customerLinkAI" href="#reputixAiTitle" hidden><span aria-hidden="true">✦</span><strong id="customerLinkAITitle">Reputix AI</strong><small id="customerLinkAINote">Asistente inteligente Pro</small></a>
+      </nav>
     </section>
     <div class="private-grid private-area-groups">
       <section class="private-module-group customer-module-group" aria-labelledby="customerModulesTitle">
@@ -454,6 +505,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
         </div><button class="secondary private-action" type="button" id="privateMessagesAction">Abrir mensajes</button></article>
         <article class="private-tile"><span class="private-icon">▤</span><h3 id="privateComplaintsTitle">Reclamos</h3><p id="privateComplaintsDesc">Seguimiento y respuestas</p><div id="privateComplaintsContent"></div><button class="secondary private-action" type="button" id="privateComplaintsAction">Ver mis reclamos</button></article>
         
+        <article class="private-tile private-wide"><h3 id="privateOwnReviewsTitle">Mis opiniones</h3><p id="privateOwnReviewsDesc">Consulta el estado de las opiniones que has enviado.</p><div id="privateOwnReviewsContent" aria-live="polite"></div><button class="secondary private-action" type="button" id="privateOwnReviewsAction">Actualizar opiniones</button></article>
         <article class="private-tile private-wide"><h3 id="privatePostsTitle">Mis publicaciones</h3><form id="privatePostForm"><label class="owner-field"><span id="privatePostLabel">Comparte algo con la comunidad</span><textarea id="privatePostBody" rows="3" maxlength="5000" required></textarea></label><button class="primary" type="submit" id="privatePostSubmit">Publicar</button><p class="owner-message" id="privatePostMessage" aria-live="polite"></p></form><div id="privatePostsList"></div></article>
         <article class="private-tile private-wide"><h3 id="privateDiscoverTitle">Descubre otros negocios</h3><p id="privateDiscoverDesc">Sugerencias, tendencias y recomendaciones de Reputix.</p><div id="privateDiscoverContent"></div></article>
         <article class="private-tile private-wide ai-assistant-panel" hidden>
