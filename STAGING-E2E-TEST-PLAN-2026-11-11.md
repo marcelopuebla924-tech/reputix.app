@@ -169,3 +169,14 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - App commit: `b05aba7c7ce3074f8f34471ef18f4ca0b8e297f5`.
 - Test commit: `007861f0b49008bee6f7a9d1f3d25a3e0adb6a01`.
 - Browser QA runs #156 and #157 are running. No production data or settings were changed.
+
+
+## Update — 2026-11-11 18:17 PST
+
+- Browser QA run #156 passed for the review form optional-field application fix.
+- Browser QA run #157 passed the full 30-check suite: 30/30 checks passed, zero page errors.
+- The review submission test passes with staff name left blank and verifies all five ratings, visit details, signed-in user, pending status, and mocked AI advisory calls.
+- The photo upload test passes both unsupported-file rejection and synthetic PNG metadata submission.
+- App commit: `b05aba7c7ce3074f8f34471ef18f4ca0b8e297f5`.
+- Passing test commit: `007861f0b49008bee6f7a9d1f3d25a3e0adb6a01`.
+- These are isolated mocked browser tests, not live Supabase/Auth/RLS or production upload certification.
