@@ -37,9 +37,9 @@ Historical development before this baseline is not included because session-leve
 ## Session 002 — 2026-11-11
 
 - Start: 17:32:28 PDT
-- End: 17:38:47 PDT
-- Active tracked time: 6 minutes 19 seconds (0.105 hours)
-- Cumulative tracked time since baseline: 14 minutes 47 seconds (0.246 hours)
+- End: 17:39:25 PDT
+- Active tracked time: 6 minutes 57 seconds (0.116 hours)
+- Cumulative tracked time since baseline: 15 minutes 25 seconds (0.257 hours)
 
 ### Work performed
 1. Fixed duplicate recovery OTP verification caused by overlapping initialization, `load`, `pageshow`, and `hashchange` handlers.
