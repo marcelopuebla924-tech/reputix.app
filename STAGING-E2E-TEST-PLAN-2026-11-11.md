@@ -367,3 +367,11 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - All interactions used synthetic data and mocked APIs; no production writes, real campaigns, or charges occurred.
 - Staging is still unavailable: the repository lacks a complete local Supabase schema snapshot and Supabase branching requires Pro. No upgrade or new paid project was created.
 - Continue mocked browser QA; live Auth/RLS/Stripe/Storage remains unverified until isolated staging is approved.
+
+
+## Update — 2026-11-11 (map and campaign controls)
+
+- Browser QA #235 passed 32 checks, including the rejected-campaign resubmission action to `pending_review` (commit `f888f4a45f32fe6c7adfcc524938218deaccfe01`).
+- Browser QA #244 passed 32 checks after adding positive-match assertions for all five standalone map filters (All, Smoke Shops, Restaurants, Shops, Services), using four synthetic businesses (commit `0904ae423c5d2dab0c5f849a3b685c845515e998`).
+- Added a map reset assertion that verifies **Ver todos** calls the mocked map's `fitBounds` again after filtering; commit `d839686cee1e6be5dce2e40ec03dc149caa16cd3`, run #245 pending.
+- Synthetic businesses and mocked endpoints only; no production writes or billing operations.
