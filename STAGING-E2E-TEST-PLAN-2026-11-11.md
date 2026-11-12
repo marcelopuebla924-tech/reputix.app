@@ -198,3 +198,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - The verified-owner complaint response scenario passed, including the authorized RPC request and refreshed response display.
 - Passing test commit: `f908e00f6ed44c8d37040ec7d6fea0750892ef94`.
 - These are mocked browser checks only; live Supabase RLS/RPC integration remains unverified.
+
+
+## Update — 2026-11-11 18:20 PST
+
+- Expanded admin claim QA to cover both approval and rejection, including confirmation dialogs, correct status/timestamp payloads, and pending-queue refresh.
+- Existing suite count remains 31 named checks.
+- Commit: `c5415ad9da7b6b0cfd87e21a6ad95dfc2a404d0b`.
+- Browser QA run #172 is running for the expanded admin decision test.
+- No real claims or production data were changed.
