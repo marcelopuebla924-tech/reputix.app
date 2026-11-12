@@ -1799,6 +1799,10 @@ function makeComplaintSection(business) {
 
 /* Public business profiles: stable, shareable deep links + per-profile metadata. */
 function publicBusinessUrl(b) {
+  const staticProfile = window.location.pathname.match(/^\/business\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\/?$/i);
+  if (staticProfile && staticProfile[1].toLowerCase() === String(b.id).toLowerCase()) {
+    return new URL(window.location.pathname, window.location.origin).toString();
+  }
   const url = new URL(window.location.pathname, window.location.origin);
   url.searchParams.set("business", String(b.id));
   return url.toString();
@@ -1880,7 +1884,8 @@ async function sharePublicBusiness(b, status) {
 
 async function loadPublicBusinessFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const businessId = params.get("business");
+  const staticProfile = window.location.pathname.match(/^\/business\/([0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\/?$/i);
+  const businessId = params.get("business") || (staticProfile ? staticProfile[1] : null);
   if (!businessId) return;
   resultsBox.hidden = false;
   resultsBox.replaceChildren();
