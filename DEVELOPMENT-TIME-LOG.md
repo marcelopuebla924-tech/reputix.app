@@ -525,3 +525,13 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 ### Safety
 - Campaign and billing calls remained mocked; no real ad campaign or charge was created.
 - Passing test commit: `c097b2ae2c485f0a95fe3e63ab839778dcb93181`.
+
+
+## Session 025 — 2026-11-11
+
+- Checkpoint: 18:31:36 PST.
+- Replaced three programmatic proposal form submissions with clicks on the actual visible submit button: honeypot, valid proposal, and duplicate-proposal paths.
+- Commit: `807609bab3d09fb3a84a55f00a1ee1aa572a33b5`.
+- Exact push-triggered CI status is not independently available through the current workflow-run connector; new assertions remain unverified.
+- Exact active duration not measured; excluded from official time.
+- Official cumulative tracked development time remains 43 minutes 28 seconds (0.724 hours).
