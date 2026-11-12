@@ -346,3 +346,11 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Admin advertising lifecycle passed activate, pause, finish, and reject transitions using mocked API responses and confirmation dialogs.
 - Passing commit: `f17a33b14429655795eddfba6b02428d49989463`.
 - No production campaign or billing action was executed.
+
+
+## Update — 2026-11-11 18:37 PST
+
+- Browser QA run #231 passed all 32 checks, zero failures and zero page errors.
+- Investigated local Supabase CLI staging. Repository tree has no `supabase/config.toml` and only one migration SQL file, so it lacks a complete schema snapshot needed to safely reconstruct the backend locally.
+- Decision: do not create an incomplete test schema, connect local stack to production, or incur a new project/upgrade cost without approval.
+- Continue mocked browser QA until an approved isolated backend can be prepared.
