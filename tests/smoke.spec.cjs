@@ -140,6 +140,60 @@ const { chromium } = require("playwright");
       await reviewPage.close();
     });
 
+    await check("Business photo upload validates file type and submits approved-review metadata", async () => {
+      const photoPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      photoPage.on("pageerror", error => failures.push(error.stack || error.message));
+      const businessId = "00000000-0000-4000-8000-000000000401";
+      let storageUploads = 0;
+      let photoPayload = null;
+      await photoPage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = new URL(request.url());
+        const table = url.pathname.split("/").pop();
+        if (table === "businesses" && request.method() === "GET") {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+            id: businessId, name: "QA Photo Test Business", category: "Retail", city: "Los Angeles", status: "approved"
+          }]) });
+          return;
+        }
+        if (table === "business_photos" && request.method() === "POST") {
+          photoPayload = request.postDataJSON();
+          await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await photoPage.route("**/storage/v1/object/business-photos/**", async route => {
+        if (route.request().method() === "POST") storageUploads += 1;
+        await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+      });
+      await photoPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await photoPage.locator("#business").fill("QA Photo Test Business");
+      await photoPage.locator("#searchButton").click();
+      const card = photoPage.locator("#results .business-card").filter({ hasText: "QA Photo Test Business" }).first();
+      await card.waitFor({ state: "visible", timeout: 10000 });
+      await card.locator(".actions button.primary").click();
+      const form = card.locator('form:has(input[name="photo"])');
+      const fileInput = form.locator('input[name="photo"]');
+      await fileInput.setInputFiles({ name: "not-an-image.gif", mimeType: "image/gif", buffer: Buffer.from("qa-gif") });
+      await form.locator('button[type="submit"]').click();
+      await photoPage.waitForFunction(() => /JPG, PNG o WebP/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
+      if (storageUploads !== 0 || photoPayload) throw new Error("Unsupported file type reached storage or photo metadata API");
+      await fileInput.setInputFiles({ name: "qa-business-photo.png", mimeType: "image/png", buffer: Buffer.from("synthetic-png-image-data") });
+      await form.locator('button[type="submit"]').click();
+      await photoPage.waitForFunction(() => /Foto enviada|Photo submitted/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 10000 });
+      if (storageUploads !== 1 || !photoPayload ||
+          photoPayload.business_id !== businessId ||
+          photoPayload.original_filename !== "qa-business-photo.png" ||
+          photoPayload.content_type !== "image/png" ||
+          photoPayload.file_size !== Buffer.byteLength("synthetic-png-image-data") ||
+          photoPayload.status !== "pending" ||
+          !String(photoPayload.storage_path || "").startsWith("proposals/" + businessId + "/")) {
+        throw new Error("Photo upload did not send the expected storage object and pending review metadata: " + JSON.stringify({ storageUploads, photoPayload }));
+      }
+      await photoPage.close();
+    });
+
     await check("Owner claim submission preserves the session and confirms the request", async () => {
       const claimPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       claimPage.on("pageerror", error => failures.push(error.stack || error.message));
