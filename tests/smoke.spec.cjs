@@ -364,6 +364,41 @@ const { chromium } = require("playwright");
       await page.waitForFunction(() => /correo|email/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""));
     });
 
+    await check("Owner sign-out clears the local session and revokes only the current server session", async () => {
+      const signOutPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      signOutPage.on("pageerror", error => failures.push(error.stack || error.message));
+      let logoutCalls = 0;
+      let logoutScope = "";
+      let logoutAuthorization = "";
+      await signOutPage.route("**/rest/v1/**", route =>
+        route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+      );
+      await signOutPage.route("**/auth/v1/logout*", async route => {
+        logoutCalls += 1;
+        const url = new URL(route.request().url());
+        logoutScope = url.searchParams.get("scope") || "";
+        logoutAuthorization = route.request().headers().authorization || "";
+        await route.fulfill({ status: 204, body: "" });
+      });
+      await signOutPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await signOutPage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await signOutPage.evaluate(() => window.ownerSetSession({
+        access_token: "qa-signout-access-token",
+        refresh_token: "qa-signout-refresh-token",
+        user: { id: "00000000-0000-4000-8000-000000000212", email: "signout-qa@example.invalid", app_metadata: {} }
+      }));
+      await signOutPage.locator("#ownerSignOut").waitFor({ state: "visible" });
+      await signOutPage.locator("#ownerSignOut").click();
+      await signOutPage.waitForFunction(() => /sesión cerrada|signed out/i.test(document.querySelector("#ownerAuthMessage")?.textContent || ""));
+      if (logoutCalls !== 1) throw new Error("Supabase logout endpoint was not called exactly once");
+      if (logoutScope !== "local") throw new Error("Sign-out did not explicitly preserve other devices' sessions");
+      if (logoutAuthorization !== "Bearer qa-signout-access-token") throw new Error("Logout request did not use the current access token");
+      if (await signOutPage.evaluate(() => sessionStorage.getItem("reputix_owner_session")) !== null) {
+        throw new Error("Local session was not cleared after sign-out");
+      }
+      await signOutPage.close();
+    });
+
     await check("Password recovery verifies a one-time link only once and safely updates the password", async () => {
       const recoveryPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       recoveryPage.on("pageerror", error => failures.push(error.stack || error.message));
