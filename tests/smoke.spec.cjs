@@ -118,6 +118,15 @@ const { chromium } = require("playwright");
         await form.locator('select[name="' + field + '"]').selectOption("5");
       }
       await form.locator('textarea[name="comment"]').fill("Great service at this QA business.");
+      const staffRequired = await form.locator('input[name="staff_name"]').evaluate(input => input.required);
+      if (staffRequired) throw new Error("The explicitly optional staff name field is still required");
+      const formValidity = await form.evaluate(form => ({
+        valid: form.checkValidity(),
+        invalidFields: [...form.elements].filter(field => !field.checkValidity()).map(field => ({
+          name: field.name, value: field.value, required: field.required
+        }))
+      }));
+      if (!formValidity.valid) throw new Error("Review form should be valid without an optional staff name: " + JSON.stringify(formValidity));
       await form.locator('button[type="submit"]').click();
       try {
         await reviewPage.waitForFunction(() => {
