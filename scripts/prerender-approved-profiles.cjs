@@ -103,7 +103,7 @@ function renderProfileHtml(template, business) {
   html = replaceExactlyOne(html, /<meta\s+name="twitter:description"\s+content="[^"]*"\s*>/i,
     '<meta name="twitter:description" content="' + escapeHtml(description) + '">', "Twitter description");
   html = replaceExactlyOne(html, /<script\s+type="application\/ld\+json">[\s\S]*?<\/script>/i,
-    '<script type="application/ld+json">' + websiteJsonLd + "</script>\\n" +
+    '<script type="application/ld+json">' + websiteJsonLd + "</script>\n" +
     '<script type="application/ld+json" id="reputix-business-structured-data">' + jsonLd + "</script>",
     "JSON-LD script");
   html = html.replace(/<meta\s+name="robots"\s+content="[^"]*"\s*>/i,
