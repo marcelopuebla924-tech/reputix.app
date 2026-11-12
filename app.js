@@ -1470,7 +1470,12 @@ async function loadReviews(business,list,status,stats,ratingRow) {
 /* Formulario de reseñas */
 function makeReviewForm(business) {
   const f = node("form","form");
-  f.append(node("h3","",t("share")),node("p","empty",t("pending")));\n  if (/uber|rideshare|transporte por aplicaci|conductor/i.test(String(business.category || "") + " " + String(business.name || ""))) {\n    f.append(node("p","review-safety-note",lang === "es"\n      ? "Protección para viajes: describe tu experiencia real sin publicar teléfonos, direcciones particulares, datos de cuenta, placas completas ni información que identifique a terceros. Si existe un peligro inmediato, contacta a emergencias; Reputix no sustituye los canales de seguridad de Uber."\n      : "Ride safety: describe your real experience without posting phone numbers, private addresses, account details, full license plates, or information identifying third parties. For immediate danger, contact emergency services; Reputix does not replace Uber safety channels."));\n  }
+  f.append(node("h3","",t("share")),node("p","empty",t("pending")));
+  if (/uber|rideshare|transporte por aplicaci|conductor/i.test(String(business.category || "") + " " + String(business.name || ""))) {
+    f.append(node("p","review-safety-note",lang === "es"
+      ? "Protección para viajes: describe tu experiencia real sin publicar teléfonos, direcciones particulares, datos de cuenta, placas completas ni información que identifique a terceros. Si existe un peligro inmediato, contacta a emergencias; Reputix no sustituye los canales de seguridad de Uber."
+      : "Ride safety: describe your real experience without posting phone numbers, private addresses, account details, full license plates, or information identifying third parties. For immediate danger, contact emergency services; Reputix does not replace Uber safety channels."));
+  }
   const grid = node("div","form-grid");
 
   function addField(label,key,type,full=false,required=true) {
