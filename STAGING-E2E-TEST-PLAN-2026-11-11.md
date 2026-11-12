@@ -403,3 +403,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Test commit: `ae999ac38f925d00c311e6c2ba6cfb83050ee7d5`.
 - This is a frontend regression guard only. It does not fix the production `business_messages` UPDATE privilege/RLS concern documented in `SECURITY-REVIEW-MESSAGING-UPDATE-2026-11-11.md`.
 - Server-side remediation and two-user positive/negative integration tests remain blocked on isolated staging and explicit approval. No production SQL or data changes occurred.
+
+
+## Update — 2026-11-11 (messaging validation and deployment)
+
+- Browser QA #256 passed 32/32 with zero page errors; read-receipt updates contain only `read_at` and target only messages received by the signed-in participant (commit `ae999ac38f925d00c311e6c2ba6cfb83050ee7d5`).
+- Browser QA #263 passed 32/32 with zero page errors; empty customer message creation, empty customer replies, and empty verified-owner replies are blocked before any message write (commit `1621dace39da039eece03677724be3307a3a89d4`).
+- GitHub Pages deployment #490 succeeded for `b1281cb7bd430ce9b29342cbe1a3e41e96053f2f`, publishing the map marker/filter synchronization fix.
+- Current suite remains at 32 named checks. Synthetic identities and mocked API responses only.
+- The production `business_messages` UPDATE privilege/RLS issue remains a launch blocker; frontend read-receipt tests do not remediate server-side permissions. No production SQL or data changes occurred.
