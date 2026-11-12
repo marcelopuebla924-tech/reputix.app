@@ -516,45 +516,46 @@ const { chromium } = require("playwright");
       await adminPage.close();
     });
 
-    await check("Admin owner-claim verification button confirms and updates only the mocked pending claim", async () => {
+    await check("Admin owner-claim approve and reject buttons confirm and update only mocked pending claims", async () => {
       const claimPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
       claimPage.on("pageerror", error => failures.push(error.stack || error.message));
-      let claimStatus = "pending";
-      let patchPayload = null;
+      const claimStatuses = new Map([
+        ["qa-owner-claim-approval", "pending"],
+        ["qa-owner-claim-rejection", "pending"]
+      ]);
+      const patchPayloads = [];
+      const businessId = "00000000-0000-4000-8000-000000000318";
       await claimPage.route("**/rest/v1/**", async route => {
         const request = route.request();
         const url = new URL(request.url());
         if (url.pathname.endsWith("/business_owner_claims") && request.method() === "PATCH") {
-          patchPayload = request.postDataJSON();
-          claimStatus = patchPayload.status;
+          const payload = request.postDataJSON();
+          const id = (url.searchParams.get("id") || "").replace(/^eq\./, "");
+          patchPayloads.push({ id, ...payload });
+          claimStatuses.set(id, payload.status);
           await route.fulfill({ status: 204, body: "" });
           return;
         }
         if (url.pathname.endsWith("/business_owner_claims") && request.method() === "GET") {
-          await route.fulfill({
-            status: 200, contentType: "application/json",
-            body: JSON.stringify(claimStatus === "pending" ? [{
-              id: "qa-owner-claim-approval",
-              business_id: "00000000-0000-4000-8000-000000000318",
-              user_id: "00000000-0000-4000-8000-000000000319",
-              evidence_note: "Synthetic approval scenario only.",
-              relationship_type: "owner",
-              verification_level: "owner",
-              evidence_type: "business_documents",
-              evidence_links: [],
-              created_at: "2026-11-11T12:00:00Z",
-              status: "pending"
-            }] : [])
-          });
+          const pending = [...claimStatuses.entries()].filter(([,status]) => status === "pending").map(([id]) => ({
+            id,
+            business_id: businessId,
+            user_id: "00000000-0000-4000-8000-000000000319",
+            evidence_note: "Synthetic admin decision scenario only.",
+            relationship_type: "owner",
+            verification_level: "owner",
+            evidence_type: "business_documents",
+            evidence_links: [],
+            created_at: "2026-11-11T12:00:00Z",
+            status: "pending"
+          }));
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(pending) });
           return;
         }
         if (url.pathname.endsWith("/businesses") && request.method() === "GET") {
           await route.fulfill({
             status: 200, contentType: "application/json",
-            body: JSON.stringify([{
-              id: "00000000-0000-4000-8000-000000000318",
-              name: "QA Approval Business", city: "Los Angeles"
-            }])
+            body: JSON.stringify([{ id: businessId, name: "QA Approval Business", city: "Los Angeles" }])
           });
           return;
         }
@@ -571,12 +572,24 @@ const { chromium } = require("playwright");
           app_metadata: { reputix_role: "admin" }
         }
       }));
-      await claimPage.locator("#adminClaimsList .admin-claim").waitFor({ state: "visible", timeout: 10000 });
+      const cards = claimPage.locator("#adminClaimsList .admin-claim");
+      await claimPage.waitForFunction(() => document.querySelectorAll("#adminClaimsList .admin-claim").length === 2, null, { timeout: 10000 });
       claimPage.once("dialog", dialog => dialog.accept());
-      await claimPage.locator("#adminClaimsList .admin-claim-actions button.primary").click();
+      await cards.nth(0).locator(".admin-claim-actions button.primary").click();
+      await claimPage.waitForFunction(() => document.querySelectorAll("#adminClaimsList .admin-claim").length === 1, null, { timeout: 8000 });
+      if (claimStatuses.get("qa-owner-claim-approval") !== "verified") {
+        throw new Error("Admin approve button did not verify the first synthetic claim");
+      }
+      claimPage.once("dialog", dialog => dialog.accept());
+      await claimPage.locator("#adminClaimsList .admin-claim .admin-claim-actions button.secondary").click();
       await claimPage.waitForFunction(() => /no hay solicitudes pendientes/i.test(document.querySelector("#adminClaimsList")?.textContent || ""), null, { timeout: 8000 });
-      if (!patchPayload || patchPayload.status !== "verified" || !patchPayload.reviewed_at) {
-        throw new Error("Admin verification button did not send the expected synthetic approval update");
+      const approved = patchPayloads.find(item => item.id === "qa-owner-claim-approval");
+      const rejected = patchPayloads.find(item => item.id === "qa-owner-claim-rejection");
+      if (!approved || approved.status !== "verified" || !approved.reviewed_at) {
+        throw new Error("Admin approve action did not send the expected synthetic update");
+      }
+      if (!rejected || rejected.status !== "rejected" || !rejected.reviewed_at) {
+        throw new Error("Admin reject action did not send the expected synthetic update");
       }
       await claimPage.close();
     });
