@@ -1069,6 +1069,62 @@ const { chromium } = require("playwright");
       await customerPage.close();
     });
 
+    await check("Verified business owner can submit a complaint response through the authorized RPC", async () => {
+      const responsePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      responsePage.on("pageerror", error => failures.push(error.stack || error.message));
+      const ownerId = "00000000-0000-4000-8000-000000000501";
+      const businessId = "00000000-0000-4000-8000-000000000502";
+      const complaintId = "00000000-0000-4000-8000-000000000503";
+      let responsePayload = null;
+      let businessResponse = null;
+      await responsePage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = new URL(request.url());
+        if (url.pathname.endsWith("/business_owner_claims") && request.method() === "GET") {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+            id: "qa-owner-claim", business_id: businessId, status: "verified"
+          }]) });
+          return;
+        }
+        if (url.pathname.endsWith("/complaints") && request.method() === "GET" && url.searchParams.has("business_id")) {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
+            id: complaintId, business_id: businessId, complaint: "Synthetic customer complaint for owner response QA.",
+            status: "pending", business_response: businessResponse, created_at: "2026-11-10T12:00:00Z"
+          }]) });
+          return;
+        }
+        if (url.pathname.endsWith("/rpc/owner_respond_to_complaint") && request.method() === "POST") {
+          responsePayload = request.postDataJSON();
+          businessResponse = responsePayload.p_response;
+          await route.fulfill({ status: 200, contentType: "application/json", body: "true" });
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await responsePage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await responsePage.waitForFunction(() => typeof window.ownerSetSession === "function", null, { timeout: 15000 });
+      await responsePage.evaluate(({ ownerId }) => window.ownerSetSession({
+        access_token: "qa-owner-complaint-token",
+        refresh_token: "qa-owner-complaint-refresh",
+        user: { id: ownerId, email: "owner-complaint-qa@example.invalid", app_metadata: {} }
+      }), { ownerId });
+      const form = responsePage.locator("#privateComplaintsContent .owner-complaint-response").first();
+      await form.waitFor({ state: "visible", timeout: 10000 });
+      const reply = "We reviewed your concern and will contact you with an update.";
+      await form.locator("textarea").fill(reply);
+      await form.locator('button[type="submit"]').click();
+      await responsePage.waitForFunction(() => /respuesta publicada|response published/i.test(
+        document.querySelector("#privateComplaintsContent .owner-complaint-response .form-message")?.textContent || ""
+      ), null, { timeout: 10000 });
+      if (!responsePayload ||
+          responsePayload.p_complaint_id !== complaintId ||
+          responsePayload.p_response !== reply ||
+          businessResponse !== reply) {
+        throw new Error("Owner complaint response RPC did not receive the expected complaint ID and reply: " + JSON.stringify(responsePayload));
+      }
+      await responsePage.close();
+    });
+
     await check("Reviews and statistics feature buttons open their sections", async () => {
       await page.locator("#featureReviews").click();
       await page.waitForFunction(() => {
