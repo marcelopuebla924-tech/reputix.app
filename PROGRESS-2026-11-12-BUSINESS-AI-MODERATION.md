@@ -23,3 +23,12 @@
 
 ## User correction — 12 November 2026, 1:08 p.m. Pacific
 - User supplied the actual New York Market & Deli storefront photo and explicitly instructed: use this photo, not the prior generated image. This instruction supersedes the prior illustrative asset. The original uploaded image path in the current working session was `/mnt/data/47723278ed23d0d0cdda5f0a1f97c0ce5ecf31fd59d569bb5f12206da85e98f6.png` (768×1024 PNG). Do not claim it is live until the exact file has been uploaded and the business record/photo status verified.
+
+
+## Mobile photo optimization — 12 November 2026, 1:10 p.m. Pacific
+- Updated `app.js` so business photo uploads are optimized in the visitor's browser before upload: max 1920 px on the longest edge, WebP preferred with JPEG fallback, quality reduced as needed to target <=4.5 MB and enforce the existing 5 MB storage limit.
+- Original file name is retained in photo metadata; optimized content type and byte size are stored. Original uploads up to 25 MB can be accepted for client-side optimization (larger files show a clear limit).
+- Upload UI now explains that photos are automatically optimized for phones; progress message reflects optimization and upload.
+- Existing storefront image CSS already uses responsive width/height and `object-fit:cover`, with lazy loading for approved business photos.
+- GitHub commit: `508a333589af9ef5ea411bffa447f79f3ff305d6`. GitHub Actions workflow run #11 was still in progress when checked; live mobile behavior remains to be verified after deployment.
+- This does not upload or publish the specific New York Market & Deli photo. That photo still needs to be submitted through the business photo form and approved.
