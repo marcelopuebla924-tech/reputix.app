@@ -34,6 +34,80 @@ const { execFileSync } = require("node:child_process");
       if (!(await page.locator("#searchForm").count())) throw new Error("Search form missing");
     });
 
+    await check("Visible homepage controls expose accessible names and form labels", async () => {
+      const audit = await page.evaluate(() => {
+        const visible = el => !!(el.getClientRects().length) &&
+          getComputedStyle(el).visibility !== "hidden" &&
+          getComputedStyle(el).display !== "none" &&
+          !el.closest("[aria-hidden='true'],[hidden]");
+        const text = value => String(value || "").replace(/\\s+/g, " ").trim();
+        const controls = [...document.querySelectorAll("button,a[href],[role='button'],input:not([type='hidden']),select,textarea")]
+          .filter(visible);
+        const missing = controls.filter(el => {
+          const labelledBy = (el.getAttribute("aria-labelledby") || "").split(/\\s+/)
+            .filter(Boolean).map(id => document.getElementById(id)?.textContent || "").join(" ");
+          const labels = el.labels ? [...el.labels].map(label => label.textContent).join(" ") : "";
+          const ownText = /^(BUTTON|A)$/.test(el.tagName) || el.getAttribute("role") === "button"
+            ? el.innerText || el.textContent : "";
+          const name = el.getAttribute("aria-label") || labelledBy || labels ||
+            el.getAttribute("title") || ownText ||
+            (el.matches("input[type='submit'],input[type='button']") ? el.value : "") ||
+            (el.matches("input[type='image']") ? el.alt : "");
+          return !text(name);
+        }).map(el => ({
+          tag: el.tagName.toLowerCase(),
+          type: el.getAttribute("type") || "",
+          id: el.id || "",
+          className: typeof el.className === "string" ? el.className : "",
+          snippet: text(el.outerHTML).slice(0, 180)
+        }));
+        return { checked: controls.length, missing };
+      });
+      if (audit.missing.length) {
+        throw new Error(audit.missing.length + " visible controls lack an accessible name: " +
+          JSON.stringify(audit.missing.slice(0, 12)));
+      }
+      if (!audit.checked) throw new Error("No visible controls were audited");
+    });
+
+    await check("Standalone map controls expose accessible names and form labels", async () => {
+      await page.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
+      await page.waitForFunction(() => !!document.querySelector("#map"), null, { timeout: 10000 });
+      const audit = await page.evaluate(() => {
+        const visible = el => !!el.getClientRects().length &&
+          getComputedStyle(el).visibility !== "hidden" &&
+          getComputedStyle(el).display !== "none" &&
+          !el.closest("[aria-hidden='true'],[hidden]");
+        const text = value => String(value || "").replace(/\\s+/g, " ").trim();
+        const controls = [...document.querySelectorAll("button,a[href],[role='button'],input:not([type='hidden']),select,textarea")]
+          .filter(visible);
+        const missing = controls.filter(el => {
+          const labelledBy = (el.getAttribute("aria-labelledby") || "").split(/\\s+/)
+            .filter(Boolean).map(id => document.getElementById(id)?.textContent || "").join(" ");
+          const labels = el.labels ? [...el.labels].map(label => label.textContent).join(" ") : "";
+          const ownText = /^(BUTTON|A)$/.test(el.tagName) || el.getAttribute("role") === "button"
+            ? el.innerText || el.textContent : "";
+          const name = el.getAttribute("aria-label") || labelledBy || labels ||
+            el.getAttribute("title") || ownText ||
+            (el.matches("input[type='submit'],input[type='button']") ? el.value : "") ||
+            (el.matches("input[type='image']") ? el.alt : "");
+          return !text(name);
+        }).map(el => ({
+          tag: el.tagName.toLowerCase(),
+          type: el.getAttribute("type") || "",
+          id: el.id || "",
+          className: typeof el.className === "string" ? el.className : "",
+          snippet: text(el.outerHTML).slice(0, 180)
+        }));
+        return { checked: controls.length, missing };
+      });
+      if (audit.missing.length) {
+        throw new Error(audit.missing.length + " visible map controls lack an accessible name: " +
+          JSON.stringify(audit.missing.slice(0, 12)));
+      }
+      if (!audit.checked) throw new Error("No visible map controls were audited");
+    });
+
     await check("Spanish and English language selector works without runtime errors", async () => {
       await page.locator("#language").selectOption("en");
       if (!(await page.locator("#plansTitle").textContent()).includes("plans")) throw new Error("English plan title did not update");
