@@ -109,6 +109,12 @@ function renderProfileHtml(template, business) {
   html = html.replace(/<meta\s+name="robots"\s+content="[^"]*"\s*>/i,
     '<meta name="robots" content="index,follow,max-image-preview:large">');
   if (!/<base\s+href=/i.test(html)) html = html.replace(/<head>/i, '<head>\n  <base href="/">');
+  const fallbackDetails = [business.category, business.address, business.city, business.state].filter(Boolean).join(" · ");
+  const noScript = '<noscript><main><h1>' + escapeHtml(business.name) + '</h1>' +
+    (fallbackDetails ? '<p>' + escapeHtml(fallbackDetails) + '</p>' : '') +
+    (business.description ? '<p>' + escapeHtml(business.description) + '</p>' : '') +
+    '</main></noscript>';
+  html = replaceExactlyOne(html, /<\/body>/i, noScript + "</body>", "body closing tag");
   return html;
 }
 

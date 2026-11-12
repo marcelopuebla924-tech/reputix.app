@@ -1,0 +1,93 @@
+name: Prepare approved public business profiles
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - app.js
+      - index.html
+      - scripts/fetch-approved-businesses.cjs
+      - scripts/prerender-approved-profiles.cjs
+      - scripts/sync-generated-profiles.cjs
+      - .github/workflows/publish-approved-profiles.yml
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: reputix-approved-profile-publishing
+  cancel-in-progress: false
+
+jobs:
+  prepare-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Test approved-profile publishing safeguards
+        run: node --test tests/prerender-approved-profiles.test.cjs tests/fetch-approved-businesses.test.cjs tests/sync-generated-profiles.test.cjs
+
+      - name: Fetch approved public business fields with the publishable key
+        run: node scripts/fetch-approved-businesses.cjs /tmp/reputix-approved-businesses.json
+
+      - name: Generate static profiles and approved-only sitemap
+        run: node scripts/prerender-approved-profiles.cjs /tmp/reputix-approved-businesses.json .reputix-generated index.html
+
+      - name: Safely sync generated pages into the publishing branch
+        run: |
+          node scripts/sync-generated-profiles.cjs .reputix-generated .
+          rm -rf .reputix-generated /tmp/reputix-approved-businesses.json
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Start local site for browser QA
+        run: |
+          python3 -m http.server 4173 > /tmp/reputix-http.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/reputix-http.log
+          exit 1
+
+      - name: Run browser regression suite before opening update PR
+        run: node tests/smoke.spec.cjs
+
+      - name: Open or update the approved-profiles publishing PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          branch: automation/approved-public-profiles
+          delete-branch: true
+          add-paths: |
+            business
+            sitemap.xml
+          commit-message: 'chore: refresh approved public business profiles'
+          title: 'chore: refresh approved public business profiles'
+          body: |
+            ## Automated public-profile snapshot
+
+            This update is generated from the public Supabase REST endpoint using the app's publishable key and an explicit field allowlist.
+
+            - Includes only records whose status is approved.
+            - Excludes owner emails, internal notes, billing identifiers, reviews, and all non-allowlisted fields.
+            - Removes previously generated profile pages that are no longer approved.
+            - Updates the sitemap to match the generated approved profiles.
+
+            The publishing workflow runs generator/sync unit tests and the browser regression suite before opening this PR. Merge this PR to publish the new static pages through the existing GitHub Pages branch deployment.
