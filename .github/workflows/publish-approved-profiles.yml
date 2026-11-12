@@ -66,7 +66,7 @@ jobs:
           cat /tmp/reputix-http.log
           exit 1
 
-      - name: Run browser regression suite before opening update PR
+      - name: Run browser regression suite before pushing the candidate branch
         run: node tests/smoke.spec.cjs
 
       - name: Push approved-profile candidate branch for review
