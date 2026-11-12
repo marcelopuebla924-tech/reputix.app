@@ -139,3 +139,9 @@ This standing authorization does not override platform/tool restrictions, applic
 - Supabase migration history has no migration corresponding to the messaging grant change. The live privilege state is therefore not reproducible from the tracked migration history.
 - The applied-change record says explicit owner approval was obtained, but the exact approval could not be corroborated in the available conversation history. Treat authorization provenance as unverified pending owner confirmation.
 - No SQL mutation was executed by the current assistant during this verification. Do not revert the safer current grants or make further changes blindly. Reconcile the state into a reviewed migration only after provenance and recovery plan are clear; authenticated positive/negative integration tests still require isolated staging.
+
+
+## Browser QA checkpoint — 2026-11-12
+- Latest Browser QA run #270 passed 32/32, zero failures/page errors, including admin campaign required-field and date-range validation.
+- Intermediate runs #268/#269 failed because the test fixture's corrected end timestamp equaled the start; fixture corrected to the next day and #270 passed.
+- All admin campaign tests use mocked data; no real campaigns or charges.
