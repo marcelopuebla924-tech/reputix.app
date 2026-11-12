@@ -10,17 +10,27 @@ Build Reputix so people discover and return to it because it helps them make bet
 - Added Open Graph and Twitter share-preview metadata.
 - Added minimal Schema.org WebSite structured data describing Reputix.
 - Added `robots.txt` with a sitemap declaration.
-- Added `sitemap.xml` containing the canonical public homepage only.
+- Added `sitemap.xml` containing the canonical homepage plus five approved static business profile URLs.
+- Added stable `/business/<uuid>/` public profile routes with pre-rendered HTML, business-specific title/canonical/Open Graph/Twitter metadata, LocalBusiness structured data, and no-script fallback.
+- Added a scheduled/manual approved-only profile publishing workflow using the public publishable key and a strict field allowlist. Generated candidate snapshots are reviewed through a separate PR before publication.
+- Synced the accessible Spanish search label to all five generated profile pages and added a bilingual regression test for those routes.
 
-## Why the sitemap is intentionally small
-Business profile URLs are currently rendered by the client-side app and no verified stable public URL pattern or server-rendered profile inventory has been established in this review. Do not invent profile URLs or submit fake/empty business pages to search engines. Expand the sitemap only after stable, crawlable public profile URLs exist.
+## Why the sitemap is intentionally limited
+The sitemap now includes only the canonical homepage and five static profiles generated from records whose database status is `approved`. The export is restricted to public fields: business ID, name, category, address, city, and status. Business descriptions/comments, owner emails, private notes, billing identifiers, reviews, and pending/rejected records are excluded. Do not broaden the field allowlist or include a profile unless its approval state is verified.
+
+## Publication and revocation controls
+- The publishing workflow runs on a six-hour schedule and can be manually dispatched.
+- It fetches the approved public snapshot with the publishable key, generates static pages and sitemap, runs Node safeguards and the browser regression suite, and pushes a candidate branch.
+- A separate reviewed PR must be created and merged to publish the candidate snapshot; the workflow does not write generated business content directly to `main`.
+- A revoked/unapproved business remains in the currently published static snapshot until the next candidate is reviewed and merged. Prioritize a removal PR when approval is withdrawn.
+- The five currently published profile pages are a snapshot, not a promise that every business is indexed by Google.
 
 ## Next organic-growth priorities
-1. Establish crawlable, stable URLs for approved business profiles without exposing private or pending records.
-2. Add per-business title, description, canonical URL, and structured data only when the profile is public and approved.
-3. Add native share links/actions to business profiles and review-safe share cards.
-4. Improve search discovery/category landing pages using real, useful business data.
-5. Instrument privacy-conscious acquisition and retention metrics: organic landing visits, searches, useful profile views, review submissions, return visits, and business-owner claims.
+1. Verify the live homepage and all five direct profile URLs in a normal browser; check canonical tags, initial HTML metadata, and share previews.
+2. Submit `https://www.reputixapp.com/sitemap.xml` in Google Search Console and monitor crawl/index coverage. Do not promise immediate indexing or traffic.
+3. Build useful category/city landing pages only when there is enough approved public data to make each page genuinely helpful; avoid thin or duplicate pages.
+4. Add review-safe share cards and clear calls to action while preserving the business-specific canonical profile URL.
+5. Instrument privacy-conscious acquisition and retention metrics: organic landing visits, searches, useful profile views, review submissions, return visits, and business-owner claims. Avoid collecting sensitive review content for analytics.
 6. Preserve review integrity: no paid ranking, purchased ratings, fake reviews, or ads disguised as organic results.
 
 ## Safety and scope
