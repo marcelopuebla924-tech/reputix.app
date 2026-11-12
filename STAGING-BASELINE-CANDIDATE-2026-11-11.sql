@@ -264,15 +264,69 @@ CREATE TABLE public.user_subscriptions (
 );
 
 -- 93 validated constraints.
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_budget_cents_check CHECK (budget_cents >= 0);
+ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_pkey PRIMARY KEY (id);
 
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+ALTER TABLE public.ad_clicks ADD CONSTRAINT ad_clicks_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.ad_impressions ADD CONSTRAINT ad_impressions_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_photos ADD CONSTRAINT business_photos_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.businesses ADD CONSTRAINT businesses_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.complaints ADD CONSTRAINT complaints_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.monetization_plans ADD CONSTRAINT monetization_plans_pkey PRIMARY KEY (code);
+
+ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.reviews ADD CONSTRAINT reviews_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id);
+
+ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_pkey PRIMARY KEY (id);
+
+ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_business_id_customer_id_subject_key UNIQUE (business_id, customer_id, subject);
+
+ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_business_id_month_start_key UNIQUE (business_id, month_start);
+
+ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_business_id_user_id_key UNIQUE (business_id, user_id);
+
+ALTER TABLE public.business_photos ADD CONSTRAINT business_photos_storage_path_key UNIQUE (storage_path);
+
+ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_provider_subscription_id_key UNIQUE (provider_subscription_id);
+
+ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_storage_path_key UNIQUE (storage_path);
+
+ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_provider_event_id_key UNIQUE (provider_event_id);
+
+ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_review_id_key UNIQUE (review_id);
+
+ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_provider_subscription_id_key UNIQUE (provider_subscription_id);
+
+ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_budget_cents_check CHECK (budget_cents >= 0);
 
 ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_check CHECK (ends_at IS NULL OR starts_at IS NULL OR ends_at > starts_at);
 
 ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_description_check CHECK (description IS NULL OR char_length(description) <= 1000);
-
-ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_placement_check CHECK (placement = ANY (ARRAY['business_carousel'::text, 'discovery_feed'::text, 'category_featured'::text]));
 
@@ -280,71 +334,27 @@ ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_status_check CHECK (
 
 ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_title_check CHECK (char_length(btrim(title)) >= 3 AND char_length(btrim(title)) <= 120);
 
-ALTER TABLE public.ad_clicks ADD CONSTRAINT ad_clicks_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES ad_campaigns(id) ON DELETE CASCADE;
-
-ALTER TABLE public.ad_clicks ADD CONSTRAINT ad_clicks_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.ad_impressions ADD CONSTRAINT ad_impressions_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES ad_campaigns(id) ON DELETE CASCADE;
-
-ALTER TABLE public.ad_impressions ADD CONSTRAINT ad_impressions_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_business_id_customer_id_subject_key UNIQUE (business_id, customer_id, subject);
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_pkey PRIMARY KEY (id);
-
 ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_status_check CHECK (status = ANY (ARRAY['open'::text, 'closed'::text]));
 
 ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_subject_check CHECK (char_length(btrim(subject)) >= 1 AND char_length(btrim(subject)) <= 160);
 
 ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_body_check CHECK (char_length(btrim(body)) >= 1 AND char_length(btrim(body)) <= 5000);
 
-ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES business_conversations(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_business_id_month_start_key UNIQUE (business_id, month_start);
-
-ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_pkey PRIMARY KEY (id);
-
 ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_total_published_reviews_check CHECK (total_published_reviews >= 0);
 
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_business_id_user_id_key UNIQUE (business_id, user_id);
-
 ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_evidence_type_check CHECK (evidence_type = ANY (ARRAY['work_photos'::text, 'customer_references'::text, 'business_social'::text, 'phone_or_email'::text, 'storefront_photos'::text, 'business_documents'::text, 'written_statement'::text, 'multiple'::text]));
-
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_relationship_type_check CHECK (relationship_type = ANY (ARRAY['owner'::text, 'partner'::text, 'manager'::text, 'independent_worker'::text, 'new_entrepreneur'::text]));
 
 ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_status_check CHECK (status = ANY (ARRAY['pending'::text, 'activity_verified'::text, 'responsible_verified'::text, 'verified'::text, 'rejected'::text]));
 
-ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
 ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_verification_level_check CHECK (verification_level = ANY (ARRAY['activity'::text, 'business_responsible'::text, 'owner'::text]));
 
-ALTER TABLE public.business_photos ADD CONSTRAINT business_photos_pkey PRIMARY KEY (id);
-
 ALTER TABLE public.business_photos ADD CONSTRAINT business_photos_status_check CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text]));
-
-ALTER TABLE public.business_photos ADD CONSTRAINT business_photos_storage_path_key UNIQUE (storage_path);
-
-ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
 
 ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_check CHECK (ends_at IS NULL OR starts_at IS NULL OR ends_at > starts_at);
 
 ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_description_check CHECK (description IS NULL OR char_length(description) <= 1000);
-
-ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_status_check CHECK (status = ANY (ARRAY['draft'::text, 'pending_review'::text, 'approved'::text, 'active'::text, 'expired'::text, 'rejected'::text]));
 
@@ -352,65 +362,25 @@ ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_title_
 
 ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_billing_interval_check CHECK (billing_interval = ANY (ARRAY['month'::text, 'year'::text]));
 
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_plan_code_fkey FOREIGN KEY (plan_code) REFERENCES monetization_plans(code);
-
 ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_provider_check CHECK (provider = 'stripe'::text);
-
-ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_provider_subscription_id_key UNIQUE (provider_subscription_id);
 
 ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_status_check CHECK (status = ANY (ARRAY['pending'::text, 'trialing'::text, 'active'::text, 'past_due'::text, 'canceled'::text, 'incomplete'::text, 'unpaid'::text]));
 
-ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
-ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_pkey PRIMARY KEY (id);
-
 ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_status_check CHECK (status = ANY (ARRAY['awaiting_upload'::text, 'pending_review'::text, 'verified'::text, 'rejected'::text]));
-
-ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_storage_path_key UNIQUE (storage_path);
-
-ALTER TABLE public.businesses ADD CONSTRAINT businesses_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE RESTRICT;
 
 ALTER TABLE public.complaints ADD CONSTRAINT complaints_complaint_check CHECK (char_length(TRIM(BOTH FROM complaint)) >= 10 AND char_length(TRIM(BOTH FROM complaint)) <= 5000);
 
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_pkey PRIMARY KEY (id);
-
 ALTER TABLE public.complaints ADD CONSTRAINT complaints_status_check CHECK (status = ANY (ARRAY['pending'::text, 'published'::text, 'rejected'::text, 'resolved'::text]));
-
-ALTER TABLE public.complaints ADD CONSTRAINT complaints_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
 
 ALTER TABLE public.monetization_plans ADD CONSTRAINT monetization_plans_currency_check CHECK (currency = 'usd'::text);
 
 ALTER TABLE public.monetization_plans ADD CONSTRAINT monetization_plans_monthly_price_cents_check CHECK (monthly_price_cents >= 0);
 
-ALTER TABLE public.monetization_plans ADD CONSTRAINT monetization_plans_pkey PRIMARY KEY (code);
-
-ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL;
-
-ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_pkey PRIMARY KEY (id);
-
 ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_processing_status_check CHECK (processing_status = ANY (ARRAY['received'::text, 'processed'::text, 'failed'::text, 'ignored'::text]));
-
-ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_provider_event_id_key UNIQUE (provider_event_id);
 
 ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_outcome_check CHECK (outcome = ANY (ARRAY['clear'::text, 'needs_review'::text, 'high_risk'::text, 'unavailable'::text]));
 
-ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_review_id_fkey FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE;
-
-ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_review_id_key UNIQUE (review_id);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
-
 ALTER TABLE public.reviews ADD CONSTRAINT reviews_cleanliness_check CHECK (cleanliness >= 1 AND cleanliness <= 5);
-
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.reviews ADD CONSTRAINT reviews_product_quality_check CHECK (product_quality >= 1 AND product_quality <= 5);
 
@@ -420,33 +390,63 @@ ALTER TABLE public.reviews ADD CONSTRAINT reviews_speed_check CHECK (speed >= 1 
 
 ALTER TABLE public.reviews ADD CONSTRAINT reviews_status_check CHECK (status = ANY (ARRAY['pending'::text, 'published'::text, 'rejected'::text]));
 
-ALTER TABLE public.reviews ADD CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-
 ALTER TABLE public.reviews ADD CONSTRAINT reviews_value_for_money_check CHECK (value_for_money >= 1 AND value_for_money <= 5);
 
 ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_bio_check CHECK (bio IS NULL OR char_length(bio) <= 500);
 
-ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_pkey PRIMARY KEY (user_id);
-
-ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
 ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_body_check CHECK (char_length(btrim(body)) >= 1 AND char_length(btrim(body)) <= 5000);
-
-ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_pkey PRIMARY KEY (id);
 
 ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_status_check CHECK (status = ANY (ARRAY['draft'::text, 'published'::text, 'hidden'::text]));
 
-ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_pkey PRIMARY KEY (id);
-
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_plan_code_fkey FOREIGN KEY (plan_code) REFERENCES monetization_plans(code);
-
 ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_provider_check CHECK (provider = 'stripe'::text);
 
-ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_provider_subscription_id_key UNIQUE (provider_subscription_id);
-
 ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_status_check CHECK (status = ANY (ARRAY['trialing'::text, 'active'::text, 'past_due'::text, 'canceled'::text, 'incomplete'::text, 'unpaid'::text, 'paused'::text]));
+
+ALTER TABLE public.ad_campaigns ADD CONSTRAINT ad_campaigns_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+
+ALTER TABLE public.ad_clicks ADD CONSTRAINT ad_clicks_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES ad_campaigns(id) ON DELETE CASCADE;
+
+ALTER TABLE public.ad_impressions ADD CONSTRAINT ad_impressions_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES ad_campaigns(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_conversations ADD CONSTRAINT business_conversations_customer_id_fkey FOREIGN KEY (customer_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES business_conversations(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_messages ADD CONSTRAINT business_messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_monthly_history ADD CONSTRAINT business_monthly_history_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_owner_claims ADD CONSTRAINT business_owner_claims_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_promotions ADD CONSTRAINT business_promotions_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+
+ALTER TABLE public.business_subscriptions ADD CONSTRAINT business_subscriptions_plan_code_fkey FOREIGN KEY (plan_code) REFERENCES monetization_plans(code);
+
+ALTER TABLE public.business_verification_documents ADD CONSTRAINT business_verification_documents_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+
+ALTER TABLE public.complaints ADD CONSTRAINT complaints_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE RESTRICT;
+
+ALTER TABLE public.complaints ADD CONSTRAINT complaints_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+ALTER TABLE public.payment_events ADD CONSTRAINT payment_events_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE SET NULL;
+
+ALTER TABLE public.review_ai_moderation ADD CONSTRAINT review_ai_moderation_review_id_fkey FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE;
+
+ALTER TABLE public.reviews ADD CONSTRAINT reviews_business_id_fkey FOREIGN KEY (business_id) REFERENCES businesses(id) ON DELETE CASCADE;
+
+ALTER TABLE public.reviews ADD CONSTRAINT reviews_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+
+ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.user_publications ADD CONSTRAINT user_publications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_plan_code_fkey FOREIGN KEY (plan_code) REFERENCES monetization_plans(code);
 
 ALTER TABLE public.user_subscriptions ADD CONSTRAINT user_subscriptions_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
 
