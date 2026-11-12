@@ -320,3 +320,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - Browser QA run #198 passed the previous 31-check suite only; run #219 was still in progress at its last recorded checkpoint and does not include this new test.
 - The new 32-check suite remains pending independent CI verification.
 - No production review or translation was created; REST responses are mocked.
+
+
+## Update — 2026-11-11 18:34 PST
+
+- Browser QA run #219 passed all 31 named checks with zero failures/page errors.
+- Claim picker search/selection passed with a synthetic approved business.
+- Admin ad campaign test passed pending-review creation, activation, pause, and completion through mocked API transitions.
+- Passing commit: `f527464afceaf277fdbd42ef82fba8c73be71ac3`.
+- No production claims, campaigns, or billing operations were performed.
