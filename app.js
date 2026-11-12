@@ -131,6 +131,8 @@ document.addEventListener("click", async event => {
       try {
         current = await api("user_profiles?select=display_name,bio&user_id=eq."+encodeURIComponent(ownerSession.user.id));
       } catch (loadError) {
+        action.disabled = false;
+        action.textContent = ownerText("Editar perfil","Edit profile");
         throw new Error(ownerText("No se pudo cargar tu perfil. Inténtalo de nuevo.","Your profile could not be loaded. Please try again."));
       }
       const profile = current?.[0] || {};
