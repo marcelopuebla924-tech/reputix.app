@@ -36,7 +36,6 @@ function normalizeApprovedBusinesses(rows) {
       id,
       name,
       category: cleanText(row.category, 120),
-      description: cleanText(row.description, 300),
       address: cleanText(row.address, 180),
       city: cleanText(row.city, 100),
       state: cleanText(row.state, 80),
@@ -55,8 +54,7 @@ function replaceExactlyOne(source, pattern, replacement, label) {
 function renderProfileHtml(template, business) {
   const canonical = SITE_ORIGIN + "/business/" + business.id + "/";
   const title = business.name + " | Reputix";
-  const description = business.description ||
-    [business.category, business.address, business.city, business.state].filter(Boolean).join(" · ") ||
+  const description = [business.category, business.city, business.state].filter(Boolean).join(" · ") ||
     "Consulta opiniones y descubre este negocio en Reputix.";
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -71,7 +69,6 @@ function renderProfileHtml(template, business) {
     name: business.name,
     url: canonical
   };
-  if (business.description) localBusinessSchema.description = business.description;
   if (business.category) localBusinessSchema.additionalType = business.category;
   const address = {};
   if (business.address) address.streetAddress = business.address;
@@ -112,7 +109,6 @@ function renderProfileHtml(template, business) {
   const fallbackDetails = [business.category, business.address, business.city, business.state].filter(Boolean).join(" · ");
   const noScript = '<noscript><main><h1>' + escapeHtml(business.name) + '</h1>' +
     (fallbackDetails ? '<p>' + escapeHtml(fallbackDetails) + '</p>' : '') +
-    (business.description ? '<p>' + escapeHtml(business.description) + '</p>' : '') +
     '</main></noscript>';
   html = replaceExactlyOne(html, /<\/body>/i, noScript + "</body>", "body closing tag");
   return html;
