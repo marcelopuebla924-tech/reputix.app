@@ -93,3 +93,12 @@ Move beyond mocked browser tests without risking real customer accounts, message
 - These are browser tests only. They do not certify live Supabase RLS, Auth, database writes, or production integration.
 - Commits: `eebb436f50bdb5c0f8cfb74520109ff1c499769a`, `66ce065665161086a1869646b3b78ef7526f7875`.
 - Await GitHub Actions before marking these tests passed.
+
+
+## Update — 2026-11-11 18:06 PST
+
+- Extended the paid member workspace browser test to submit a community publication using a synthetic account.
+- Asserted that the request includes the signed-in user ID, exact test content, and expected `published` state.
+- This validates the browser request only; it does not exercise live RLS or a production write.
+- Commit: `d020dcaf993365c134fad2aa41b08732fcd8fa27`.
+- Await GitHub Actions result before marking this check passed.
