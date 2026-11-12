@@ -434,8 +434,19 @@ const { chromium } = require("playwright");
         }
         await route.continue();
       });
+      const mapDiagnostics = [];
+      mapPage.on("requestfailed", request => mapDiagnostics.push("request failed: " + request.url() + " " + (request.failure()?.errorText || "")));
+      mapPage.on("response", response => {
+        if (response.url().includes("/rest/v1/businesses")) mapDiagnostics.push("business API: " + response.status() + " " + response.url());
+      });
       await mapPage.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
-      await mapPage.waitForFunction(() => /2 de 2 negocios ubicados/i.test(document.querySelector("#status")?.textContent || ""), null, { timeout: 10000 });
+      try {
+        await mapPage.waitForFunction(() => /2 de 2 negocios ubicados/i.test(document.querySelector("#status")?.textContent || ""), null, { timeout: 10000 });
+      } catch (error) {
+        const statusText = await mapPage.locator("#status").textContent().catch(() => "missing status");
+        const rowCount = await mapPage.locator("#businessList .business").count().catch(() => -1);
+        throw new Error(error.message + "; map status: " + statusText + "; business rows: " + rowCount + "; diagnostics: " + mapDiagnostics.join(" | "));
+      }
       const rows = mapPage.locator("#businessList .business");
       if (await rows.count() !== 2) throw new Error("Approved businesses did not appear in the map list");
       await mapPage.locator('#filters [data-category="smoke"]').click();
