@@ -27,7 +27,7 @@ Notation: `name type [NOT NULL] [DEFAULT ...]`. Nullable is the default unless N
 - updated_at timestamptz NOT NULL DEFAULT now()
 
 ### ad_clicks
-- id bigint NOT NULL (no column default)
+- id bigint GENERATED ALWAYS AS IDENTITY NOT NULL
 - campaign_id uuid NOT NULL
 - occurred_at timestamptz NOT NULL DEFAULT now()
 - placement text
@@ -194,6 +194,6 @@ All extracted constraints below reported `convalidated=true`.
 - This batch adds exact catalog evidence for ten tables; it does not yet constitute an executable schema baseline.
 - The global production totals remain 20 public base tables, 93 constraints (40 CHECK, 24 FK, 20 PK, 9 UNIQUE), and 54 public indexes. Reconcile all per-table batches against these totals before staging DDL.
 - Preserve the distinct user-level and business-level subscription tables. The current user Basic/Pro Stripe checkout path does not establish that business_subscriptions is wired to billing.
-- Preserve bigint identity columns on ad_clicks/ad_impressions exactly; they have no column default in information_schema output.
+- Preserve bigint identity generation on ad_clicks/ad_impressions exactly. A later direct pg_attribute inspection confirmed both columns are GENERATED ALWAYS AS IDENTITY; information_schema.columns did not expose that identity marker in the earlier extraction.
 - Do not copy live Stripe secrets or any production records to staging.
 - Do not fabricate the missing historical migrations. A later baseline, if needed, must be explicitly labeled staging-only and independently reviewed.
