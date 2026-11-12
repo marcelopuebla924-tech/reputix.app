@@ -34,10 +34,13 @@ pid_b=$!
 wait "$pid_a"
 wait "$pid_b"
 
-results="$(cat /tmp/claim-a.txt /tmp/claim-b.txt | tr -d '[:space:]' | fold -w 0)"
 processed="$(grep -hxc 'processed' /tmp/claim-a.txt /tmp/claim-b.txt | awk '{s+=$1} END{print s+0}')"
 duplicate="$(grep -hxc 'duplicate' /tmp/claim-a.txt /tmp/claim-b.txt | awk '{s+=$1} END{print s+0}')"
-[[ "$processed" -eq 1 && "$duplicate" -eq 1 ]] || { echo "Concurrent claim failed: $processed processed / $duplicate duplicate ($results)"; exit 1; }
+[[ "$processed" -eq 1 && "$duplicate" -eq 1 ]] || { echo "Concurrent claim failed: $processed processed / $duplicate duplicate ($(cat /tmp/claim-a.txt /tmp/claim-b.txt))"; exit 1; }
+
+# The RPC is a privileged internal endpoint: only service_role may execute it.
+acl="$(psql "$DATABASE_URL" -X -A -t -c "select has_function_privilege('service_role', 'public.process_stripe_webhook_event(text,text,timestamptz,boolean,uuid,text,text,text,text,timestamptz,timestamptz,boolean)', 'EXECUTE') || ':' || has_function_privilege('anon', 'public.process_stripe_webhook_event(text,text,timestamptz,boolean,uuid,text,text,text,text,timestamptz,timestamptz,boolean)', 'EXECUTE') || ':' || has_function_privilege('authenticated', 'public.process_stripe_webhook_event(text,text,timestamptz,boolean,uuid,text,text,text,text,timestamptz,timestamptz,boolean)', 'EXECUTE')")"
+[[ "$acl" == "true:false:false" ]] || { echo "Unexpected RPC execute grants: $acl"; exit 1; }
 
 event_count="$(psql "$DATABASE_URL" -X -A -t -c "select count(*) from public.payment_events where provider_event_id='evt_parallel_claim'")"
 [[ "$event_count" == "1" ]] || { echo "Expected one event row, got $event_count"; exit 1; }
