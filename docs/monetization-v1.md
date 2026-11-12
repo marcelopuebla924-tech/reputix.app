@@ -1,47 +1,48 @@
 # Reputix Monetization V1
-Updated: 2026-11-09 (America/Los_Angeles)
+
+Updated: 2026-11-11 (America/Los_Angeles)
 
 ## Business rule
+
 Reputix keeps 100% of advertising revenue. There is no revenue share, payout, or creator monetization program for reviewers or users. Advertising is separate from reviews, ratings, moderation, and business statistics. Advertisers cannot buy, alter, suppress, or improve ratings or review placement.
 
 ## Revenue streams
-1. Direct local advertising sold by Reputix.
-2. Clearly labeled sponsored business placements.
-3. Time-limited campaigns (7, 15, or 30 days); campaign prices are to be set by the Reputix administrator.
-4. Existing business subscriptions remain separate: Free $0, Basic $13/month, Pro $25/month.
 
-## Existing Supabase foundation (inspected 2026-11-09)
-The Reputix Supabase project already contains:
-- `ad_campaigns`: campaign, business, placement, budget, dates, and approval status.
-- `ad_impressions` and `ad_clicks`: event counters.
-- `business_promotions`: owner promotions.
-- `monetization_plans` and `business_subscriptions`.
-- `payment_events`: payment-provider event records.
+1. Business subscriptions: Free/public access, Basic $13/month, Pro $25/month.
+2. Direct local advertising sold by Reputix.
+3. Clearly labeled sponsored business placements, only after public delivery and tracking are implemented.
+4. Time-limited campaigns (7, 15, or 30 days); campaign prices remain an administrator decision and are not yet exposed as a live checkout product.
 
-Existing ad placements are `business_carousel`, `discovery_feed`, and `category_featured`. Campaign statuses include draft, pending_review, approved, active, paused, completed, and rejected.
+## Current implementation status
 
-The existing subscription plan records already show Basic at 1300 cents and Pro at 2500 cents. Do not create duplicate monetization tables or change these prices.
+### Subscriptions
+- Browser plan buttons call the Supabase `create-checkout-session` Edge Function.
+- Supabase function is ACTIVE (version 8) and validates the signed-in user and allowed plan.
+- Supabase `stripe-webhook` is ACTIVE (version 3); its code verifies Stripe signatures and handles checkout, subscription lifecycle, and invoice payment events.
+- Live Stripe Dashboard webhook configuration, current function secrets, test purchases, payout setup, and live-mode readiness still require verification.
+- The plan button in the owner dashboard only opens the plan section. A self-service Billing Portal is not implemented.
 
-## Security findings / implementation gates
-- Row Level Security is enabled on the monetization tables.
-- Public read access is limited to active campaigns within their date window.
-- Verified business owners can view their own campaigns.
-- There is currently no admin write policy for `ad_campaigns`, and no public tracking insert policy for impressions/clicks.
-- `public.is_reputix_admin()` checks the signed JWT app_metadata claim `reputix_role=admin`.
-- Before activating an admin dashboard or public tracking, verify that the intended administrator account has this server-managed claim and add narrowly scoped policies / server-side tracking. Never expose a service-role key in browser code.
+### Reputix Ads administration
+- The owner/admin interface includes campaign creation, review-status transitions, and campaign/impression/click counters.
+- The campaign creation form sends new campaigns as `pending_review`; its own message explicitly states that ad billing is not active.
+- Current RLS includes an admin-management policy on `ad_campaigns`, an admin read policy for `ad_impressions` and `ad_clicks`, and a verified-owner read policy for campaigns.
+- Public read access is restricted to active campaigns within their scheduled dates.
+- Public impression/click insertion and a protected tracking endpoint are not currently confirmed.
+- Public ad placements are not yet connected to the homepage/map discovery experience. Admin campaign management does not mean an ad is being delivered to customers.
 
-## V1 build order
-1. Build a separate Reputix Ads administration module; do not modify sign-in/sign-up controls or their handlers.
-2. Admin campaign workflow: create draft, submit for review, approve/reject, schedule, pause/resume, and view metrics.
-3. Public placements: show only approved active campaigns and label each as “Publicidad” / “Sponsored”.
-4. Track impressions and clicks through a protected server-side endpoint with basic deduplication and bot safeguards.
-5. Add campaign checkout only after payment provider credentials, webhook handling, refund/cancellation rules, and tax/payment details are configured.
-6. Test on a staging copy and verify the existing search, owner login, registration, reviews, and statistics remain unchanged before publishing.
+## Remaining implementation gates
+
+1. Connect approved, active campaigns to clearly labeled public placements.
+2. Add protected server-side impression and click tracking, deduplication, and basic bot safeguards. Do not expose service-role credentials in the browser.
+3. Verify metrics are populated and match actual delivery before showing campaign performance to advertisers.
+4. Add advertiser billing only after payment credentials, webhook handling, refunds, cancellations, and tax/payment details are configured and tested.
+5. Confirm the intended admin account has the server-managed `reputix_role=admin` claim before using administrative controls.
+6. Test the entire ad lifecycle on a staging/test environment before public launch.
 
 ## UX and trust rules
-- Ads must be visibly labeled and visually distinct from organic results.
+
+- Ads must be visibly labeled “Publicidad” / “Sponsored”.
 - Never present paid placement as an organic recommendation.
 - Never use ad spend to affect star ratings, review sorting, moderation, or statistical calculations.
 - Do not target ads using sensitive personal information or private review content.
-- Report campaign delivery (impressions, clicks, dates, status) to the advertiser.
-- Reputix retains all ad revenue; no user/reviewer revenue sharing.
+- Reputix keeps all ad revenue; no user/reviewer revenue sharing.
