@@ -685,7 +685,12 @@ const { chromium } = require("playwright");
       await adminPage.waitForFunction(() => /Estado: rejected/i.test(
         [...document.querySelectorAll("#reputixAdsCampaignList .admin-claim")].find(card => card.textContent.includes("QA Reject Campaign"))?.textContent || ""
       ), null, { timeout: 8000 });
-      const expectedTransitions = ["active", "paused", "completed", "rejected"];
+      adminPage.once("dialog", dialog => dialog.accept());
+      await rejectCard.getByRole("button", { name: "Enviar a revisión" }).click();
+      await adminPage.waitForFunction(() => /Estado: pending_review/i.test(
+        [...document.querySelectorAll("#reputixAdsCampaignList .admin-claim")].find(card => card.textContent.includes("QA Reject Campaign"))?.textContent || ""
+      ), null, { timeout: 8000 });
+      const expectedTransitions = ["active", "paused", "completed", "rejected", "pending_review"];
       if (expectedTransitions.some(status => !campaignPatches.some(patch => patch.status === status))) {
         throw new Error("Admin campaign state buttons did not submit all expected transitions: " + JSON.stringify(campaignPatches));
       }
