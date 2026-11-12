@@ -578,6 +578,11 @@ const { chromium } = require("playwright");
       await ownerConversation.waitFor({ state: "visible", timeout: 8000 });
       await ownerConversation.click();
       await ownerPage.waitForFunction(() => !document.querySelector("#ownerMessageThread")?.hidden, null, { timeout: 8000 });
+      await ownerPage.waitForFunction(() =>
+        (document.querySelector("#ownerMessageThreadItems")?.textContent || "").includes("Hello from the synthetic customer account."),
+        null,
+        { timeout: 8000 }
+      );
       if (!(await ownerPage.locator("#ownerMessageThreadItems").textContent()).includes("Hello from the synthetic customer account.")) {
         throw new Error("Verified owner could not read the customer's message");
       }
