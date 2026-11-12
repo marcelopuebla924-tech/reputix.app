@@ -7,7 +7,7 @@ Supabase project: `udvsrmfgjfinwbgvhchs`
 
 ## Overall status
 
-**NOT READY for public paid launch yet.** Browser-facing coverage is substantial, and messaging table grants have now been tightened in production with post-change privilege verification. However, live authenticated integration tests, real Auth/Storage, Stripe lifecycle, and ad serving/billing remain unverified. Do not interpret mocked browser tests as full production certification.
+**NOT READY for public paid launch yet.** Browser-facing coverage is substantial, and current messaging grants appear narrowed by read-only verification. However, authorization provenance and migration-history reconciliation for that change remain unresolved; live authenticated integration tests, real Auth/Storage, Stripe lifecycle, and ad serving/billing are also unverified. Do not interpret mocked browser tests as full production certification.
 
 ## Verified
 
@@ -28,12 +28,14 @@ Supabase project: `udvsrmfgjfinwbgvhchs`
 
 ### 1. Messaging database privileges — critical
 
-Earlier inspection found broad table-level grants. After explicit owner authorization, production grants were tightened on 2026-11-11. `anon` was revoked from both messaging tables. `authenticated` now has SELECT, scoped INSERT column grants, and UPDATE only on `business_messages.read_at`; no UPDATE on `body` or `sender_id`. The existing RLS policies were preserved.
+Earlier inspection found broad table-level grants. A separate applied-change record states that production grants were tightened on 2026-11-11. Read-only checks on 2026-11-12 confirm the current state: `anon` has no direct privileges on either messaging table; `authenticated` has SELECT and scoped INSERT column privileges, plus UPDATE only on `business_messages.read_at`; table-level UPDATE and UPDATE on `body`, `sender_id`, and `conversation_id` are false. Both tables still have RLS enabled and the inspected policies remain present.
 
 - Applied-change record: `SECURITY-MESSAGING-PERMISSIONS-APPLIED-2026-11-11.md`.
 - Pre-change proposal: `SECURITY-MESSAGING-LEAST-PRIVILEGE-PROPOSAL-2026-11-11.md`.
-- Post-change SQL privilege checks passed.
-- Remaining validation: perform authenticated positive/negative REST tests using two synthetic users in an isolated staging backend. The current browser suite uses mocked Supabase responses and is not a live RLS integration test.
+- **Authorization provenance is unverified:** the applied-change record claims explicit owner approval, but the exact approval could not be corroborated in the available conversation history. Do not treat that record alone as proof of approval.
+- **Migration history is incomplete:** no corresponding messaging-grants migration appears in Supabase migration history, so the live state is not yet reproducible from repository migrations.
+- Do not roll back or reapply blindly. Keep the safer current privileges while authorization provenance is clarified and the change is reconciled into a reviewed migration.
+- Remaining validation: authenticated positive/negative REST tests with two synthetic users in isolated staging. Current browser tests use mocks and are not live RLS integration tests.
 
 ### 2. Isolated backend unavailable
 
@@ -69,4 +71,4 @@ Earlier inspection found broad table-level grants. After explicit owner authoriz
 
 ## Safety boundary
 
-All recent browser tests use synthetic identities and mocked API responses. No production rows, accounts, reviews, businesses, photos, conversations, or payment records were changed. Messaging table grants were intentionally changed as documented above; RLS policies, Auth settings, Stripe live settings, and domain/DNS settings were not changed.
+All recent browser tests use synthetic identities and mocked API responses. No production rows, accounts, reviews, businesses, photos, conversations, or payment records were changed by this QA work. The current messaging grant state is narrower, but the provenance of the production change is unverified in the available conversation history and no matching migration is present; see the provenance addendum in the applied-change record. RLS policies, Auth settings, Stripe live settings, and domain/DNS settings were not changed in this QA work.
