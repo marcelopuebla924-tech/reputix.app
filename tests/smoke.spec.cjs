@@ -395,41 +395,44 @@ const { chromium } = require("playwright");
           featureGroup: () => ({ getBounds: () => ({}) })
         };
       });
-      await mapPage.route("**/leaflet.js", route => route.abort());
-      await mapPage.route(/\/rest\/v1\/businesses(?:\?|$)/, async route => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify([
-            {
-              id: "qa-map-1",
-              name: "<img src=x onerror=alert(1)>",
-              category: "Smoke Shop",
-              address: "100 Main Street",
-              city: "Los Angeles",
-              zip: "90001",
-              status: "approved"
-            },
-            {
-              id: "qa-map-2",
-              name: "QA Cafe",
-              category: "Restaurant",
-              address: "200 Main Street",
-              city: "Los Angeles",
-              zip: "90002",
-              latitude: 34.01,
-              longitude: -118.25,
-              status: "approved"
-            }
-          ])
-        });
-      });
-      await mapPage.route(/nominatim\.openstreetmap\.org\/search(?:\?|$)/, async route => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify([{ lat: "34.00", lon: "-118.26" }])
-        });
+      await mapPage.route("**/*", async route => {
+        const url = route.request().url();
+        if (url.includes("leaflet.js")) {
+          await route.abort();
+          return;
+        }
+        if (url.includes("/rest/v1/businesses")) {
+          await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify([
+              {
+                id: "qa-map-1",
+                name: "<img src=x onerror=alert(1)>",
+                category: "Smoke Shop",
+                address: "100 Main Street",
+                city: "Los Angeles",
+                zip: "90001",
+                latitude: 34.00,
+                longitude: -118.26,
+                status: "approved"
+              },
+              {
+                id: "qa-map-2",
+                name: "QA Cafe",
+                category: "Restaurant",
+                address: "200 Main Street",
+                city: "Los Angeles",
+                zip: "90002",
+                latitude: 34.01,
+                longitude: -118.25,
+                status: "approved"
+              }
+            ])
+          });
+          return;
+        }
+        await route.continue();
       });
       await mapPage.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
       await mapPage.waitForFunction(() => /2 de 2 negocios ubicados/i.test(document.querySelector("#status")?.textContent || ""), null, { timeout: 10000 });
