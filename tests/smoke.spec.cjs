@@ -1078,6 +1078,16 @@ const { chromium } = require("playwright");
         null,
         { timeout: 8000 }
       );
+      await customerPage.locator("#messageReplyBody").fill("Customer follow-up from the synthetic account.");
+      await customerPage.locator("#messageReplyButton").click();
+      await customerPage.waitForFunction(() =>
+        (document.querySelector("#messageThreadItems")?.textContent || "").includes("Customer follow-up from the synthetic account."),
+        null,
+        { timeout: 8000 }
+      );
+      if (messages.length !== 3 || messages[2].sender_id !== customerId) {
+        throw new Error("Customer reply button did not send a message from the signed-in synthetic customer");
+      }
       await ownerPage.close();
       await customerPage.close();
     });
