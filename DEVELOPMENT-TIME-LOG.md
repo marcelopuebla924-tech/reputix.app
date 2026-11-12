@@ -621,3 +621,21 @@ Only time actively spent inspecting, coding, testing, reviewing, and documenting
 
 ### Safety
 - All campaigns, identities, REST responses, and state changes were synthetic/mocked. No real campaign, charge, or production record was created or changed.
+
+
+## Session 029 — 2026-11-11
+
+- Start: 18:36:34 PST
+- End: 18:37:29 PST
+- Active tracked time: 55 seconds (0.015 hours)
+- Cumulative tracked time since baseline: 53 minutes 21 seconds (0.889 hours)
+
+### Verification and work performed
+1. Confirmed Browser QA run #231 passed all 32 named checks, zero failures and zero page errors.
+2. Inspected the repository tree for a no-cost local Supabase CLI staging option.
+3. Found no `supabase/config.toml` and only one SQL migration in the repository, so the repo does not currently contain a complete schema snapshot for an isolated local Supabase instance.
+
+### Staging decision
+- Do not invent an incomplete database schema or connect local test infrastructure to production.
+- Do not upgrade Supabase or create a paid project without separate approval.
+- Continue mocked browser QA; live Auth/RLS/Stripe/Storage verification remains pending an approved isolated backend.
