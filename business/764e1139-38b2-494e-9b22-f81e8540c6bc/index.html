@@ -198,6 +198,66 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 .owner-module-grid .private-tile{border-color:#765d2a}
 @media(max-width:620px){.private-module-grid{grid-template-columns:1fr}.private-module-grid>.private-wide{grid-column:auto}}
 </style>
+
+<style id="reputix-elegant-mobile-navigation-20261112">
+/* Navegación principal refinada: jerarquía clara, controles equilibrados y accesibles. */
+header{gap:clamp(14px,2vw,28px)!important}
+header>.header-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}
+.header-actions .home-header-access,
+.header-actions .map-header-access,
+.header-actions .independent-header-access,
+.header-actions .account-access{
+  box-sizing:border-box;position:relative;display:inline-flex;align-items:center;justify-content:center;
+  gap:7px;min-height:44px;padding:10px 15px;border-radius:14px;text-decoration:none;
+  font-size:12px;font-weight:850;letter-spacing:.12px;line-height:1.25;text-align:center;
+  white-space:nowrap;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+}
+.header-actions .home-header-access{border:1px solid #35cfff;color:#fff;background:linear-gradient(135deg,#087fda,#00a9ed);box-shadow:inset 0 1px 0 #ffffff55,0 0 17px #009dff55}
+.header-actions .home-header-access>span:first-child{font-size:17px;color:#d9faff}
+.header-actions .map-header-access{border:1px solid #55dfff;color:#eafaff;background:linear-gradient(145deg,#0a3456,#071a30);box-shadow:inset 0 0 12px #48dfff12,0 0 11px #00baff22}
+.header-actions .independent-header-access{border:1px solid #238fc3;color:#bdeeff;background:linear-gradient(145deg,#081e35,#0a2d49);box-shadow:inset 0 0 13px #00aaff12}
+.header-actions .independent-header-access:before{content:"✦";font-size:15px;color:#61e5ff}
+.header-actions .account-access{border:1px solid #8cecff;color:#fff;background:linear-gradient(115deg,#087fe0,#00b9ed 55%,#0875d3);box-shadow:inset 0 1px 0 #ffffff55,0 0 16px #009dff44}
+.header-actions .home-header-access:hover,.header-actions .map-header-access:hover,
+.header-actions .independent-header-access:hover,.header-actions .account-access:hover{
+  transform:translateY(-2px);filter:brightness(1.12);box-shadow:0 0 19px #00baff55
+}
+.header-actions #language{width:auto!important;min-width:142px;min-height:42px;padding:8px 13px!important;border:1px solid #278ec4!important;border-radius:13px!important;background:#071a30!important;color:#eafaff!important;box-shadow:0 0 10px #008cff18}
+.mobile-map-shortcut{box-sizing:border-box;width:min(100%,760px);min-height:58px;margin:18px auto 8px!important;padding:14px 18px!important;border:1px solid #36d8ff!important;border-radius:18px!important;background:linear-gradient(110deg,#07345a,#075b91 58%,#06375f)!important;color:#fff!important;text-decoration:none!important;font-size:clamp(13px,2vw,17px)!important;font-weight:900!important;letter-spacing:.25px;box-shadow:inset 0 1px 0 #ffffff24,0 0 18px #009dff30!important}
+.mobile-map-shortcut .map-symbol{font-size:23px!important;color:#79edff!important}
+.hero-center .search{margin-bottom:10px}
+@media(max-width:700px){
+  header{display:grid!important;grid-template-columns:minmax(0,1fr)!important;align-items:stretch!important;gap:13px!important;padding:15px 18px 16px!important}
+  header>div:first-child{width:100%;text-align:left}
+  header .logo{font-size:clamp(25px,7vw,31px)!important}
+  header .home-tagline{font-size:12px!important}
+  header>.header-actions{display:grid!important;width:100%!important;max-width:none!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+  .header-actions .home-header-access,.header-actions .map-header-access,
+  .header-actions .independent-header-access,.header-actions .account-access{
+    width:100%!important;min-width:0!important;min-height:48px!important;padding:9px 7px!important;
+    border-radius:14px!important;font-size:clamp(11px,2.8vw,13px)!important;white-space:normal!important
+  }
+  .header-actions #language{grid-column:1/-1;justify-self:center;width:min(100%,190px)!important;min-width:0!important;min-height:43px!important;text-align:center}
+  .mobile-map-shortcut{display:flex!important;align-items:center;justify-content:center;gap:10px;margin:15px auto 8px!important;min-height:56px}
+  .hero{padding-top:17px!important}
+  .hero-center .search{margin-top:18px!important}
+}
+@media(min-width:701px){
+  .header-actions #language{margin-left:3px}
+  .mobile-map-shortcut{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .header-actions .home-header-access,.header-actions .map-header-access,
+  .header-actions .independent-header-access,.header-actions .account-access{transition:none}
+}
+</style>
+
+<style id="reputix-official-qr-20261112">
+.reputix-qr-section{display:flex;align-items:center;justify-content:center;gap:22px;max-width:900px;margin:26px auto 22px;padding:20px;border:1px solid rgba(0,166,255,.55);border-radius:20px;background:linear-gradient(135deg,rgba(7,24,44,.98),rgba(5,13,27,.98));box-shadow:0 0 22px rgba(0,145,255,.12)}
+.reputix-qr-image{display:block;width:148px;height:148px;flex:0 0 148px;padding:8px;border-radius:12px;background:#fff;image-rendering:pixelated}
+.reputix-qr-copy{min-width:0}.reputix-qr-copy h2{margin:0 0 7px;color:#f4f8ff;font-size:clamp(19px,3vw,25px)}.reputix-qr-copy p{margin:0 0 12px;color:#b9cce3;line-height:1.55;font-size:14px}.reputix-qr-link{display:inline-flex;align-items:center;gap:7px;color:#72caff;font-weight:800;text-decoration:none;overflow-wrap:anywhere}.reputix-qr-link:hover{text-decoration:underline}
+@media(max-width:560px){.reputix-qr-section{margin:18px 12px;padding:15px;gap:14px}.reputix-qr-image{width:112px;height:112px;flex-basis:112px}.reputix-qr-copy p{font-size:12px}}
+</style>
 </head>
 
 <body id="pageTop">
@@ -243,10 +303,11 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
     <div class="logo">REPUTI<span>X</span></div>
     <a class="tag home-tagline" id="tagline" href="#pageTop" aria-label="Volver al inicio" title="Volver al inicio">Opiniones reales. Soluciones reales.</a>
   </div>
-  <div class="header-actions">
-    <button class="independent-header-access" type="button" id="independentHeaderBtn">Ofrece tu servicio</button>
+  <nav class="header-actions" aria-label="Navegación principal">
+    <a class="home-header-access" href="#pageTop" aria-current="page"><span aria-hidden="true">⌂</span> <span class="nav-label" data-nav-label="home">Inicio</span></a>
     <a class="map-header-access" href="./mapa.html" aria-label="Abrir mapa de negocios">⌖ <span>Mapa</span></a>
-    <button class="account-access" type="button" id="accountAccessBtn">Registrarse / Iniciar sesión</button>
+    <button class="independent-header-access" type="button" id="independentHeaderBtn">Ofrece tu servicio</button>
+    <button class="account-access" type="button" id="accountAccessBtn">Crear cuenta / Iniciar sesión</button>
     <select id="language" aria-label="Language" style="width:auto">
       <option value="es">Español</option>
       <option value="en">English</option>
@@ -258,7 +319,6 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 .mobile-map-shortcut{display:none}
 @media(max-width:700px){.mobile-map-shortcut{display:flex;align-items:center;justify-content:center;gap:9px;margin:12px 14px 0;padding:12px 16px;border:1px solid #22caff;border-radius:14px;background:linear-gradient(110deg,#07345a,#075b91);color:#fff;text-decoration:none;font-weight:900;box-shadow:0 0 16px #009dff35}.mobile-map-shortcut .map-symbol{font-size:21px;color:#70eaff}}
 </style>
-<a class="mobile-map-shortcut" href="./mapa.html"><span class="map-symbol">⌖</span> ABRIR MAPA DE NEGOCIOS <span aria-hidden="true">→</span></a>
 <main>
 <section class="hero">
   <div class="discovery-strip" id="topDiscoveryRail" aria-label="Negocios destacados">
@@ -287,6 +347,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
         <input id="business" type="search" placeholder="Busca negocios, servicios o categorías..." aria-label="Buscar negocios, servicios o categorías" required>
         <button class="primary" id="searchButton" type="submit">Buscar</button>
       </form>
+      <a class="mobile-map-shortcut" href="./mapa.html"><span class="map-symbol">⌖</span> <span data-map-cta>ABRIR MAPA DE NEGOCIOS</span> <span aria-hidden="true">→</span></a>
       <div class="google-discovery">
         <span class="google-mark">G</span>
         <strong id="googleDiscoveryTitle">Próximamente: descubrimiento con Google</strong>
@@ -416,6 +477,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       <div class="owner-grid">
         <label class="owner-field"><span id="ownerEmailLabel">Correo electrónico</span><input id="ownerEmail" type="email" autocomplete="email" required></label>
         <label class="owner-field"><span id="ownerPasswordLabel">Contraseña</span><input id="ownerPassword" type="password" autocomplete="current-password" required></label>
+        <label class="owner-field"><span id="ownerCountryLabel">País</span><input id="ownerCountry" type="text" autocomplete="country-name" maxlength="80" placeholder="Detectando país…"><small id="ownerCountryHelp">Detectamos tu país aproximadamente por tu conexión. Puedes corregirlo.</small></label>
       </div>
       <div class="owner-actions">
         <button class="primary" type="button" id="ownerSignUp">Crear cuenta</button>
@@ -434,6 +496,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       <button class="primary" type="button" id="ownerSaveNewPassword" style="width:100%;margin-top:12px">Guardar nueva contraseña</button>
     </section>
     <p class="owner-message" id="ownerAuthMessage" aria-live="polite"></p>
+    <p id="ownerCountryDisplay" class="owner-copy" hidden></p>
     <section class="private-space" id="privateSpace" hidden>
       <div class="private-space-head">
         <div><span class="private-kicker">REPUTIX · ÁREA PRIVADA</span><h2 id="privateWelcome">Mi espacio</h2><p id="privateIntro">Tu actividad y tus negocios en un solo lugar.</p></div>
@@ -671,6 +734,12 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
       </section>
       <section id="adminClaimsPanel" hidden>
         <div class="divider"></div>
+        <h3>Revisión inteligente de negocios</h3>
+        <p class="admin-warning">La IA analiza integridad y consistencia de las propuestas. No verifica existencia, identidad ni propiedad y nunca aprueba automáticamente.</p>
+        <button class="secondary" id="adminBusinessModerationRefresh" type="button">Actualizar negocios pendientes</button>
+        <p id="adminBusinessModerationStatus" class="owner-message" aria-live="polite"></p>
+        <div id="adminBusinessModerationList"></div>
+        <div class="divider"></div>
         <h3 id="adminClaimsTitle">🛡️ Revisión administrativa</h3>
         <p class="admin-warning" id="adminClaimsWarning">Solo verifica una solicitud cuando hayas comprobado la identidad y una prueba válida de relación con el negocio. No aceptes únicamente una declaración escrita.</p>
         <div id="adminClaimsList"></div>
@@ -683,6 +752,15 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
 
 
 
+
+<section class="reputix-qr-section" id="reputixOfficialQr" aria-labelledby="reputixQrTitle">
+  <img class="reputix-qr-image" src="./assets/reputix-qr-web.svg" width="148" height="148" alt="Código QR oficial de Reputix. Escanea para visitar reputixapp.com" loading="lazy" decoding="async">
+  <div class="reputix-qr-copy">
+    <h2 id="reputixQrTitle">Lleva Reputix contigo</h2>
+    <p>Escanea el código para visitar Reputix, descubrir negocios y compartir opiniones reales.</p>
+    <a class="reputix-qr-link" href="https://www.reputixapp.com/" target="_blank" rel="noopener noreferrer">www.reputixapp.com ↗</a>
+  </div>
+</section>
 <footer>
   REPUTIX © 2026 · Opiniones reales. Soluciones reales.<br>
   Las estadísticas se basan en datos disponibles.
@@ -744,7 +822,7 @@ body.owner-auth-in-view .reputix-ai-fab{display:none!important;pointer-events:no
  refresh();
 })();
 </script>
-<script src="./app.js?v=20261111-profile-editor-2" defer></script>
+<script src="./app.js?v=20261112-review-rpc-fix-1" defer></script>
 <script src="./checkout.js?v=standalone-stripe-20261110-1" defer></script>
 
 <noscript><main><h1>Carolina Fashion Boutique</h1><p>Ropa y accesorios · 9419 S San Pedro St · Los Angeles</p></main></noscript></body>
