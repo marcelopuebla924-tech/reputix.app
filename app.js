@@ -742,16 +742,52 @@ function safeUrl(value) {
 let discoveryOffset = 0;
 let discoveryTimer = null;
 
+// Reuse signed URLs within the page session so repeated cards/profile opens
+// do not create fresh signed URLs and trigger avoidable Storage downloads.
+const businessPhotoSignedUrlCache = new Map();
+const businessPhotoSignedUrlPending = new Map();
+
+async function getBusinessPhotoSignedUrl(storagePath) {
+  const path = String(storagePath || "").trim();
+  if (!path) return null;
+  const cached = businessPhotoSignedUrlCache.get(path);
+  if (cached && cached.expiresAt > Date.now() + 60000) return cached.url;
+  if (businessPhotoSignedUrlPending.has(path)) return businessPhotoSignedUrlPending.get(path);
+
+  const request = (async () => {
+    const response = await fetch(SUPABASE_URL + "/storage/v1/object/sign/business-photos/" + photoPathUrl(path), {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ expiresIn: 3600 })
+    });
+    if (!response.ok) throw new Error("No se pudo firmar la foto: " + response.status);
+    const data = await response.json();
+    const signed = data.signedURL || data.signedUrl;
+    if (!signed) return null;
+    const url = (signed.startsWith("https://") || signed.startsWith("http://"))
+      ? signed
+      : SUPABASE_URL + "/storage/v1" + (signed.startsWith("/") ? signed : "/" + signed);
+    businessPhotoSignedUrlCache.set(path, { url, expiresAt: Date.now() + 50 * 60 * 1000 });
+    return url;
+  })();
+
+  businessPhotoSignedUrlPending.set(path, request);
+  try {
+    return await request;
+  } finally {
+    if (businessPhotoSignedUrlPending.get(path) === request) businessPhotoSignedUrlPending.delete(path);
+  }
+}
+
 async function loadDiscoveryTilePhoto(business,tile) {
   const applyPhoto = src => {
     if (!src) return;
-    // Fondo directo: evita que la capa de color de la tarjeta oculte la fotografía.
-    tile.style.backgroundImage =
-      'linear-gradient(180deg,rgba(0,8,20,.08) 0%,rgba(0,8,20,.72) 100%),url("' +
-      String(src).replace(/"/g,"%22") + '")';
-    tile.style.backgroundSize = "cover";
-    tile.style.backgroundPosition = "center";
-    tile.style.backgroundRepeat = "no-repeat";
+    // The tile uses one real image element; avoid requesting the same URL again as a CSS background.
+    tile.style.backgroundImage = "";
     tile.classList.add("has-business-photo");
     const oldImage = tile.querySelector(".tile-photo");
     if (oldImage) oldImage.remove();
@@ -759,6 +795,7 @@ async function loadDiscoveryTilePhoto(business,tile) {
     img.src = src;
     img.alt = "";
     img.loading = "lazy";
+    img.decoding = "async";
     img.onerror = () => img.remove();
     tile.prepend(img);
   };
@@ -779,21 +816,8 @@ async function loadDiscoveryTilePhoto(business,tile) {
     });
     const rows = await api("business_photos?" + params);
     if (!Array.isArray(rows) || !rows.length || !rows[0].storage_path) return;
-    const response = await fetch(SUPABASE_URL + "/storage/v1/object/sign/business-photos/" + photoPathUrl(rows[0].storage_path),{
-      method:"POST",
-      headers:{apikey:SUPABASE_KEY,Authorization:"Bearer " + SUPABASE_KEY,"Content-Type":"application/json"},
-      body:JSON.stringify({expiresIn:3600})
-    });
-    if (!response.ok) {
-      console.error("No se pudo firmar la foto del negocio:",response.status,await response.text());
-      return;
-    }
-    const data = await response.json();
-    const signed = data.signedURL || data.signedUrl;
-    if (!signed) return;
-    const src = (signed.startsWith("https://") || signed.startsWith("http://"))
-      ? signed
-      : SUPABASE_URL + "/storage/v1" + (signed.startsWith("/") ? signed : "/" + signed);
+    const src = await getBusinessPhotoSignedUrl(rows[0].storage_path);
+    if (!src) return;
     applyPhoto(src);
   } catch (err) {
     console.error("No se pudo cargar la portada de la tarjeta:",err);
@@ -1088,27 +1112,14 @@ async function loadApprovedBusinessPhotos(businessId,card) {
     const gallery = node("div","business-photo-gallery");
     let firstPhoto = !cover?.classList.contains("has-photo");
     for (const row of rows) {
-      const response = await fetch(SUPABASE_URL + "/storage/v1/object/sign/business-photos/" + photoPathUrl(row.storage_path),{
-        method:"POST",
-        headers:{
-          apikey:SUPABASE_KEY,
-          Authorization:"Bearer " + SUPABASE_KEY,
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({expiresIn:3600})
-      });
-      if (!response.ok) continue;
-      const data = await response.json();
-      const signed = data.signedURL || data.signedUrl;
-      if (!signed) continue;
-      const src = (signed.startsWith("https://") || signed.startsWith("http://"))
-        ? signed
-        : SUPABASE_URL + "/storage/v1" + (signed.startsWith("/") ? signed : "/" + signed);
+      const src = await getBusinessPhotoSignedUrl(row.storage_path);
+      if (!src) continue;
       if (firstPhoto && cover) {
         const img = node("img","business-cover-image");
         img.src = src;
         img.alt = lang === "es" ? "Portada del negocio" : "Business cover photo";
         img.loading = "lazy";
+        img.decoding = "async";
         const caption = cover.querySelector(".business-cover-caption");
         cover.insertBefore(img,caption || cover.firstChild);
         cover.classList.add("has-photo");
@@ -1118,6 +1129,7 @@ async function loadApprovedBusinessPhotos(businessId,card) {
         img.src = src;
         img.alt = lang === "es" ? "Foto del negocio" : "Business photo";
         img.loading = "lazy";
+        img.decoding = "async";
         gallery.append(img);
       }
     }
