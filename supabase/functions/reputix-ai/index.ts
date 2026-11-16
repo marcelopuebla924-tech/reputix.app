@@ -33,7 +33,7 @@ function getSupabaseSecretKey(): string | null {
       console.error("SUPABASE_SECRET_KEYS is not valid JSON");
     }
   }
-  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? null;
 }
 
 function getOpenAIKey(): string | null {
