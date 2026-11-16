@@ -32,7 +32,7 @@ test("only POST requests proceed beyond the method guard", () => {
 });
 
 test("a valid Supabase user session is checked server-side", () => {
-  assert.match(source, /fetch\(\$\{supabaseUrl\}\/auth\/v1\/user/);
+  assert.match(source, /fetch\(\`\$\{supabaseUrl\}\/auth\/v1\/user/);
   assert.match(source, /if \(!userResponse\.ok\) return respond\(\{ error: "Valid user session required" \}, 401\)/);
   assert.match(source, /if \(!user\?\.id\) return respond\(\{ error: "Valid user session required" \}, 401\)/);
 });
