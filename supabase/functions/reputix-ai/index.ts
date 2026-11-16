@@ -36,6 +36,15 @@ function getSupabaseSecretKey(): string | null {
   return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 }
 
+function getOpenAIKey(): string | null {
+  // The legacy mixed-case secret is accepted only as a fallback. Stripe keys
+  // (for example sk_test_...) are deliberately rejected.
+  const candidates = [Deno.env.get("OPENAI_API_KEY"), Deno.env.get("Open_api_key")];
+  return candidates
+    .map((value) => typeof value === "string" ? value.trim() : "")
+    .find((value) => /^sk-(?:proj-)?[A-Za-z0-9_-]{20,}$/.test(value)) || null;
+}
+
 function cleanText(value: unknown, max = 280): string {
   if (typeof value !== "string") return "";
   return value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
@@ -98,7 +107,7 @@ Deno.serve(async (req: Request) => {
   const authorization = req.headers.get("Authorization");
   const apikey = req.headers.get("apikey");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const openaiKey = Deno.env.get("OPENAI_API_KEY");
+  const openaiKey = getOpenAIKey();
 
   if (!authorization?.startsWith("Bearer ") || !apikey || !supabaseUrl) {
     return respond({ error: "Authentication required" }, 401);
@@ -127,7 +136,7 @@ Deno.serve(async (req: Request) => {
   }
 
   if (mode !== "admin_moderation_list" && !openaiKey) {
-    return respond({ error: "Reputix AI is not configured yet. Add OPENAI_API_KEY to Supabase Function Secrets." }, 503);
+    return respond({ error: "Reputix AI needs a valid OpenAI API key. Add a key beginning with sk- or sk-proj- as OPENAI_API_KEY (or Open_api_key). A Stripe sk_test_ key will not work." }, 503);
   }
 
   // Reputix AI conversacional es una ventaja exclusiva de Pro.
@@ -353,7 +362,12 @@ Rules for using data:
   const result = await aiResponse.json().catch(() => ({}));
   if (!aiResponse.ok) {
     console.error("OpenAI request failed", aiResponse.status, result?.error?.type || "unknown");
-    return respond({ error: "Reputix AI could not answer right now. Please try again later." }, 502);
+    const error = aiResponse.status === 401
+      ? "OpenAI rejected the configured API key. Replace it with an OpenAI Platform key; Stripe keys are not valid here."
+      : aiResponse.status === 429
+        ? "OpenAI API quota or rate limit reached. Check API billing and usage."
+        : "Reputix AI could not answer right now. Please try again later.";
+    return respond({ error }, aiResponse.status === 401 ? 503 : 502);
   }
 
   const answer = (result.output || [])
