@@ -57,3 +57,17 @@ test("assistant Pro entitlement is checked server-side, not from browser input",
   assert.match(source, /subscription\?\.plan_code !== "pro"/);
   assert.match(source, /validStatus = \["active", "trialing"\]/);
 });
+
+
+test("OpenAI secret selection rejects Stripe test keys and supports the legacy mixed-case secret", () => {
+  assert.match(source, /function getOpenAIKey\(\): string \| null/);
+  assert.match(source, /Deno\.env\.get\("OPENAI_API_KEY"\)/);
+  assert.match(source, /Deno\.env\.get\("Open_api_key"\)/);
+  assert.match(source, /\^sk-\(\?:proj-\)\?/);
+  assert.match(source, /A Stripe sk_test_ key will not work/);
+});
+
+test("assistant explains invalid OpenAI credentials without exposing secret values", () => {
+  assert.match(source, /OpenAI rejected the configured API key/);
+  assert.doesNotMatch(source, /console\.log\(openaiKey|console\.error\(openaiKey/);
+});
