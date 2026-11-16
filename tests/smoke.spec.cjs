@@ -6,9 +6,19 @@ const { execFileSync } = require("node:child_process");
 
 (async () => {
   const browser = await chromium.launch({ headless: true });
+  // Keep browser QA from downloading real customer photos on every CI run.
+  // REST and upload requests remain testable; only Storage object GETs are blocked.
+  async function newTestPage(options) {
+    const testPage = await browser.newPage(options);
+    await testPage.route("**/storage/v1/object/**", route => {
+      if (route.request().method() === "GET") return route.abort();
+      return route.continue();
+    });
+    return testPage;
+  }
   const failures = [];
   const results = [];
-  const page = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+  const page = await newTestPage({ viewport: { width: 1365, height: 900 } });
   page.on("pageerror", error => failures.push(error.stack || error.message));
 
   async function check(name, fn) {
@@ -174,7 +184,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Approved business deep links load a public profile with SEO metadata and working share action", async () => {
-      const profilePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const profilePage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       profilePage.on("pageerror", error => failures.push(error.stack || error.message));
       const businessId = "00000000-0000-4000-8000-000000000551";
       const businessName = "QA Public Profile Business";
@@ -285,7 +295,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Unapproved or missing business IDs are not exposed by direct profile links", async () => {
-      const privatePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const privatePage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       privatePage.on("pageerror", error => failures.push(error.stack || error.message));
       await privatePage.route("**/rest/v1/**", async route => {
         await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
@@ -316,7 +326,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Published review translation button toggles the translated text", async () => {
-      const translationPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const translationPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       translationPage.on("pageerror", error => failures.push(error.stack || error.message));
       const businessId = "00000000-0000-4000-8000-000000000311";
       const translatedText = "Synthetic translated review for Reputix QA.";
@@ -363,7 +373,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Public review submission saves the five ratings as pending and keeps AI moderation advisory", async () => {
-      const reviewPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const reviewPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       reviewPage.on("pageerror", error => failures.push(error.stack || error.message));
       const businessId = "00000000-0000-4000-8000-000000000301";
       const userId = "00000000-0000-4000-8000-000000000302";
@@ -461,7 +471,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Business photo upload validates file type and submits approved-review metadata", async () => {
-      const photoPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const photoPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       photoPage.on("pageerror", error => failures.push(error.stack || error.message));
       const businessId = "00000000-0000-4000-8000-000000000401";
       let storageUploads = 0;
@@ -524,7 +534,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Owner claim submission preserves the session and confirms the request", async () => {
-      const claimPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const claimPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       claimPage.on("pageerror", error => failures.push(error.stack || error.message));
       let claimPayload = null;
       await claimPage.route("**/rest/v1/**", async route => {
@@ -575,7 +585,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Customer and verified-owner workspaces stay separate and owner tools require a verified claim", async () => {
-      const workspacePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const workspacePage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       workspacePage.on("pageerror", error => failures.push(error.stack || error.message));
       let verified = true;
       await workspacePage.route("**/rest/v1/**", async route => {
@@ -679,7 +689,7 @@ const { execFileSync } = require("node:child_process");
 
     await check("Paid Basic and Pro members receive a spacious working dashboard with live navigation and refresh controls", async () => {
       for (const plan of ["basic", "pro"]) {
-        const paidPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+        const paidPage = await newTestPage({ viewport: { width: 1440, height: 1000 } });
         paidPage.on("pageerror", error => failures.push(error.stack || error.message));
         let refreshProfileCalls = 0;
         let profileSavePayload = null;
@@ -834,7 +844,7 @@ const { execFileSync } = require("node:child_process");
         await paidPage.close();
       }
 
-      const freePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const freePage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       await freePage.route("**/rest/v1/**", async route => {
         if (route.request().url().includes("/user_subscriptions")) {
           await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify([{
@@ -858,7 +868,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Admin moderation and advertising controls work with mocked data", async () => {
-      const adminPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const adminPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       adminPage.on("pageerror", error => failures.push(error.stack || error.message));
       let adPayload = null;
       let adCampaignReads = 0;
@@ -1013,7 +1023,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Admin owner-claim approve and reject buttons confirm and update only mocked pending claims", async () => {
-      const claimPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const claimPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       claimPage.on("pageerror", error => failures.push(error.stack || error.message));
       const claimStatuses = new Map([
         ["qa-owner-claim-approval", "pending"],
@@ -1130,7 +1140,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Owner registration, email-confirmation message, sign-in, and session restoration work with isolated Auth mocks", async () => {
-      const authPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const authPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       authPage.on("pageerror", error => failures.push(error.stack || error.message));
       let signupCalls = 0;
       let signinCalls = 0;
@@ -1198,7 +1208,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Owner authentication errors remain visible and controls recover", async () => {
-      const errorPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const errorPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       errorPage.on("pageerror", error => failures.push(error.stack || error.message));
       let signInCalls = 0;
       let signUpCalls = 0;
@@ -1252,7 +1262,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Private member data requests explicitly scope records to the signed-in user", async () => {
-      const scopedPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const scopedPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       scopedPage.on("pageerror", error => failures.push(error.stack || error.message));
       const userId = "00000000-0000-4000-8000-000000000314";
       const requiredTables = new Set([
@@ -1306,7 +1316,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Owner sign-out clears the local session and revokes only the current server session", async () => {
-      const signOutPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const signOutPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       signOutPage.on("pageerror", error => failures.push(error.stack || error.message));
       let logoutCalls = 0;
       let logoutScope = "";
@@ -1341,7 +1351,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Password recovery verifies a one-time link only once and safely updates the password", async () => {
-      const recoveryPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const recoveryPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       recoveryPage.on("pageerror", error => failures.push(error.stack || error.message));
       let verifyCalls = 0;
       let updateCalls = 0;
@@ -1386,7 +1396,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Checkout refreshes an expired session once before retrying safely", async () => {
-      const checkoutPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const checkoutPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       checkoutPage.on("pageerror", error => failures.push(error.stack || error.message));
       let refreshCalls = 0;
       let checkoutCalls = 0;
@@ -1474,7 +1484,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Public business proposal honeypot blocks bots and duplicate submissions show a clear message", async () => {
-      const proposalPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const proposalPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       proposalPage.on("pageerror", error => failures.push(error.stack || error.message));
       let rpcCalls = 0;
       let rpcMode = "success";
@@ -1577,7 +1587,7 @@ const { execFileSync } = require("node:child_process");
         return json([]);
       };
 
-      const customerPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const customerPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       customerPage.on("pageerror", error => failures.push(error.stack || error.message));
       await customerPage.route("**/rest/v1/**", mockRest);
       await customerPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
@@ -1606,7 +1616,7 @@ const { execFileSync } = require("node:child_process");
         return !!target && target.getBoundingClientRect().top < window.innerHeight && target.getBoundingClientRect().bottom > 0;
       }, null, { timeout: 8000 });
 
-      const ownerPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const ownerPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       ownerPage.on("pageerror", error => failures.push(error.stack || error.message));
       await ownerPage.route("**/rest/v1/**", mockRest);
       await ownerPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
@@ -1693,7 +1703,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Verified business owner can submit a complaint response through the authorized RPC", async () => {
-      const responsePage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const responsePage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       responsePage.on("pageerror", error => failures.push(error.stack || error.message));
       const ownerId = "00000000-0000-4000-8000-000000000501";
       const businessId = "00000000-0000-4000-8000-000000000502";
@@ -1811,7 +1821,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Standalone map loads approved businesses, filters results, and safely renders untrusted names", async () => {
-      const mapPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const mapPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       mapPage.on("pageerror", error => failures.push(error.stack || error.message));
       await mapPage.addInitScript(() => {
         window.__qaMapFitBoundsCalls = 0;
@@ -1983,7 +1993,7 @@ const { execFileSync } = require("node:child_process");
       await page.locator("#resetView").click();
     });
 
-    const mobile = await browser.newPage({
+    const mobile = await newTestPage({
       viewport: { width: 390, height: 844 },
       isMobile: true,
       hasTouch: true,
@@ -2005,7 +2015,7 @@ const { execFileSync } = require("node:child_process");
     });
 
     await check("Desktop Reputix AI shortcut stays compact and keeps its accessible label", async () => {
-      const desktopAiPage = await browser.newPage({ viewport: { width: 1365, height: 900 } });
+      const desktopAiPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       try {
         await desktopAiPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
         await desktopAiPage.waitForFunction(() => typeof window.reputixStartCheckout === "function", null, { timeout: 15000 });
