@@ -343,7 +343,7 @@ try { ownerSession = JSON.parse(sessionStorage.getItem("reputix_owner_session") 
       answer.replaceChildren();
       // Convierte enlaces Markdown de Google Maps en botones de texto compactos,
       // evitando mostrar la URL larga o romper el ancho de la tarjeta.
-      const linkPattern=/\\[([^\\]]+)\\]\\((https:\\/\\/maps\\.google\\.com\\/\\?[^\\s)]+)\\)|(https:\\/\\/maps\\.google\\.com\\/\\?[^\\s<>"']+)/g;
+      const linkPattern=/\[([^\]]+)\]\((https:\/\/maps\.google\.com\/\?[^\s)]+)\)|(https:\/\/maps\.google\.com\/\?[^\s<>"']+)/g;
       let cursor=0, match;
       while((match=linkPattern.exec(result))!==null){
         if(match.index>cursor)answer.append(document.createTextNode(result.slice(cursor,match.index)));
