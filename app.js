@@ -341,15 +341,18 @@ try { ownerSession = JSON.parse(sessionStorage.getItem("reputix_owner_session") 
       }
       const result=await askReputix(message,session);
       answer.replaceChildren();
-      const linkPattern=/(https:\/\/maps\.google\.com\/\?[^\s<>"']+)/g;
+      // Convierte enlaces Markdown de Google Maps en botones de texto compactos,
+      // evitando mostrar la URL larga o romper el ancho de la tarjeta.
+      const linkPattern=/\\[([^\\]]+)\\]\\((https:\\/\\/maps\\.google\\.com\\/\\?[^\\s)]+)\\)|(https:\\/\\/maps\\.google\\.com\\/\\?[^\\s<>"']+)/g;
       let cursor=0, match;
       while((match=linkPattern.exec(result))!==null){
         if(match.index>cursor)answer.append(document.createTextNode(result.slice(cursor,match.index)));
+        const url=(match[2]||match[3]||"").replace(/[),.;]+$/,"");
         const link=document.createElement("a");
-        link.href=match[1].replace(/[),.;]+$/,"");
-        link.textContent=lang==="es"?"Abrir ubicación en Google Maps":"Open location in Google Maps";
+        link.href=url;
+        link.textContent=match[1]|| (lang==="es"?"Ver en el mapa":"View on map");
         link.target="_blank";link.rel="noopener noreferrer";
-        link.style.cssText="display:inline-block;margin:5px 0;color:#65dcff;text-decoration:underline;font-weight:700";
+        link.style.cssText="display:inline-block;max-width:100%;margin:5px 0;color:#65dcff;text-decoration:underline;font-weight:700;overflow-wrap:anywhere";
         answer.append(link);
         cursor=linkPattern.lastIndex;
       }
