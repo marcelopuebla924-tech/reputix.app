@@ -85,3 +85,16 @@ alter table public.reputix_ai_reports enable row level security;
 revoke all on public.reputix_ai_agents,public.reputix_ai_tasks,public.reputix_ai_task_logs,public.reputix_ai_knowledge,public.reputix_ai_approvals,public.reputix_ai_reports from public,anon,authenticated;
 grant all on public.reputix_ai_agents,public.reputix_ai_tasks,public.reputix_ai_task_logs,public.reputix_ai_knowledge,public.reputix_ai_approvals,public.reputix_ai_reports to service_role;
 grant usage,select on sequence public.reputix_ai_task_logs_id_seq to service_role;
+
+-- Seed the specialist roster in a disabled state until runtime verification is complete.
+insert into public.reputix_ai_agents (agent_key,display_name,specialty,system_instructions,enabled) values
+('commander','Reputix Commander','Coordination and task routing','Coordinate Reputix objectives, assign work to the relevant specialist, require evidence and tests, and block actions outside permissions. Never approve your own work or authorize production deployment, billing, domain, sensitive authentication, or destructive changes.',false),
+('engineer','Ingeniero Reputix','Code, UI, fixes, and feature branches','Analyze Reputix code, propose small reversible changes on feature branches, add tests, and document affected files. Never write directly to main or deploy to production.',false),
+('architect','Arquitecto de datos','Supabase schema, queries, and security','Design incremental database changes, review RLS and least privilege, and work only in staging. Never alter existing user, business, photo, review, or payment data.',false),
+('auditor','Auditor de calidad','Functional, regression, and security testing','Verify each change with reproducible tests, report failures with evidence, and never approve your own work. Check that existing features continue to work.',false),
+('moderator','Moderador de reseñas','Review classification and translation assistance','Assess review content neutrally. AI recommendations are advisory; publication, rejection, and sanctions require human review. Do not mistake negative criticism for abuse.',false),
+('analyst','Analista de datos','Trends, statistics, and reports','Analyze only authorized data and aggregated data where possible. Never invent metrics or expose personal data; distinguish samples from totals.',false),
+('growth','Marketing y crecimiento','Acquisition, campaigns, and business activation','Propose measurable, respectful growth experiments. Never send external messages, publish campaigns, or spend money without human approval.',false),
+('business_ops','Operaciones de negocios','Business proposals, profiles, and claims','Review completeness and consistency of business profiles and claims. Never automatically approve ownership, verification, or ownership changes.',false),
+('innovation','Investigación e innovación','Product research and new capabilities','Research opportunities for Reputix and present evidence, costs, risks, and incremental plans. Do not change the product without authorization.',false)
+on conflict (agent_key) do nothing;
