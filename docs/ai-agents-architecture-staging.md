@@ -1,71 +1,36 @@
-# Reputix AI Agent Team — Staging Foundation
+# Reputix AI Agent Team — Staging Checkpoint
 
-Last reviewed: 2026-11-17 (America/Los_Angeles)
+Last reviewed: 2026-11-17 (America/Los_Angeles).
 
 ## Environment boundaries
+- Repository: marcelopuebla924-tech/reputix.app.
+- Working branch: ai/agent-foundation-staging.
+- Backend: Supabase Reputix-Staging (lzcyulncvjjxsyyivlty).
+- Production remains untouched; no domain/DNS, Stripe, billing, auth, customer data, main branch or production deployment changes.
 
-- Repository: `marcelopuebla924-tech/reputix.app`
-- Working branch: `ai/agent-foundation-staging`
-- Backend for this foundation: Supabase project `Reputix-Staging` (`lzcyulncvjjxsyyivlty`)
-- Production project `Reputix` is read-only for this work.
-- Never change the production domain/DNS, Stripe settings, live secrets, auth settings, or production deployment without explicit approval.
-- Never delete or overwrite user accounts, businesses, reviews, photos, payment records, or other customer data.
+## Canonical system
+The canonical control plane is the private schema reputix_ai: agents, tasks, task_runs, approvals, knowledge and reports. It contains nine controlled agent roles. All nine are currently disabled. anon and authenticated have no schema USAGE; service_role has schema USAGE.
 
-## Canonical agent registry found in staging
+One audit task remains queued and marked read_only_analysis: Auditar y consolidar la base de agentes de Reputix, assigned to security_auditor. No task has been claimed and no paid model call has been made.
 
-The existing private schema `reputix_ai` is the canonical agent foundation. It already contains:
+## Retired and legacy systems
+- ai_ops is a retired prototype: its nine agent records have status retired and its original audit task is cancelled. Retain the records; do not drop the schema as routine cleanup.
+- The public reputix_ai_* tables are a legacy integration surface. Their nine agents remain disabled and their nine queued work items are not connected to the worker. Retain all records and do not use as the canonical queue.
+- The original reputix-ai conversational Edge Function is unchanged.
 
-- `agents`: 9 registered agents
-- `tasks`: work queue
-- `task_runs`: execution history and usage/cost tracking
-- `approvals`: human approval gate
-- `reports`: structured agent reports
-- `knowledge`: shared project knowledge
+## Staging worker
+reputix-ai-worker is deployed in Reputix-Staging at version 2 with JWT verification enabled. It requires a valid admin user with app_metadata.reputix_role=admin. It uses the private reputix_ai queue through service_role-only RPC wrappers and processes at most one read-only task per request. The worker has not yet been invoked with an admin session, and secret readiness has not been verified.
 
-Registered agents:
+RPC safeguards: claim only queued read_only_analysis tasks assigned to enabled controlled agents with no approval requirement; completion and failure are written to task_runs and tasks. RPC execution is revoked from anon and authenticated and granted only to service_role.
 
-1. `reputix_commander` — orchestration, prioritization, reporting, approval routing
-2. `engineering` — code review, bug reproduction, patch proposals, tests
-3. `database_architect` — schema, query, RLS, performance review
-4. `security_auditor` — permissions, security and incident review
-5. `review_moderator` — language and content classification; recommendations only
-6. `business_analyst` — aggregate analytics and trend reports
-7. `growth_marketer` — campaigns, drafts and growth experiments
-8. `business_ops` — onboarding, claims and verification workflow analysis
-9. `innovation` — product research and feature proposals
+All agents remain disabled pending an authenticated status check and a deliberately approved single-task staging test. No model call or external action has occurred.
 
-All agents are constrained to `autonomy_level = controlled`. Keep this restriction.
+## Next steps
+1. Check worker status using a real admin session; do not run a task.
+2. Confirm OPENAI_API_KEY and spending controls in staging without exposing the secret.
+3. Enable only security_auditor for one read-only test after reviewing the status and cost configuration.
+4. Verify run history, result persistence, failure handling, and then disable the agent pending review.
+5. Build the admin dashboard and broader orchestration only after these checks.
 
-## Queue item opened
-
-A high-priority task was added to `reputix_ai.tasks`:
-
-- ID: `6560b7d3-f982-4cee-8101-2ee167bc3375`
-- Title: `Auditar y consolidar la base de agentes de Reputix`
-- Assigned to: `security_auditor`
-- Status: `queued`
-- Scope: compare the private `reputix_ai` schema, public legacy `reputix_ai_*` tables, the isolated `ai_ops` prototype, RLS/grants, Edge Functions and admin authorization.
-- Deliverable: audit report and a safe consolidation plan.
-- No production changes permitted.
-
-## Duplicate schema note
-
-During initial staging setup, an isolated `ai_ops` prototype was created before the pre-existing `reputix_ai` foundation was discovered. It is explicitly marked retired/cancelled and must not be used by the application. It was not created in production and no existing customer data was touched. Do not drop it as part of routine work; any cleanup requires a separately reviewed migration.
-
-## Next implementation sequence
-
-1. Finish the staging audit and choose one canonical task/agent API.
-2. Verify private schema grants and public legacy table grants; keep all agent data inaccessible to `anon` and ordinary `authenticated` users.
-3. Verify the admin identity contract. The current Reputix AI Edge Function checks `app_metadata.reputix_role === "admin"`; preserve server-side authorization and do not trust user-editable metadata.
-4. Implement a separate staging-only Commander endpoint with JWT verification enabled, bounded request sizes, rate limits, task idempotency, audit logs, and strict agent allowlists.
-5. Keep model execution disabled until the OpenAI secret and spending limit are deliberately configured. Do not make paid model calls during foundation setup.
-6. Add read-only dashboard visibility first. Add write actions only behind explicit approvals.
-7. Run staging tests and Supabase security/performance advisors. Do not merge to `main` or deploy production without Marcelo's approval.
-
-## Required safety policy
-
-- Read/analyze/report: allowed.
-- Prepare code changes and test in isolated branches/staging: allowed.
-- Production deploys, production data changes, auth changes, Stripe/domain/DNS changes, outbound messages, spending or paid ads: approval required.
-- Deleting data or manipulating legitimate reviews/ratings: prohibited.
-- Every task must have an owner, status, result, and traceable run/report.
+## Safety rules
+Read/analyze/report is permitted. Prepare code changes on isolated branches and test in staging. Production deploys, production data changes, auth changes, Stripe/domain/DNS changes, external messages and spending require approval. Deleting data or manipulating legitimate reviews/ratings is prohibited.
