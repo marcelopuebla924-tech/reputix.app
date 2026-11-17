@@ -42,3 +42,21 @@ The worker has not been invoked with an administrator session. Secret presence i
 
 ## Explicit non-goals
 No production deployment, customer-data mutation, review/business approval automation, external messages, ad spend, Stripe/domain/DNS/auth changes, or autonomous write actions.
+
+## Checkpoint de acceso administrativo — 17 Nov 2026, 1:16 p. m. PST
+
+### Verificación de staging
+- Proyecto: Reputix-Staging (`lzcyulncvjjxsyyivlty`).
+- Edge Functions `reputix-ai-worker` y `reputix-ai-agents`: ACTIVE, versión 2, `verify_jwt=true`.
+- Esquema canónico `reputix_ai`: 9 agentes registrados; los 9 siguen `enabled=false` y `autonomy_level=controlled`.
+- Cola canónica: 1 tarea `queued`, asignada a `security_auditor`, con `requires_approval=false` y `input_payload.mode=read_only_analysis`.
+- Ejecuciones: 0. No se ha ejecutado la tarea ni se ha generado consumo de modelo por el worker.
+- Auth de staging: 0 usuarios y 0 administradores con `app_metadata.reputix_role=admin`.
+
+### Bloqueo identificado antes de conectar el panel
+La aplicación web existente en `app.js` utiliza el proyecto Supabase de producción (`udvsrmfgjfinwbgvhchs`). Su sesión JWT no puede autenticar llamadas al worker del proyecto de staging. El proyecto de staging tampoco tiene cuentas de usuario; por tanto, no existe una sesión administrativa válida para consultar el endpoint `status`.
+
+**Decisión segura:** no conectar el worker de staging desde la interfaz de producción, no crear ni promover usuarios de Auth, y no modificar configuración de autenticación. El panel de control debe vivir en una interfaz/preview de staging con su propio inicio de sesión y un administrador de staging provisionado de forma explícita y segura. Después de contar con esa sesión, consultar `status` (solo presencia booleana de secretos), verificar el presupuesto antes de cualquier ejecución y ejecutar únicamente la auditoría de solo lectura con aprobación operativa explícita.
+
+### Límites conservados
+Sin cambios en producción, `main`, dominio/DNS, Stripe, usuarios, negocios, opiniones, fotos, ni configuración de Auth. Los 9 agentes permanecen apagados y la cola intacta.
