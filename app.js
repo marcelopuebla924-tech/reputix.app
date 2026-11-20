@@ -2810,6 +2810,9 @@ function ownerSetSession(session) {
   if (moderationPanel) moderationPanel.hidden = !isAdmin;
   const adsPanel = $("adminAdsPanel");
   if (adsPanel) adsPanel.hidden = !isAdmin;
+  const aiAgentsPanel = $("adminAiAgentsPanel");
+  if (aiAgentsPanel) aiAgentsPanel.hidden = !isAdmin;
+  if (isAdmin) setupReputixAiAgentsAdmin();
   if (isAdmin) { setupReputixAdsAdmin(); loadReputixAdsBusinesses().then(loadReputixAdsCampaigns).catch(error => { if ($("adsAdminMessage")) $("adsAdminMessage").textContent = "Error: "+error.message; }); }
   if(session) {
     loadOwnerSubscription().then(() => loadOwnerDashboard());
@@ -3761,3 +3764,116 @@ async function loadApprovedBusinesses() {
 
 /* El eslogan superior sirve como botón para volver al inicio */
 document.addEventListener("DOMContentLoaded",()=>{const homeButton=document.getElementById("tagline");if(homeButton)homeButton.addEventListener("click",()=>{window.scrollTo({top:0,behavior:"smooth"});});});
+
+
+/* Centro administrativo de agentes IA: llamadas protegidas por sesión admin */
+const REPUTIX_AI_AGENTS_URL = SUPABASE_URL + "/functions/v1/reputix-ai-agents";
+let reputixAiAgentsBound = false;
+async function reputixAiAgentsCall(action, extra = {}) {
+  if (!ownerSession?.access_token) throw new Error("Inicia sesión nuevamente como administrador.");
+  const response = await fetch(REPUTIX_AI_AGENTS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + ownerSession.access_token
+    },
+    body: JSON.stringify({ action, ...extra })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || ("Error HTTP " + response.status));
+  return data;
+}
+function setupReputixAiAgentsAdmin() {
+  const panel = $("adminAiAgentsPanel");
+  if (!panel || !ownerSession?.user?.app_metadata?.reputix_role || ownerSession.user.app_metadata.reputix_role !== "admin") return;
+  panel.hidden = false;
+  if (!reputixAiAgentsBound) {
+    reputixAiAgentsBound = true;
+    $("aiAgentsRefresh")?.addEventListener("click", () => loadReputixAiAgentsAdmin());
+    $("aiAgentsTaskForm")?.addEventListener("submit", async event => {
+      event.preventDefault();
+      const button = $("aiAgentsQueue"), status = $("aiAgentsStatus");
+      button.disabled = true; status.textContent = "Creando tarea…";
+      try {
+        const result = await reputixAiAgentsCall("enqueue", {
+          agent_key: $("aiAgentsAgent").value,
+          title: $("aiAgentsTitle").value.trim(),
+          objective: $("aiAgentsObjective").value.trim()
+        });
+        $("aiAgentsTaskForm").reset();
+        status.textContent = "Tarea creada y pendiente de tu aprobación: " + result.task.id;
+        await loadReputixAiAgentsAdmin();
+      } catch (error) { status.textContent = "No se pudo crear la tarea: " + error.message; }
+      finally { button.disabled = false; }
+    });
+    $("aiAgentsTaskList")?.addEventListener("click", async event => {
+      const button = event.target.closest("button[data-ai-action]");
+      if (!button) return;
+      const taskId = button.dataset.taskId, action = button.dataset.aiAction;
+      button.disabled = true;
+      $("aiAgentsStatus").textContent = action === "approve_task" ? "Registrando aprobación…" : "Ejecutando análisis…";
+      try {
+        await reputixAiAgentsCall(action, { task_id: taskId });
+        $("aiAgentsStatus").textContent = action === "approve_task"
+          ? "Aprobación registrada. Puedes ejecutar la tarea cuando estés listo."
+          : "Análisis terminado. Revisa el resultado en la lista de tareas.";
+        await loadReputixAiAgentsAdmin();
+      } catch (error) { $("aiAgentsStatus").textContent = "No se pudo completar la acción: " + error.message; button.disabled = false; }
+    });
+  }
+  loadReputixAiAgentsAdmin();
+}
+async function loadReputixAiAgentsAdmin() {
+  const status = $("aiAgentsStatus");
+  if (!status || !ownerSession?.access_token) return;
+  status.textContent = "Conectando con el servicio de agentes…";
+  try {
+    const [health, registry, taskData] = await Promise.all([
+      reputixAiAgentsCall("status"),
+      reputixAiAgentsCall("list_agents"),
+      reputixAiAgentsCall("list_tasks")
+    ]);
+    $("aiAgentsBackendStatus").textContent = health.agents_backend === "connected" ? "Conectado" : "No disponible";
+    $("aiAgentsOpenAIStatus").textContent = health.openai_key_configured ? "Clave configurada" : "Falta configurar la clave";
+    $("aiAgentsModelStatus").textContent = health.model || "—";
+    $("aiAgentsModeStatus").textContent = health.execution_mode === "advisory_only" ? "Solo recomendaciones" : (health.execution_mode || "—");
+    const registryBox = $("aiAgentsRegistry");
+    registryBox.replaceChildren();
+    (registry.agents || []).forEach(agent => {
+      const card = document.createElement("div"); card.className = "owner-field";
+      const title = document.createElement("strong"); title.textContent = agent.display_name || agent.agent_key;
+      const detail = document.createElement("div"); detail.textContent = (agent.specialty || agent.agent_key) + " · " + (agent.enabled ? "Activo" : "Desactivado");
+      card.append(title, detail); registryBox.append(card);
+    });
+    const select = $("aiAgentsAgent"), selected = select.value;
+    select.replaceChildren();
+    (registry.agents || []).filter(agent => agent.enabled).forEach(agent => {
+      const option = document.createElement("option"); option.value = agent.agent_key; option.textContent = agent.display_name || agent.agent_key; select.append(option);
+    });
+    if ([...select.options].some(option => option.value === selected)) select.value = selected;
+    const list = $("aiAgentsTaskList"); list.replaceChildren();
+    const tasks = taskData.tasks || [];
+    if (!tasks.length) {
+      const empty = document.createElement("p"); empty.className = "owner-copy"; empty.textContent = "Todavía no hay tareas. Crea una para iniciar el flujo de aprobación."; list.append(empty);
+    }
+    tasks.forEach(task => {
+      const card = document.createElement("article"); card.className = "owner-field full"; card.style.marginBottom = "10px";
+      const heading = document.createElement("strong"); heading.textContent = task.title + " · " + task.status;
+      const meta = document.createElement("p"); meta.textContent = "Agente: " + task.agent_key + " · Aprobación: " + (task.approval_status || "no requerida");
+      const objective = document.createElement("p"); objective.textContent = task.objective || "";
+      card.append(heading, meta, objective);
+      if (task.result?.text) { const result = document.createElement("pre"); result.style.whiteSpace = "pre-wrap"; result.textContent = task.result.text; card.append(result); }
+      if (task.status === "queued" && task.requires_approval && task.approval_status === "pending") {
+        const approve = document.createElement("button"); approve.type = "button"; approve.className = "secondary"; approve.textContent = "Aprobar tarea"; approve.dataset.aiAction = "approve_task"; approve.dataset.taskId = task.id; card.append(approve);
+      } else if (task.status === "queued" && (!task.requires_approval || task.approval_status === "approved")) {
+        const run = document.createElement("button"); run.type = "button"; run.className = "primary"; run.textContent = "Ejecutar análisis"; run.dataset.aiAction = "run_task"; run.dataset.taskId = task.id; card.append(run);
+      }
+      list.append(card);
+    });
+    status.textContent = "Agentes conectados. " + (registry.agents || []).length + " especialistas; " + tasks.length + " tareas registradas.";
+  } catch (error) {
+    status.textContent = "No se pudo conectar el panel: " + error.message;
+    console.error("Reputix AI agents admin:", error);
+  }
+}
