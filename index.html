@@ -750,6 +750,30 @@ header>.header-actions{display:flex;align-items:center;justify-content:flex-end;
         <p class="admin-warning" id="adminClaimsWarning">Solo verifica una solicitud cuando hayas comprobado la identidad y una prueba válida de relación con el negocio. No aceptes únicamente una declaración escrita.</p>
         <div id="adminClaimsList"></div>
       </section>
+      <section id="adminAiAgentsPanel" hidden>
+        <div class="divider"></div>
+        <h3>🤖 Centro de agentes Reputix</h3>
+        <p class="admin-warning">Los agentes preparan análisis y recomendaciones. Toda tarea nueva requiere aprobación humana; ejecutar una tarea no autoriza cambios automáticos en producción.</p>
+        <div class="owner-grid">
+          <div class="owner-field"><strong>Backend</strong><div id="aiAgentsBackendStatus">Comprobando…</div></div>
+          <div class="owner-field"><strong>OpenAI</strong><div id="aiAgentsOpenAIStatus">Comprobando…</div></div>
+          <div class="owner-field"><strong>Modelo</strong><div id="aiAgentsModelStatus">—</div></div>
+          <div class="owner-field"><strong>Modo</strong><div id="aiAgentsModeStatus">—</div></div>
+        </div>
+        <div class="owner-actions"><button class="secondary" id="aiAgentsRefresh" type="button">Actualizar agentes y tareas</button></div>
+        <p class="owner-message" id="aiAgentsStatus" aria-live="polite"></p>
+        <h4>Especialistas conectados</h4><div id="aiAgentsRegistry" class="owner-grid"></div>
+        <h4>Solicitar análisis a un agente</h4>
+        <form id="aiAgentsTaskForm">
+          <div class="owner-grid">
+            <label class="owner-field"><span>Agente</span><select id="aiAgentsAgent" required></select></label>
+            <label class="owner-field"><span>Título de la tarea</span><input id="aiAgentsTitle" minlength="3" maxlength="180" required placeholder="Ej. Analizar opiniones recientes"></label>
+            <label class="owner-field full"><span>Objetivo y contexto</span><textarea id="aiAgentsObjective" rows="4" minlength="10" maxlength="12000" required placeholder="Explica qué debe analizar y qué resultado necesitas…"></textarea></label>
+          </div>
+          <div class="owner-actions"><button class="primary" id="aiAgentsQueue" type="submit">Crear tarea pendiente de aprobación</button></div>
+        </form>
+        <h4>Cola de tareas y aprobaciones</h4><div id="aiAgentsTaskList"></div>
+      </section>
     </div>
   </section>
 </section>
