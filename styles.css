@@ -2379,3 +2379,4 @@ select option, select optgroup {
   border:0 !important;
   box-shadow:none !important;
 }
+#adminAiAgentsPanel[hidden]{display:none!important}
