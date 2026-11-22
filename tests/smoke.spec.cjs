@@ -183,6 +183,57 @@ const { execFileSync } = require("node:child_process");
       }, null, { timeout: 20000 });
     });
 
+    await check("Business search matches approved businesses by name, category, city, and address", async () => {
+      const searchPage = await newTestPage({ viewport: { width: 390, height: 844 } });
+      searchPage.on("pageerror", error => failures.push(error.stack || error.message));
+      const business = {
+        id: "00000000-0000-4000-8000-000000000552",
+        name: "Harbor Community Market",
+        category: "Smoke Shop",
+        address: "123 Harbor Avenue",
+        city: "San Pedro",
+        zip: "90731",
+        status: "approved"
+      };
+      const seenFilters = [];
+      await searchPage.route("**/rest/v1/**", async route => {
+        const request = route.request();
+        const url = new URL(request.url());
+        const table = url.pathname.split("/").pop();
+        if (table === "businesses" && request.method() === "GET") {
+          const filter = url.searchParams.get("or") || "";
+          if (filter) {
+            seenFilters.push(filter);
+            await route.fulfill({
+              status: 200,
+              contentType: "application/json",
+              body: JSON.stringify([business])
+            });
+          } else {
+            await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+          }
+          return;
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+      });
+      await searchPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+      await searchPage.locator("#business").fill("San Pedro");
+      await searchPage.locator("#searchButton").click();
+      await searchPage.locator("#results .business-card").filter({ hasText: business.name }).waitFor({ state: "visible", timeout: 10000 });
+      await searchPage.locator("#business").fill("Smoke Shop");
+      await searchPage.locator("#searchButton").click();
+      await searchPage.locator("#results .business-card").filter({ hasText: business.name }).waitFor({ state: "visible", timeout: 10000 });
+      if (seenFilters.length < 2 || seenFilters.some(filter =>
+        !filter.includes("name.ilike") ||
+        !filter.includes("category.ilike") ||
+        !filter.includes("city.ilike") ||
+        !filter.includes("address.ilike")
+      )) {
+        throw new Error("Search did not send all expected PostgREST OR fields");
+      }
+      await searchPage.close();
+    });
+
     await check("Approved business deep links load a public profile with SEO metadata and working share action", async () => {
       const profilePage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       profilePage.on("pageerror", error => failures.push(error.stack || error.message));
