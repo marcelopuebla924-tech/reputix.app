@@ -2351,9 +2351,17 @@ form.addEventListener("submit",async e => {
   searchButton.disabled = true;
 
   try {
+    // Search across the fields users naturally use to find a local business.
+    // Strip PostgREST filter syntax characters so user input cannot alter the OR expression.
+    const safeQuery = query.replace(/[(),.*%_\\\\]/g," ").replace(/\\s+/g," ").trim();
+    if (!safeQuery) {
+      notice.textContent = t("initial");
+      return;
+    }
+    const pattern = "ilike.*" + safeQuery + "*";
     const params = new URLSearchParams({
       select:"*",
-      name:"ilike.*" + query.replace(/[%_]/g,"") + "*",
+      or:"(name." + pattern + ",category." + pattern + ",city." + pattern + ",address." + pattern + ",zip." + pattern + ")",
       status:"eq.approved",
       limit:"20"
     });
