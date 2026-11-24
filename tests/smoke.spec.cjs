@@ -1,3 +1,4 @@
+// CI captures desktop and mobile screenshots for a short-lived visual review artifact.
 const { chromium } = require("playwright");
 const fs = require("node:fs");
 const os = require("node:os");
