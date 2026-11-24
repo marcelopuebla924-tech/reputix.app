@@ -2108,6 +2108,11 @@ const { execFileSync } = require("node:child_process");
         if ((await heading.textContent()).trim() !== spanishHeading) {
           throw new Error("Spanish experience heading is missing or incorrect");
         }
+        fs.mkdirSync("artifacts/reputix-preview", { recursive: true });
+        await designPage.screenshot({
+          path: "artifacts/reputix-preview/reputix-desktop-es.png",
+          fullPage: true
+        });
         if (await section.locator(".reputix-how-card").count() !== 4) {
           throw new Error("The four how-it-works cards are not present");
         }
@@ -2118,6 +2123,10 @@ const { execFileSync } = require("node:child_process");
         if (!(await section.locator(".reputix-how-actions a").first().textContent()).includes("Explore businesses")) {
           throw new Error("Primary experience action did not translate to English");
         }
+        await designPage.screenshot({
+          path: "artifacts/reputix-preview/reputix-desktop-en.png",
+          fullPage: true
+        });
         await designPage.locator("#language").selectOption("es");
         if ((await heading.textContent()).trim() !== spanishHeading) {
           throw new Error("Experience heading did not return to Spanish");
@@ -2146,6 +2155,10 @@ const { execFileSync } = require("node:child_process");
           }
         }
         await designPage.setViewportSize({ width: 390, height: 844 });
+        await designPage.screenshot({
+          path: "artifacts/reputix-preview/reputix-mobile-es.png",
+          fullPage: true
+        });
         const primary = section.locator(".reputix-how-primary");
         if (!(await primary.isVisible())) throw new Error("Mobile primary action is not visible");
         if (!(await primary.getAttribute("href")) || !(await designPage.locator(await primary.getAttribute("href")).count())) {
