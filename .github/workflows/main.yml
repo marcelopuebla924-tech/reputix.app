@@ -13,9 +13,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Test AI agent GitHub context safety contract
@@ -37,3 +37,11 @@ jobs:
         run: node --test tests/prerender-approved-profiles.test.cjs tests/fetch-approved-businesses.test.cjs tests/sync-generated-profiles.test.cjs
       - name: Run browser smoke tests
         run: node tests/smoke.spec.cjs
+      - name: Upload design review screenshots
+        if: success()
+        uses: actions/upload-artifact@v7
+        with:
+          name: reputix-design-preview
+          path: artifacts/reputix-preview/*.png
+          if-no-files-found: error
+          retention-days: 7
