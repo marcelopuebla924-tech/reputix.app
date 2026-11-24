@@ -20,6 +20,8 @@ jobs:
           node-version: 22
       - name: Test AI agent GitHub context safety contract
         run: node --test tests/agent-github-context-contract.test.cjs
+      - name: Test Reputix experience design contract
+        run: node --test tests/reputix-experience-design.test.cjs
       - name: Install Playwright
         run: |
           npm install --no-save playwright
