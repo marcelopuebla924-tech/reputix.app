@@ -12,7 +12,7 @@ const helper = source.slice(start, end);
 
 test("GitHub context is restricted to the two public client source files", () => {
   assert.match(helper, /new Set\(\["app\.js", "index\.html"\]\)/);
-  assert.match(helper, /requested\.filter/);
+  assert.match(helper, /github_context_paths\.filter/);
   assert.match(helper, /raw\.githubusercontent\.com\/marcelopuebla924-tech\/reputix\.app/);
 });
 
@@ -24,7 +24,7 @@ test("GitHub reads are pinned to a resolved main commit and time bounded", () =>
 
 test("source size and excerpt size are bounded; no GitHub write/auth scope is used", () => {
   assert.match(helper, /source\.length > 500_000/);
-  assert.match(helper, /slice\(0, 3800\)/);
+  assert.match(helper, /slice\(0,\s*3800\)/);
   assert.doesNotMatch(helper, /Authorization|method:\s*["'](POST|PATCH|PUT|DELETE)["']/);
 });
 
