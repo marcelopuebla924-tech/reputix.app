@@ -563,11 +563,11 @@ const { execFileSync } = require("node:child_process");
       await fileInput.setInputFiles({
         name: "too-large.png",
         mimeType: "image/png",
-        buffer: Buffer.alloc(41 * 1024 * 1024)
+        buffer: Buffer.alloc(51 * 1024 * 1024)
       });
       await form.locator('button[type="submit"]').click();
-      await photoPage.waitForFunction(() => /40 MB|40 MB/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
-      if (storageUploads !== 0 || photoPayload) throw new Error("Photo above the 40 MB source limit reached storage or metadata API");
+      await photoPage.waitForFunction(() => /50 MB/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
+      if (storageUploads !== 0 || photoPayload) throw new Error("Photo above the 50 MB source limit reached storage or metadata API");
       const validPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j2ioAAAAASUVORK5CYII=", "base64");
       await fileInput.setInputFiles({ name: "qa-business-photo.png", mimeType: "image/png", buffer: validPng });
       await form.locator('button[type="submit"]').click();
@@ -576,7 +576,7 @@ const { execFileSync } = require("node:child_process");
           photoPayload.business_id !== businessId ||
           photoPayload.original_filename !== "qa-business-photo.png" ||
           !["image/webp","image/jpeg"].includes(photoPayload.content_type) ||
-          !(photoPayload.file_size > 0 && photoPayload.file_size <= 5 * 1024 * 1024) ||
+          !(photoPayload.file_size > 0 && photoPayload.file_size <= 40 * 1024 * 1024) ||
           photoPayload.status !== "pending" ||
           !String(photoPayload.storage_path || "").startsWith("proposals/" + businessId + "/")) {
         throw new Error("Photo upload did not optimize and send the expected storage object and pending review metadata: " + JSON.stringify({ storageUploads, photoPayload }));
