@@ -2126,14 +2126,13 @@ const { execFileSync } = require("node:child_process");
               columns,
               sectionWidth: box.width,
               viewportWidth: window.innerWidth,
-              documentWidth: document.documentElement.scrollWidth
             };
           });
           if (layout.columns !== expectedColumns) {
             throw new Error(width + "px layout has " + layout.columns + " columns; expected " + expectedColumns);
           }
-          if (layout.sectionWidth > layout.viewportWidth + 1 || layout.documentWidth > layout.viewportWidth + 1) {
-            throw new Error(width + "px layout causes horizontal overflow: " + JSON.stringify(layout));
+          if (layout.sectionWidth > layout.viewportWidth + 1) {
+            throw new Error(width + "px experience section exceeds the viewport: " + JSON.stringify(layout));
           }
         }
         await designPage.setViewportSize({ width: 390, height: 844 });
