@@ -2379,3 +2379,7 @@ select option, select optgroup {
   border:0 !important;
   box-shadow:none !important;
 }
+
+
+/* Keep the Reputix AI agents admin panel hidden until admin auth is confirmed. */
+#adminAiAgentsPanel[hidden]{display:none!important}
