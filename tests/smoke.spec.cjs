@@ -2089,6 +2089,64 @@ const { execFileSync } = require("node:child_process");
       }
     });
 
+    await check("New experience section works in Spanish and English and stays responsive on desktop, tablet, and mobile", async () => {
+      const designPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
+      designPage.on("pageerror", error => failures.push(error.stack || error.message));
+      try {
+        await designPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+        const section = designPage.locator("#reputixHow");
+        await section.waitFor({ state: "visible" });
+        const heading = section.locator("#reputixHowTitle");
+        const spanishHeading = "Una comunidad que crece con experiencias reales";
+        const englishHeading = "A community that grows through real experiences";
+        if ((await heading.textContent()).trim() !== spanishHeading) {
+          throw new Error("Spanish experience heading is missing or incorrect");
+        }
+        if (await section.locator(".reputix-how-card").count() !== 4) {
+          throw new Error("The four how-it-works cards are not present");
+        }
+        await designPage.locator("#language").selectOption("en");
+        if ((await heading.textContent()).trim() !== englishHeading) {
+          throw new Error("Experience heading did not translate to English");
+        }
+        if (!(await section.locator(".reputix-how-actions a").first().textContent()).includes("Explore businesses")) {
+          throw new Error("Primary experience action did not translate to English");
+        }
+        await designPage.locator("#language").selectOption("es");
+        if ((await heading.textContent()).trim() !== spanishHeading) {
+          throw new Error("Experience heading did not return to Spanish");
+        }
+        for (const [width, height, expectedColumns] of [[1365, 900, 4], [800, 900, 2], [390, 844, 1]]) {
+          await designPage.setViewportSize({ width, height });
+          const layout = await section.evaluate(el => {
+            const grid = el.querySelector(".reputix-how-grid");
+            const columns = getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/).length;
+            const box = el.getBoundingClientRect();
+            return {
+              columns,
+              sectionWidth: box.width,
+              viewportWidth: window.innerWidth,
+              documentWidth: document.documentElement.scrollWidth
+            };
+          });
+          if (layout.columns !== expectedColumns) {
+            throw new Error(width + "px layout has " + layout.columns + " columns; expected " + expectedColumns);
+          }
+          if (layout.sectionWidth > layout.viewportWidth + 1 || layout.documentWidth > layout.viewportWidth + 1) {
+            throw new Error(width + "px layout causes horizontal overflow: " + JSON.stringify(layout));
+          }
+        }
+        await designPage.setViewportSize({ width: 390, height: 844 });
+        const primary = section.locator(".reputix-how-primary");
+        if (!(await primary.isVisible())) throw new Error("Mobile primary action is not visible");
+        if (!(await primary.getAttribute("href")) || !(await designPage.locator(await primary.getAttribute("href")).count())) {
+          throw new Error("Primary action target is missing");
+        }
+      } finally {
+        await designPage.close();
+      }
+    });
+
     await mobile.goto("http://127.0.0.1:4173/mapa.html", { waitUntil: "domcontentloaded" });
     await mobile.waitForFunction(() => !!window.L && !!document.querySelector("#map"), null, { timeout: 15000 });
     await check("Mobile map filters respond to touch", async () => {
