@@ -18,6 +18,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Test AI agent GitHub context safety contract
+        run: node --test tests/agent-github-context-contract.test.cjs
       - name: Install Playwright
         run: |
           npm install --no-save playwright
