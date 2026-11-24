@@ -40,3 +40,11 @@ jobs:
         run: node --test tests/prerender-approved-profiles.test.cjs tests/fetch-approved-businesses.test.cjs tests/sync-generated-profiles.test.cjs
       - name: Run browser smoke tests
         run: node tests/smoke.spec.cjs
+      - name: Upload design review screenshots
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reputix-design-preview
+          path: artifacts/reputix-preview/*.png
+          if-no-files-found: error
+          retention-days: 7
