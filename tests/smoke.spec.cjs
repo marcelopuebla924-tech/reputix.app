@@ -2093,7 +2093,7 @@ const { execFileSync } = require("node:child_process");
       const designPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       designPage.on("pageerror", error => failures.push(error.stack || error.message));
       try {
-        await designPage.goto("http://127.0.0.1:4173/", { waitUntil: "load" });
+        await designPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
         const section = designPage.locator("#reputixHow");
         await section.waitFor({ state: "visible" });
         await designPage.waitForFunction(() => {
