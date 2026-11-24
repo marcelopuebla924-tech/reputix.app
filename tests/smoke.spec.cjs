@@ -1,3 +1,4 @@
+// CI captures desktop and mobile screenshots for a short-lived visual review artifact.
 const { chromium } = require("playwright");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -2086,6 +2087,86 @@ const { execFileSync } = require("node:child_process");
         }
       } finally {
         await desktopAiPage.close();
+      }
+    });
+
+    await check("New experience section works in Spanish and English and stays responsive on desktop, tablet, and mobile", async () => {
+      const designPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
+      designPage.on("pageerror", error => failures.push(error.stack || error.message));
+      try {
+        await designPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+        const section = designPage.locator("#reputixHow");
+        await section.waitFor({ state: "visible" });
+        await designPage.waitForFunction(() => {
+          const stylesheet = [...document.querySelectorAll('link[rel="stylesheet"]')]
+            .find(link => link.href.includes("styles.css"));
+          const grid = document.querySelector("#reputixHow .reputix-how-grid");
+          return !!stylesheet?.sheet && !!grid && getComputedStyle(grid).display === "grid";
+        }, null, { timeout: 10000 });
+        const heading = section.locator("#reputixHowTitle");
+        const spanishHeading = "Una comunidad que crece con experiencias reales";
+        const englishHeading = "A community that grows through real experiences";
+        if ((await heading.textContent()).trim() !== spanishHeading) {
+          throw new Error("Spanish experience heading is missing or incorrect");
+        }
+        fs.mkdirSync("artifacts/reputix-preview", { recursive: true });
+        await designPage.screenshot({
+          path: "artifacts/reputix-preview/reputix-desktop-es.png",
+          fullPage: true
+        });
+        if (await section.locator(".reputix-how-card").count() !== 4) {
+          throw new Error("The four how-it-works cards are not present");
+        }
+        await designPage.locator("#language").selectOption("en");
+        if ((await heading.textContent()).trim() !== englishHeading) {
+          throw new Error("Experience heading did not translate to English");
+        }
+        if (!(await section.locator(".reputix-how-actions a").first().textContent()).includes("Explore businesses")) {
+          throw new Error("Primary experience action did not translate to English");
+        }
+        await designPage.screenshot({
+          path: "artifacts/reputix-preview/reputix-desktop-en.png",
+          fullPage: true
+        });
+        await designPage.locator("#language").selectOption("es");
+        if ((await heading.textContent()).trim() !== spanishHeading) {
+          throw new Error("Experience heading did not return to Spanish");
+        }
+        for (const [width, height, expectedColumns] of [[1365, 900, 4], [800, 900, 2], [390, 844, 1]]) {
+          await designPage.setViewportSize({ width, height });
+          const layout = await section.evaluate(el => {
+            const grid = el.querySelector(".reputix-how-grid");
+            const cardLefts = [...grid.children].map(card => Math.round(card.getBoundingClientRect().left));
+            const columns = new Set(cardLefts).size;
+            const box = el.getBoundingClientRect();
+            return {
+              columns,
+              renderedCardLefts: cardLefts,
+              gridDisplay: getComputedStyle(grid).display,
+              gridTemplateColumns: getComputedStyle(grid).gridTemplateColumns,
+              sectionWidth: box.width,
+              viewportWidth: window.innerWidth,
+            };
+          });
+          if (layout.columns !== expectedColumns) {
+            throw new Error(width + "px layout has " + layout.columns + " rendered columns; expected " + expectedColumns + ": " + JSON.stringify(layout));
+          }
+          if (layout.sectionWidth > layout.viewportWidth + 1) {
+            throw new Error(width + "px experience section exceeds the viewport: " + JSON.stringify(layout));
+          }
+        }
+        await designPage.setViewportSize({ width: 390, height: 844 });
+        await designPage.screenshot({
+          path: "artifacts/reputix-preview/reputix-mobile-es.png",
+          fullPage: true
+        });
+        const primary = section.locator(".reputix-how-primary");
+        if (!(await primary.isVisible())) throw new Error("Mobile primary action is not visible");
+        if (!(await primary.getAttribute("href")) || !(await designPage.locator(await primary.getAttribute("href")).count())) {
+          throw new Error("Primary action target is missing");
+        }
+      } finally {
+        await designPage.close();
       }
     });
 

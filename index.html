@@ -30,7 +30,7 @@
 
 <!-- REPUTIX_PAGES_BUILD: messaging-center-2026-11-09 -->
 
-  <link rel="stylesheet" href="./styles.css?v=laptop-zoom-layout-fix-20261111-3">
+  <link rel="stylesheet" href="./styles.css?v=experience-refresh-20261124-1">
   <style id="reputix-ai-inline-v6">
 /* REPUTIX AI — interfaz renovada, compacta y adaptable */
 .reputix-ai-fab{position:fixed!important;right:16px!important;bottom:22px!important;z-index:2147483000!important;display:flex!important;align-items:center!important;gap:11px!important;width:auto!important;max-width:calc(100vw - 28px)!important;padding:9px 14px 9px 9px!important;border:1.5px solid #27caff!important;border-radius:22px!important;background:linear-gradient(120deg,#06172c,#075da0)!important;color:#fff!important;box-shadow:0 0 14px #00bfff,0 0 32px #0077ff!important;cursor:pointer!important;text-align:left!important;animation:reputixAiPulse 3s ease-in-out infinite}
@@ -445,6 +445,61 @@ header>.header-actions{display:flex;align-items:center;justify-content:flex-end;
     <p id="fd3">Identifica tendencias a partir de opiniones reales.</p>
   </button>
 </section>
+
+
+<section class="reputix-how" id="reputixHow" aria-labelledby="reputixHowTitle">
+  <div class="reputix-how-heading">
+    <span class="reputix-how-kicker">REPUTIX · COMMUNITY</span>
+    <h2 id="reputixHowTitle" data-reputix-es="Una comunidad que crece con experiencias reales" data-reputix-en="A community that grows through real experiences">Una comunidad que crece con experiencias reales</h2>
+    <p data-reputix-es="Descubre negocios, comparte lo que viviste y ayuda a otros a decidir con más confianza." data-reputix-en="Discover businesses, share your experience, and help others make more confident decisions.">Descubre negocios, comparte lo que viviste y ayuda a otros a decidir con más confianza.</p>
+  </div>
+  <div class="reputix-how-grid">
+    <article class="reputix-how-card">
+      <span class="reputix-how-number" aria-hidden="true">01</span>
+      <span class="reputix-how-icon" aria-hidden="true">⌕</span>
+      <h3 data-reputix-es="Descubre" data-reputix-en="Discover">Descubre</h3>
+      <p data-reputix-es="Busca negocios y profesionales por nombre, servicio o categoría." data-reputix-en="Find businesses and professionals by name, service, or category.">Busca negocios y profesionales por nombre, servicio o categoría.</p>
+    </article>
+    <article class="reputix-how-card">
+      <span class="reputix-how-number" aria-hidden="true">02</span>
+      <span class="reputix-how-icon" aria-hidden="true">☆</span>
+      <h3 data-reputix-es="Compara opiniones" data-reputix-en="Compare reviews">Compara opiniones</h3>
+      <p data-reputix-es="Consulta experiencias publicadas y evalúa distintos aspectos del servicio." data-reputix-en="Read published experiences and compare different aspects of service.">Consulta experiencias publicadas y evalúa distintos aspectos del servicio.</p>
+    </article>
+    <article class="reputix-how-card">
+      <span class="reputix-how-number" aria-hidden="true">03</span>
+      <span class="reputix-how-icon" aria-hidden="true">✎</span>
+      <h3 data-reputix-es="Comparte tu experiencia" data-reputix-en="Share your experience">Comparte tu experiencia</h3>
+      <p data-reputix-es="Deja una opinión honesta que aporte información útil a la comunidad." data-reputix-en="Leave an honest review that gives the community useful information.">Deja una opinión honesta que aporte información útil a la comunidad.</p>
+    </article>
+    <article class="reputix-how-card">
+      <span class="reputix-how-number" aria-hidden="true">04</span>
+      <span class="reputix-how-icon" aria-hidden="true">↗</span>
+      <h3 data-reputix-es="Construye confianza" data-reputix-en="Build trust">Construye confianza</h3>
+      <p data-reputix-es="Los negocios pueden responder a las opiniones y trabajar en mejorar su servicio." data-reputix-en="Businesses can respond to reviews and work to improve their service.">Los negocios pueden responder a las opiniones y trabajar en mejorar su servicio.</p>
+    </article>
+  </div>
+  <div class="reputix-how-actions">
+    <a class="reputix-how-primary" href="#searchForm" data-reputix-es="Explorar negocios" data-reputix-en="Explore businesses">Explorar negocios</a>
+    <a class="reputix-how-secondary" href="#communityTitle" data-reputix-es="Agregar un negocio o servicio" data-reputix-en="Add a business or service">Agregar un negocio o servicio</a>
+  </div>
+</section>
+<script>
+(function () {
+  const language = document.getElementById("language");
+  const section = document.getElementById("reputixHow");
+  if (!language || !section || section.dataset.languageBound === "true") return;
+  const applyCopy = () => {
+    const key = language.value === "en" ? "en" : "es";
+    section.querySelectorAll("[data-reputix-es][data-reputix-en]").forEach((element) => {
+      element.textContent = element.dataset["reputix" + (key === "en" ? "En" : "Es")];
+    });
+  };
+  language.addEventListener("change", applyCopy);
+  section.dataset.languageBound = "true";
+  applyCopy();
+})();
+</script>
 
 <section class="advanced-stats" id="advancedStatsDashboard" hidden aria-labelledby="advancedStatsTitle">
   <div class="advanced-stats-head">
