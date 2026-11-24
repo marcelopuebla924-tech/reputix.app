@@ -2093,9 +2093,15 @@ const { execFileSync } = require("node:child_process");
       const designPage = await newTestPage({ viewport: { width: 1365, height: 900 } });
       designPage.on("pageerror", error => failures.push(error.stack || error.message));
       try {
-        await designPage.goto("http://127.0.0.1:4173/", { waitUntil: "domcontentloaded" });
+        await designPage.goto("http://127.0.0.1:4173/", { waitUntil: "load" });
         const section = designPage.locator("#reputixHow");
         await section.waitFor({ state: "visible" });
+        await designPage.waitForFunction(() => {
+          const stylesheet = [...document.querySelectorAll('link[rel="stylesheet"]')]
+            .find(link => link.href.includes("styles.css"));
+          const grid = document.querySelector("#reputixHow .reputix-how-grid");
+          return !!stylesheet?.sheet && !!grid && getComputedStyle(grid).display === "grid";
+        }, null, { timeout: 10000 });
         const heading = section.locator("#reputixHowTitle");
         const spanishHeading = "Una comunidad que crece con experiencias reales";
         const englishHeading = "A community that grows through real experiences";
