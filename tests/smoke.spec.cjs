@@ -2126,16 +2126,20 @@ const { execFileSync } = require("node:child_process");
           await designPage.setViewportSize({ width, height });
           const layout = await section.evaluate(el => {
             const grid = el.querySelector(".reputix-how-grid");
-            const columns = getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/).length;
+            const cardLefts = [...grid.children].map(card => Math.round(card.getBoundingClientRect().left));
+            const columns = new Set(cardLefts).size;
             const box = el.getBoundingClientRect();
             return {
               columns,
+              renderedCardLefts: cardLefts,
+              gridDisplay: getComputedStyle(grid).display,
+              gridTemplateColumns: getComputedStyle(grid).gridTemplateColumns,
               sectionWidth: box.width,
               viewportWidth: window.innerWidth,
             };
           });
           if (layout.columns !== expectedColumns) {
-            throw new Error(width + "px layout has " + layout.columns + " columns; expected " + expectedColumns);
+            throw new Error(width + "px layout has " + layout.columns + " rendered columns; expected " + expectedColumns + ": " + JSON.stringify(layout));
           }
           if (layout.sectionWidth > layout.viewportWidth + 1) {
             throw new Error(width + "px experience section exceeds the viewport: " + JSON.stringify(layout));
