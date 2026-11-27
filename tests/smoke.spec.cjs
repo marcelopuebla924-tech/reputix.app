@@ -580,7 +580,7 @@ const { execFileSync } = require("node:child_process");
       const validPng = Buffer.from(validPngBase64, "base64");
       await fileInput.setInputFiles({ name: "qa-business-photo.png", mimeType: "image/png", buffer: validPng });
       await form.locator('button[type="submit"]').click();
-      await photoPage.waitForFunction(() => /foto.*quedó enviada a revisión|photo was also submitted for review/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 10000 }).catch(async error => { const message = await form.locator(".form-message").textContent().catch(() => "missing form message"); throw new Error(error.message + "; upload form message: " + message + "; storage uploads: " + storageUploads + "; photo payload: " + JSON.stringify(photoPayload)); });
+      await photoPage.waitForFunction(() => /foto enviada|photo submitted/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 10000 }).catch(async error => { const message = await form.locator(".form-message").textContent().catch(() => "missing form message"); throw new Error(error.message + "; upload form message: " + message + "; storage uploads: " + storageUploads + "; photo payload: " + JSON.stringify(photoPayload)); });
       if (storageUploads !== 1 || !photoPayload ||
           photoPayload.business_id !== businessId ||
           photoPayload.original_filename !== "qa-business-photo.png" ||
