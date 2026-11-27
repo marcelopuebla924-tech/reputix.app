@@ -562,7 +562,7 @@ const { execFileSync } = require("node:child_process");
       const fileInput = form.locator('input[name="photo"]');
       await fileInput.setInputFiles({ name: "not-an-image.gif", mimeType: "image/gif", buffer: Buffer.from("qa-gif") });
       await form.locator('button[type="submit"]').click();
-      await photoPage.waitForFunction(() => /JPG, PNG o WebP/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
+      await photoPage.waitForFunction(() => /JPG, PNG o WebP|Use JPG, PNG or WebP/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
       if (storageUploads !== 0 || photoPayload) throw new Error("Unsupported file type reached storage or photo metadata API");
       const tooLargeDir = fs.mkdtempSync(path.join(os.tmpdir(), "reputix-large-photo-"));
       const tooLargePath = path.join(tooLargeDir, "too-large.png");
