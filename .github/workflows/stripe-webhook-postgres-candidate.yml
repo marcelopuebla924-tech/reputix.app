@@ -1,0 +1,37 @@
+name: Stripe webhook atomic RPC candidate tests
+
+on:
+  pull_request:
+    paths:
+      - "docs/proposals/stripe-webhook-atomic-claim-candidate.sql"
+      - "tests/stripe-webhook-postgres.sh"
+      - "tests/fixtures/stripe-webhook-postgres-fixture.sql"
+      - ".github/workflows/stripe-webhook-postgres-candidate.yml"
+  workflow_dispatch:
+
+jobs:
+  postgres-atomicity:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: reputix_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d reputix_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/reputix_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Run isolated PostgreSQL concurrency and rollback tests
+        run: bash tests/stripe-webhook-postgres.sh
