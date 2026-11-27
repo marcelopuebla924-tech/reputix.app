@@ -560,11 +560,15 @@ const { execFileSync } = require("node:child_process");
       await form.locator('button[type="submit"]').click();
       await photoPage.waitForFunction(() => /JPG, PNG o WebP/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
       if (storageUploads !== 0 || photoPayload) throw new Error("Unsupported file type reached storage or photo metadata API");
-      await fileInput.setInputFiles({
-        name: "too-large.png",
-        mimeType: "image/png",
-        buffer: Buffer.alloc(51 * 1024 * 1024)
-      });
+      const tooLargeDir = fs.mkdtempSync(path.join(os.tmpdir(), "reputix-large-photo-"));
+      const tooLargePath = path.join(tooLargeDir, "too-large.png");
+      try {
+        fs.writeFileSync(tooLargePath, Buffer.from([0]));
+        fs.truncateSync(tooLargePath, 51 * 1024 * 1024);
+        await fileInput.setInputFiles(tooLargePath);
+      } finally {
+        fs.rmSync(tooLargeDir, { recursive: true, force: true });
+      }
       await form.locator('button[type="submit"]').click();
       await photoPage.waitForFunction(() => /50 MB/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
       if (storageUploads !== 0 || photoPayload) throw new Error("Photo above the 50 MB source limit reached storage or metadata API");
