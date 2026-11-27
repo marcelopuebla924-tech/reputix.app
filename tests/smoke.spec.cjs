@@ -537,6 +537,10 @@ const { execFileSync } = require("node:child_process");
           }]) });
           return;
         }
+        if (table === "submit_business_proposal" && request.method() === "POST") {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(businessId) });
+          return;
+        }
         if (table === "business_photos" && request.method() === "POST") {
           photoPayload = request.postDataJSON();
           await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
