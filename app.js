@@ -1025,7 +1025,7 @@ async function optimizeBusinessPhoto(file) {
   const allowed = ["image/jpeg","image/png","image/webp"];
   if (!allowed.includes(file.type)) throw new Error(lang === "es" ? "Usa JPG, PNG o WebP. Si tu teléfono guarda HEIC, conviértela a JPG antes de subirla." : "Use JPG, PNG or WebP. If your phone saves HEIC, convert it to JPG before uploading.");
   // Acepta originales grandes; siempre se comprimen antes de enviarlos a Storage.
-  if (file.size > 40 * 1024 * 1024) throw new Error(lang === "es" ? "La foto supera el límite de 40 MB. Elige una más pequeña." : "Photo exceeds the 40 MB limit. Choose a smaller one.");
+  if (file.size > 50 * 1024 * 1024) throw new Error(lang === "es" ? "La foto original supera el límite de 50 MB. Elige una más pequeña." : "Original photo exceeds the 50 MB limit. Choose a smaller one.");
 
   let source = null, width = 0, height = 0, release = () => {};
   if (typeof createImageBitmap === "function") {
@@ -1065,13 +1065,13 @@ async function optimizeBusinessPhoto(file) {
     ctx.fillRect(0,0,canvas.width,canvas.height);
     ctx.drawImage(source,0,0,canvas.width,canvas.height);
     const toBlob = (type,quality) => new Promise(resolve => canvas.toBlob(resolve,type,quality));
-    let blob = await toBlob("image/webp",0.82);
-    if (!blob || blob.type !== "image/webp") blob = await toBlob("image/jpeg",0.82);
-    for (const quality of [0.76,0.68,0.60,0.52,0.45]) {
-      if (blob && blob.size <= 4.5*1024*1024) break;
+    let blob = await toBlob("image/webp",0.90);
+    if (!blob || blob.type !== "image/webp") blob = await toBlob("image/jpeg",0.90);
+    for (const quality of [0.86,0.82,0.78,0.74,0.68,0.62,0.56,0.50]) {
+      if (blob && blob.size <= 36*1024*1024) break;
       blob = await toBlob(blob?.type || "image/jpeg",quality);
     }
-    if (!blob || blob.size > 5*1024*1024) throw new Error(lang === "es" ? "No se pudo optimizar la foto a menos de 5 MB. Intenta con otra imagen." : "Could not optimize the photo below 5 MB. Try another image.");
+    if (!blob || blob.size > 40*1024*1024) throw new Error(lang === "es" ? "La foto procesada supera 40 MB. Intenta con otra imagen." : "Processed photo exceeds 40 MB. Try another image.");
     const ext = blob.type === "image/webp" ? "webp" : "jpg";
     return new File([blob],(file.name.replace(/\\.[^.]+$/,"") || "business-photo")+"-optimized."+ext,{type:blob.type,lastModified:Date.now()});
   } finally {
@@ -2222,8 +2222,8 @@ function renderCommunityForm(type) {
   addField(t("formDescription"),"description","textarea",t("formDescriptionHint"),true);
 
   const photoLabel = node("label","field full",lang === "es"
-    ? "Foto del negocio (opcional; JPG, PNG o WebP; original hasta 40 MB, se optimiza automáticamente)"
-    : "Business photo (optional; JPG, PNG or WebP; original up to 40 MB, automatically optimized)");
+    ? "Foto del negocio (opcional; JPG/JPEG, PNG o WebP; original hasta 50 MB, procesada hasta 40 MB)"
+    : "Business photo (optional; JPG/JPEG, PNG or WebP; original up to 50 MB, processed up to 40 MB)");
   const photoInput = node("input");
   photoInput.type = "file";
   photoInput.name = "photo";

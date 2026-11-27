@@ -537,6 +537,10 @@ const { execFileSync } = require("node:child_process");
           }]) });
           return;
         }
+        if (table === "submit_business_proposal" && request.method() === "POST") {
+          await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(businessId) });
+          return;
+        }
         if (table === "business_photos" && request.method() === "POST") {
           photoPayload = request.postDataJSON();
           await route.fulfill({ status: 201, contentType: "application/json", body: "[]" });
@@ -558,25 +562,30 @@ const { execFileSync } = require("node:child_process");
       const fileInput = form.locator('input[name="photo"]');
       await fileInput.setInputFiles({ name: "not-an-image.gif", mimeType: "image/gif", buffer: Buffer.from("qa-gif") });
       await form.locator('button[type="submit"]').click();
-      await photoPage.waitForFunction(() => /JPG, PNG o WebP/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
+      await photoPage.waitForFunction(() => /JPG, PNG o WebP|Use JPG, PNG or WebP/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
       if (storageUploads !== 0 || photoPayload) throw new Error("Unsupported file type reached storage or photo metadata API");
-      await fileInput.setInputFiles({
-        name: "too-large.png",
-        mimeType: "image/png",
-        buffer: Buffer.alloc(41 * 1024 * 1024)
-      });
+      const tooLargeDir = fs.mkdtempSync(path.join(os.tmpdir(), "reputix-large-photo-"));
+      const tooLargePath = path.join(tooLargeDir, "too-large.png");
+      try {
+        fs.writeFileSync(tooLargePath, Buffer.from([0]));
+        fs.truncateSync(tooLargePath, 51 * 1024 * 1024);
+        await fileInput.setInputFiles(tooLargePath);
+      } finally {
+        fs.rmSync(tooLargeDir, { recursive: true, force: true });
+      }
       await form.locator('button[type="submit"]').click();
-      await photoPage.waitForFunction(() => /40 MB|40 MB/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
-      if (storageUploads !== 0 || photoPayload) throw new Error("Photo above the 40 MB source limit reached storage or metadata API");
-      const validPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j2ioAAAAASUVORK5CYII=", "base64");
+      await photoPage.waitForFunction(() => /50 MB/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 8000 });
+      if (storageUploads !== 0 || photoPayload) throw new Error("Photo above the 50 MB source limit reached storage or metadata API");
+      const validPngBase64 = await photoPage.evaluate(() => { const canvas = document.createElement("canvas"); canvas.width = 2; canvas.height = 2; const context = canvas.getContext("2d"); context.fillStyle = "#2878c8"; context.fillRect(0, 0, 2, 2); return canvas.toDataURL("image/png").split(",")[1]; });
+      const validPng = Buffer.from(validPngBase64, "base64");
       await fileInput.setInputFiles({ name: "qa-business-photo.png", mimeType: "image/png", buffer: validPng });
       await form.locator('button[type="submit"]').click();
-      await photoPage.waitForFunction(() => /Foto enviada|Photo submitted/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 10000 });
+      await photoPage.waitForFunction(() => /foto enviada|photo submitted/i.test(document.querySelector("#results .business-card form:has(input[name='photo']) .form-message")?.textContent || ""), null, { timeout: 10000 }).catch(async error => { const message = await form.locator(".form-message").textContent().catch(() => "missing form message"); throw new Error(error.message + "; upload form message: " + message + "; storage uploads: " + storageUploads + "; photo payload: " + JSON.stringify(photoPayload)); });
       if (storageUploads !== 1 || !photoPayload ||
           photoPayload.business_id !== businessId ||
           photoPayload.original_filename !== "qa-business-photo.png" ||
           !["image/webp","image/jpeg"].includes(photoPayload.content_type) ||
-          !(photoPayload.file_size > 0 && photoPayload.file_size <= 5 * 1024 * 1024) ||
+          !(photoPayload.file_size > 0 && photoPayload.file_size <= 40 * 1024 * 1024) ||
           photoPayload.status !== "pending" ||
           !String(photoPayload.storage_path || "").startsWith("proposals/" + businessId + "/")) {
         throw new Error("Photo upload did not optimize and send the expected storage object and pending review metadata: " + JSON.stringify({ storageUploads, photoPayload }));
